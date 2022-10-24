@@ -1,0 +1,10 @@
+[package]
+name = "simple_audio"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+symphonia = { version = "0.5.1", features = ["mp3"] }
