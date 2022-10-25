@@ -1,3 +1,5 @@
+mod output;
+
 use symphonia::{
     core::{
         codecs::{
@@ -10,7 +12,7 @@ use symphonia::{
             FormatOptions,
             FormatReader
         },
-        meta::MetadataOptions
+        meta::MetadataOptions, audio::AudioBufferRef
     }, default
 };
 
@@ -46,10 +48,11 @@ impl Player
         let file = std::fs::File::open(path)?;
         let source = Box::new(file);
         let source_stream = MediaSourceStream::new(source, Default::default());
+        let hint = symphonia::core::probe::Hint::new();
 
         // Probe the source.
         let probe_result = self.probe.format(
-            &mut symphonia::core::probe::Hint::new(),
+            &hint,
             source_stream,
             &self.format_options,
             &self.metadata_options
@@ -58,9 +61,11 @@ impl Player
         // If the source was successfully probed, start the playback.
         match probe_result
         {
-            Err(err) => panic!("{}", err),
-            Ok(probed) => {
-                self.start_playback(probed.format);
+            Err(err) => {
+                panic!("Probe Error: {}", err)
+            },
+            Ok(mut probed) => {
+                self.start_playback(&mut probed.format);
             }
         }
 
@@ -68,7 +73,7 @@ impl Player
     }
 
     /// Plays the probed file at the default track.
-    fn start_playback(&self, mut reader:Box<dyn FormatReader>)
+    fn start_playback(&self, reader:&mut Box<dyn FormatReader>)
     {
         let track = reader.default_track();
         if let None = track { return; }
@@ -78,6 +83,8 @@ impl Player
         let mut decoder = self.codec_registry.make(&track.codec_params, &self.decoder_options)
             .expect("Unsupported codec.");
 
+        let mut output:Option<Box<dyn output::AudioOutput>> = None;
+
         // Decode loop.
         loop
         {
@@ -85,7 +92,7 @@ impl Player
             let packet = match reader.next_packet()
             {
                 Ok(packet) => packet,
-                Err(err) => panic!("{}", err)
+                Err(err) => panic!("Packet Error: {}", err)
             };
 
             // Make sure that the packet is of the track we want.
@@ -95,10 +102,26 @@ impl Player
             match decoder.decode(&packet)
             {
                 Ok(decoded) => {
-                    
+                    self.handle_output(&mut output, &decoded)
                 },
-                Err(err) => panic!("{}", err)
+                Err(err) => panic!("Decoder Error: {}", err)
             }
+        }
+    }
+
+    /// Handles outputting the decoded output to an audio device.
+    fn handle_output(&self, output:&mut Option<Box<dyn output::AudioOutput>>, decoded:&AudioBufferRef)
+    {
+        if output.is_none()
+        {
+            let spec = *decoded.spec();
+            let duration = decoded.capacity() as u64;
+            output.replace(output::try_open(spec, duration).unwrap());
+        }
+
+        if let Some(output) = output
+        {
+            output.write(decoded.clone()).unwrap();
         }
     }
 
@@ -122,4 +145,14 @@ impl Player
     // {
 
     // }
+}
+
+mod tests
+{
+    #[test]
+    fn open_and_play()
+    {
+        let mut player = crate::Player::new();
+        player.open("/home/erikas/Music/test.mp3").expect("Error");
+    }
 }
