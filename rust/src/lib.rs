@@ -16,29 +16,29 @@ use symphonia::{
 
 pub struct Player
 {
-    probe:&'static Probe,
-    format_options:FormatOptions,
-    metadata_options:MetadataOptions,
+    //probe:Probe,
+    //format_options:FormatOptions,
+    //metadata_options:MetadataOptions,
     is_playing:bool
     //is_playing:Arc<Mutex<bool>>,
 }
 
 impl Player
 {
-    pub fn new() -> Self
+    pub fn new() -> Player
     {
         Player
         {
-            probe: default::get_probe(),
-            format_options: FormatOptions { enable_gapless: true, ..Default::default() },
-            metadata_options: Default::default(),
+            //probe: default::get_probe(),
+            //format_options: FormatOptions { enable_gapless: true, ..Default::default() },
+            //metadata_options: Default::default(),
             //is_playing: Arc::new(Mutex::new(false))
             is_playing: false,
         }
     }
 
     /// Opens a file for reading.
-    pub fn open(&mut self, path:&str) -> Result<(), std::io::Error>
+    pub fn open(&self, path:String) -> Result<(), std::io::Error>
     {
         //TODO: Handle web requests.
         if path.contains("http") { return Ok(()); }
@@ -49,11 +49,11 @@ impl Player
         let hint = symphonia::core::probe::Hint::new();
 
         // Probe the source.
-        let probe_result = self.probe.format(
+        let probe_result = default::get_probe().format(
             &hint,
             source_stream,
-            &self.format_options,
-            &self.metadata_options
+            &FormatOptions { enable_gapless: true, ..Default::default() },
+            &Default::default()
         );
 
         // If the source was successfully probed, start the playback.
@@ -112,7 +112,7 @@ impl Player
             match decoder.decode(&packet)
             {
                 Ok(decoded) => {
-                    Self::handle_output(&mut output, &decoded);
+                    Player::handle_output(&mut output, &decoded);
                 },
                 Err(err) => {
                     println!("Decoder Error: {}", err);
@@ -144,18 +144,18 @@ impl Player
     }
 
     // Controls
-    pub fn play(&mut self)
+    pub fn play(&self)
     {
         // let mut value = self.is_playing.lock().unwrap();
         // *value = true;
-        self.is_playing = true;
+        //self.is_playing = true;
     }
 
-    pub fn pause(&mut self)
+    pub fn pause(&self)
     {
         // let mut value = self.is_playing.lock().unwrap();
         // *value = false;
-        self.is_playing = false;
+        //self.is_playing = false;
     }
 
     // pub fn seek(&self, seconds:i32)
@@ -169,19 +169,19 @@ impl Player
     // }
 }
 
-mod tests
-{
-    #[test]
-    fn open_and_play()
-    {
-        let mut player = crate::Player::new();
-        player.open("/home/erikas/Music/test.mp3").expect("Error");
-        loop
-        {
-            player.play();
-            std::thread::sleep(std::time::Duration::from_secs(2));
-            player.pause();
-            std::thread::sleep(std::time::Duration::from_secs(2));
-        }
-    }
-}
+// mod tests
+// {
+//     #[test]
+//     fn open_and_play()
+//     {
+//         let mut player = crate::Player::new();
+//         player.open("/home/erikas/Music/test.mp3".to_string()).expect("Error");
+//         loop
+//         {
+//             player.play();
+//             std::thread::sleep(std::time::Duration::from_secs(2));
+//             player.pause();
+//             std::thread::sleep(std::time::Duration::from_secs(2));
+//         }
+//     }
+// }
