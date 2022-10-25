@@ -1,5 +1,7 @@
 mod output;
 
+use std::{thread, sync::{Arc, Mutex}};
+
 use symphonia::{
     core::{
         codecs::{
@@ -18,11 +20,13 @@ use symphonia::{
 
 pub struct Player
 {
-    codec_registry:&'static CodecRegistry,
+    //codec_registry:&'static CodecRegistry,
     probe:&'static Probe,
     format_options:FormatOptions,
     metadata_options:MetadataOptions,
-    decoder_options:DecoderOptions
+    //decoder_options:DecoderOptions,
+    //is_playing:bool,
+    is_playing:Arc<Mutex<bool>>
 }
 
 impl Player
@@ -31,11 +35,12 @@ impl Player
     {
         Player
         {
-            codec_registry: default::get_codecs(),
+            //codec_registry: default::get_codecs(),
             probe: default::get_probe(),
             format_options: FormatOptions { enable_gapless: true, ..Default::default() },
             metadata_options: Default::default(),
-            decoder_options: Default::default()
+            //decoder_options: Default::default(),
+            is_playing: Arc::new(Mutex::new(false))
         }
     }
 
@@ -65,7 +70,10 @@ impl Player
                 panic!("Probe Error: {}", err)
             },
             Ok(mut probed) => {
-                self.start_playback(&mut probed.format);
+                let is_playing = Arc::clone(&self.is_playing);
+                thread::spawn(move || {
+                    Self::start_playback(is_playing, &mut probed.format);
+                });
             }
         }
 
@@ -73,14 +81,15 @@ impl Player
     }
 
     /// Plays the probed file at the default track.
-    fn start_playback(&self, reader:&mut Box<dyn FormatReader>)
+    /// Creates a new thread where the packets are being read.
+    fn start_playback(is_playing:Arc<Mutex<bool>>, reader:&mut Box<dyn FormatReader>)
     {
         let track = reader.default_track();
         if let None = track { return; }
 
         let track = track.unwrap();
         let track_id = track.id;
-        let mut decoder = self.codec_registry.make(&track.codec_params, &self.decoder_options)
+        let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default())
             .expect("Unsupported codec.");
 
         let mut output:Option<Box<dyn output::AudioOutput>> = None;
@@ -88,6 +97,10 @@ impl Player
         // Decode loop.
         loop
         {
+            let is_playing = *is_playing.lock().unwrap();
+
+            if !is_playing { continue; }
+
             // Get the next packet.
             let packet = match reader.next_packet()
             {
@@ -102,7 +115,7 @@ impl Player
             match decoder.decode(&packet)
             {
                 Ok(decoded) => {
-                    self.handle_output(&mut output, &decoded)
+                    Self::handle_output(&mut output, &decoded)
                 },
                 Err(err) => panic!("Decoder Error: {}", err)
             }
@@ -110,7 +123,7 @@ impl Player
     }
 
     /// Handles outputting the decoded output to an audio device.
-    fn handle_output(&self, output:&mut Option<Box<dyn output::AudioOutput>>, decoded:&AudioBufferRef)
+    fn handle_output(output:&mut Option<Box<dyn output::AudioOutput>>, decoded:&AudioBufferRef)
     {
         if output.is_none()
         {
@@ -126,15 +139,17 @@ impl Player
     }
 
     // Controls
-    // pub fn play(&self)
-    // {
+    pub fn play(&mut self)
+    {
+        let mut value = self.is_playing.lock().unwrap();
+        *value = true;
+    }
 
-    // }
-
-    // pub fn pause(&self)
-    // {
-
-    // }
+    pub fn pause(&mut self)
+    {
+        let mut value = self.is_playing.lock().unwrap();
+        *value = false;
+    }
 
     // pub fn seek(&self, seconds:i32)
     // {
@@ -154,5 +169,12 @@ mod tests
     {
         let mut player = crate::Player::new();
         player.open("/home/erikas/Music/test.mp3").expect("Error");
+        loop
+        {
+            player.pause();
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            player.play();
+            std::thread::sleep(std::time::Duration::from_secs(2));
+        }
     }
 }
