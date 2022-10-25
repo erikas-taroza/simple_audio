@@ -4,10 +4,6 @@ use std::{thread, sync::{Arc, Mutex}};
 
 use symphonia::{
     core::{
-        codecs::{
-            CodecRegistry,
-            DecoderOptions
-        }, 
         probe::Probe, 
         io::MediaSourceStream,
         formats::{
@@ -20,13 +16,11 @@ use symphonia::{
 
 pub struct Player
 {
-    //codec_registry:&'static CodecRegistry,
     probe:&'static Probe,
     format_options:FormatOptions,
     metadata_options:MetadataOptions,
-    //decoder_options:DecoderOptions,
-    //is_playing:bool,
-    is_playing:Arc<Mutex<bool>>
+    is_playing:bool
+    //is_playing:Arc<Mutex<bool>>,
 }
 
 impl Player
@@ -35,12 +29,11 @@ impl Player
     {
         Player
         {
-            //codec_registry: default::get_codecs(),
             probe: default::get_probe(),
             format_options: FormatOptions { enable_gapless: true, ..Default::default() },
             metadata_options: Default::default(),
-            //decoder_options: Default::default(),
-            is_playing: Arc::new(Mutex::new(false))
+            //is_playing: Arc::new(Mutex::new(false))
+            is_playing: false,
         }
     }
 
@@ -70,10 +63,12 @@ impl Player
                 panic!("Probe Error: {}", err)
             },
             Ok(mut probed) => {
-                let is_playing = Arc::clone(&self.is_playing);
-                thread::spawn(move || {
-                    Self::start_playback(is_playing, &mut probed.format);
-                });
+                // let is_playing = Arc::clone(&self.is_playing);
+                
+                // thread::spawn(move || {
+                //     Self::start_playback(is_playing, &mut probed.format);
+                // });
+                self.start_playback(&mut probed.format);
             }
         }
 
@@ -82,7 +77,7 @@ impl Player
 
     /// Plays the probed file at the default track.
     /// Creates a new thread where the packets are being read.
-    fn start_playback(is_playing:Arc<Mutex<bool>>, reader:&mut Box<dyn FormatReader>)
+    fn start_playback(&self,/*is_playing:Arc<Mutex<bool>>,*/ reader:&mut Box<dyn FormatReader>)
     {
         let track = reader.default_track();
         if let None = track { return; }
@@ -97,15 +92,17 @@ impl Player
         // Decode loop.
         loop
         {
-            let is_playing = *is_playing.lock().unwrap();
-
-            if !is_playing { continue; }
+            // let is_playing = *is_playing.lock().unwrap();
+            if !self.is_playing { continue; }
 
             // Get the next packet.
             let packet = match reader.next_packet()
             {
                 Ok(packet) => packet,
-                Err(err) => panic!("Packet Error: {}", err)
+                Err(err) => {
+                    println!("Packet Error: {}", err);
+                    break;
+                }
             };
 
             // Make sure that the packet is of the track we want.
@@ -115,10 +112,18 @@ impl Player
             match decoder.decode(&packet)
             {
                 Ok(decoded) => {
-                    Self::handle_output(&mut output, &decoded)
+                    Self::handle_output(&mut output, &decoded);
                 },
-                Err(err) => panic!("Decoder Error: {}", err)
+                Err(err) => {
+                    println!("Decoder Error: {}", err);
+                    break;
+                }
             }
+        }
+        
+        if let Some(output) = output.as_mut()
+        {
+            output.flush();
         }
     }
 
@@ -141,14 +146,16 @@ impl Player
     // Controls
     pub fn play(&mut self)
     {
-        let mut value = self.is_playing.lock().unwrap();
-        *value = true;
+        // let mut value = self.is_playing.lock().unwrap();
+        // *value = true;
+        self.is_playing = true;
     }
 
     pub fn pause(&mut self)
     {
-        let mut value = self.is_playing.lock().unwrap();
-        *value = false;
+        // let mut value = self.is_playing.lock().unwrap();
+        // *value = false;
+        self.is_playing = false;
     }
 
     // pub fn seek(&self, seconds:i32)
@@ -171,9 +178,9 @@ mod tests
         player.open("/home/erikas/Music/test.mp3").expect("Error");
         loop
         {
-            player.pause();
-            std::thread::sleep(std::time::Duration::from_secs(2));
             player.play();
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            player.pause();
             std::thread::sleep(std::time::Duration::from_secs(2));
         }
     }
