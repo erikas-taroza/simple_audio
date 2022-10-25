@@ -1,26 +1,20 @@
+mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 mod output;
-
-use std::{thread, sync::{Arc, Mutex}};
 
 use symphonia::{
     core::{
-        probe::Probe, 
         io::MediaSourceStream,
         formats::{
             FormatOptions,
             FormatReader
         },
-        meta::MetadataOptions, audio::AudioBufferRef
+        audio::AudioBufferRef
     }, default
 };
 
 pub struct Player
 {
-    //probe:Probe,
-    //format_options:FormatOptions,
-    //metadata_options:MetadataOptions,
     is_playing:bool
-    //is_playing:Arc<Mutex<bool>>,
 }
 
 impl Player
@@ -29,11 +23,7 @@ impl Player
     {
         Player
         {
-            //probe: default::get_probe(),
-            //format_options: FormatOptions { enable_gapless: true, ..Default::default() },
-            //metadata_options: Default::default(),
-            //is_playing: Arc::new(Mutex::new(false))
-            is_playing: false,
+            is_playing: true,
         }
     }
 
@@ -63,11 +53,6 @@ impl Player
                 panic!("Probe Error: {}", err)
             },
             Ok(mut probed) => {
-                // let is_playing = Arc::clone(&self.is_playing);
-                
-                // thread::spawn(move || {
-                //     Self::start_playback(is_playing, &mut probed.format);
-                // });
                 self.start_playback(&mut probed.format);
             }
         }
@@ -92,7 +77,6 @@ impl Player
         // Decode loop.
         loop
         {
-            // let is_playing = *is_playing.lock().unwrap();
             if !self.is_playing { continue; }
 
             // Get the next packet.
@@ -146,16 +130,12 @@ impl Player
     // Controls
     pub fn play(&self)
     {
-        // let mut value = self.is_playing.lock().unwrap();
-        // *value = true;
-        //self.is_playing = true;
+        //player.is_playing = true;
     }
 
     pub fn pause(&self)
     {
-        // let mut value = self.is_playing.lock().unwrap();
-        // *value = false;
-        //self.is_playing = false;
+        //player.is_playing = false;
     }
 
     // pub fn seek(&self, seconds:i32)

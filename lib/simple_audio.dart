@@ -1,8 +1,1 @@
-
-import 'simple_audio_platform_interface.dart';
-
-class SimpleAudio {
-  Future<String?> getPlatformVersion() {
-    return SimpleAudioPlatform.instance.getPlatformVersion();
-  }
-}
+export 'package:simple_audio/src/simple_audio.dart';
