@@ -42,11 +42,17 @@ class _MyAppState extends State<MyApp>
                             ),
                             ElevatedButton(
                                 child: const Text("Play"),
-                                onPressed: () async => await player.play(),
+                                onPressed: () async {
+                                    await player.play();
+                                    print(await player.isPlaying);
+                                },
                             ),
                             ElevatedButton(
                                 child: const Text("Pause"),
-                                onPressed: () async => await player.pause(),
+                                onPressed: () async {
+                                    await player.pause();
+                                    print(await player.isPlaying);
+                                }
                             )
                         ],
                     )

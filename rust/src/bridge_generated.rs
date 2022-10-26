@@ -41,19 +41,19 @@ fn wire_playback_state_stream__static_method__Player_impl(port_: MessagePort) {
         move || move |task_callback| Ok(Player::playback_state_stream(task_callback.stream_sink())),
     )
 }
-fn wire_get_is_playing__method__Player_impl(
+fn wire_is_playing__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
-            debug_name: "get_is_playing__method__Player",
+            debug_name: "is_playing__method__Player",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Ok(Player::get_is_playing(&api_that))
+            move |task_callback| Ok(Player::is_playing(&api_that))
         },
     )
 }
@@ -122,8 +122,8 @@ where
     }
 }
 
-impl Wire2Api<bool> for bool {
-    fn wire2api(self) -> bool {
+impl Wire2Api<i32> for i32 {
+    fn wire2api(self) -> i32 {
         self
     }
 }
@@ -138,7 +138,7 @@ impl Wire2Api<u8> for u8 {
 
 impl support::IntoDart for Player {
     fn into_dart(self) -> support::DartAbi {
-        vec![self.is_playing.into_dart()].into_dart()
+        vec![self.dummy.into_dart()].into_dart()
     }
 }
 impl support::IntoDartExceptPrimitive for Player {}

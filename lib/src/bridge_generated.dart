@@ -56,19 +56,19 @@ class SimpleAudioImpl implements SimpleAudio {
             argNames: [],
           );
 
-  Future<bool> getIsPlayingMethodPlayer({required Player that, dynamic hint}) =>
+  Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
-        callFfi: (port_) => _platform.inner.wire_get_is_playing__method__Player(
+        callFfi: (port_) => _platform.inner.wire_is_playing__method__Player(
             port_, _platform.api2wire_box_autoadd_player(that)),
         parseSuccessData: _wire2api_bool,
-        constMeta: kGetIsPlayingMethodPlayerConstMeta,
+        constMeta: kIsPlayingMethodPlayerConstMeta,
         argValues: [that],
         hint: hint,
       ));
 
-  FlutterRustBridgeTaskConstMeta get kGetIsPlayingMethodPlayerConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "get_is_playing__method__Player",
+        debugName: "is_playing__method__Player",
         argNames: ["that"],
       );
 
@@ -129,13 +129,17 @@ class SimpleAudioImpl implements SimpleAudio {
     return raw as bool;
   }
 
+  int _wire2api_i32(dynamic raw) {
+    return raw as int;
+  }
+
   Player _wire2api_player(dynamic raw) {
     final arr = raw as List<dynamic>;
     if (arr.length != 1)
       throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
     return Player(
       bridge: this,
-      isPlaying: _wire2api_bool(arr[0]),
+      dummy: _wire2api_i32(arr[0]),
     );
   }
 
@@ -147,7 +151,7 @@ class SimpleAudioImpl implements SimpleAudio {
 // Section: api2wire
 
 @protected
-bool api2wire_bool(bool raw) {
+int api2wire_i32(int raw) {
   return raw;
 }
 
@@ -186,7 +190,7 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {
-    wireObj.is_playing = api2wire_bool(apiObj.isPlaying);
+    wireObj.dummy = api2wire_i32(apiObj.dummy);
   }
 }
 
@@ -255,22 +259,22 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
       _wire_playback_state_stream__static_method__PlayerPtr
           .asFunction<void Function(int)>();
 
-  void wire_get_is_playing__method__Player(
+  void wire_is_playing__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
   ) {
-    return _wire_get_is_playing__method__Player(
+    return _wire_is_playing__method__Player(
       port_,
       that,
     );
   }
 
-  late final _wire_get_is_playing__method__PlayerPtr = _lookup<
-          ffi.NativeFunction<
-              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>)>>(
-      'wire_get_is_playing__method__Player');
-  late final _wire_get_is_playing__method__Player =
-      _wire_get_is_playing__method__PlayerPtr
+  late final _wire_is_playing__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_Player>)>>('wire_is_playing__method__Player');
+  late final _wire_is_playing__method__Player =
+      _wire_is_playing__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
   void wire_open__method__Player(
@@ -369,8 +373,8 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
 }
 
 class wire_Player extends ffi.Struct {
-  @ffi.Bool()
-  external bool is_playing;
+  @ffi.Int32()
+  external int dummy;
 }
 
 class wire_uint_8_list extends ffi.Struct {

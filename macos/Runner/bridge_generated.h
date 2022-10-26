@@ -7,7 +7,7 @@ typedef int64_t DartPort;
 typedef bool (*DartPostCObjectFnType)(DartPort port_id, void *message);
 
 typedef struct wire_Player {
-  bool is_playing;
+  int32_t dummy;
 } wire_Player;
 
 typedef struct wire_uint_8_list {
@@ -27,7 +27,7 @@ void wire_new__static_method__Player(int64_t port_);
 
 void wire_playback_state_stream__static_method__Player(int64_t port_);
 
-void wire_get_is_playing__method__Player(int64_t port_, struct wire_Player *that);
+void wire_is_playing__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_open__method__Player(int64_t port_,
                                struct wire_Player *that,
@@ -47,7 +47,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     int64_t dummy_var = 0;
     dummy_var ^= ((int64_t) (void*) wire_new__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_playback_state_stream__static_method__Player);
-    dummy_var ^= ((int64_t) (void*) wire_get_is_playing__method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_is_playing__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_open__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_play__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_pause__method__Player);

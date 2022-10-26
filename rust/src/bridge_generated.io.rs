@@ -12,8 +12,8 @@ pub extern "C" fn wire_playback_state_stream__static_method__Player(port_: i64) 
 }
 
 #[no_mangle]
-pub extern "C" fn wire_get_is_playing__method__Player(port_: i64, that: *mut wire_Player) {
-    wire_get_is_playing__method__Player_impl(port_, that)
+pub extern "C" fn wire_is_playing__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_is_playing__method__Player_impl(port_, that)
 }
 
 #[no_mangle]
@@ -59,17 +59,17 @@ impl Wire2Api<String> for *mut wire_uint_8_list {
         String::from_utf8_lossy(&vec).into_owned()
     }
 }
-
 impl Wire2Api<Player> for *mut wire_Player {
     fn wire2api(self) -> Player {
         let wrap = unsafe { support::box_from_leak_ptr(self) };
         Wire2Api::<Player>::wire2api(*wrap).into()
     }
 }
+
 impl Wire2Api<Player> for wire_Player {
     fn wire2api(self) -> Player {
         Player {
-            is_playing: self.is_playing.wire2api(),
+            dummy: self.dummy.wire2api(),
         }
     }
 }
@@ -87,7 +87,7 @@ impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
 #[repr(C)]
 #[derive(Clone)]
 pub struct wire_Player {
-    is_playing: bool,
+    dummy: i32,
 }
 
 #[repr(C)]
@@ -112,7 +112,7 @@ impl<T> NewWithNullPtr for *mut T {
 impl NewWithNullPtr for wire_Player {
     fn new_with_null_ptr() -> Self {
         Self {
-            is_playing: Default::default(),
+            dummy: Default::default(),
         }
     }
 }

@@ -2,6 +2,8 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 pub mod output;
 mod src;
 
+use std::sync::RwLock;
+
 use flutter_rust_bridge::StreamSink;
 use symphonia::{
     core::{
@@ -16,27 +18,33 @@ use symphonia::{
 
 use crate::src::playback_state_stream::*;
 
+static IS_PLAYING:RwLock<bool> = RwLock::new(false);
+
+// NOTE: Code gen fails with empty structs.
 pub struct Player
 {
-    is_playing:bool,
+    dummy:i32
 }
 
 impl Player
 {
     pub fn new() -> Player
     {
-        Player
-        {
-            is_playing: true,
-        }
+        Player { dummy: 0 }
     }
 
     // ---------------------------------
-    //            GETTERS
+    //          SETTERS/GETTERS
     // ---------------------------------
 
     pub fn playback_state_stream(stream:StreamSink<bool>) { playback_state_stream(stream); }
-    pub fn get_is_playing(&self) -> bool { self.is_playing }
+
+    pub fn is_playing(&self) -> bool { *IS_PLAYING.read().unwrap() }
+    fn set_is_playing(value:bool)
+    {
+        let mut w = IS_PLAYING.write().unwrap();
+        *w = value;
+    }
 
     // ---------------------------------
     //            PLAYBACK
@@ -90,11 +98,12 @@ impl Player
         let mut output:Option<Box<dyn output::AudioOutput>> = None;
 
         update_playback_state_stream(true);
+        Self::set_is_playing(true);
 
         // Decode loop.
         loop
         {
-            if !self.is_playing { continue; }
+            if !self.is_playing() { continue; }
 
             // Get the next packet.
             let packet = match reader.next_packet()
@@ -126,6 +135,7 @@ impl Player
         { output.flush(); }
 
         update_playback_state_stream(false);
+        Self::set_is_playing(false);
     }
 
     /// Handles outputting the decoded output to an audio device.
@@ -150,13 +160,13 @@ impl Player
 
     pub fn play(&self)
     {
-        //self.is_playing = true;
+        Self::set_is_playing(true);
         update_playback_state_stream(true);
     }
 
     pub fn pause(&self)
     {
-        //self.is_playing = false;
+        Self::set_is_playing(false);
         update_playback_state_stream(false);
     }
 
