@@ -2,15 +2,10 @@ import './ffi.dart';
 
 class SimpleAudio
 {
-    late final Player _player;
+    final Player _player = Player(bridge: api, dummy: 0);
     late Stream<bool> playbackStateStream = api.playbackStateStreamStaticMethodPlayer();
 
     Future<bool> get isPlaying => _player.isPlaying();
-
-    Future<void> init() async
-    {
-        _player = await Player.newPlayer(bridge: api);
-    }
 
     Future<void> open(String path) async
     {
