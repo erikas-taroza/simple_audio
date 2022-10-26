@@ -11,6 +11,15 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
+  Stream<bool> playbackStateStreamStaticMethodPlayer({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta
+      get kPlaybackStateStreamStaticMethodPlayerConstMeta;
+
+  Future<bool> getIsPlayingMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kGetIsPlayingMethodPlayerConstMeta;
+
   Future<void> openMethodPlayer(
       {required Player that, required String path, dynamic hint});
 
@@ -37,6 +46,14 @@ class Player {
   static Future<Player> newPlayer(
           {required SimpleAudio bridge, dynamic hint}) =>
       bridge.newStaticMethodPlayer(hint: hint);
+
+  static Stream<bool> playbackStateStream(
+          {required SimpleAudio bridge, dynamic hint}) =>
+      bridge.playbackStateStreamStaticMethodPlayer(hint: hint);
+
+  Future<bool> getIsPlaying({dynamic hint}) => bridge.getIsPlayingMethodPlayer(
+        that: this,
+      );
 
   Future<void> open({required String path, dynamic hint}) =>
       bridge.openMethodPlayer(

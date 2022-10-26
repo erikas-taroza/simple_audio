@@ -31,6 +31,32 @@ fn wire_new__static_method__Player_impl(port_: MessagePort) {
         move || move |task_callback| Ok(Player::new()),
     )
 }
+fn wire_playback_state_stream__static_method__Player_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "playback_state_stream__static_method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || move |task_callback| Ok(Player::playback_state_stream(task_callback.stream_sink())),
+    )
+}
+fn wire_get_is_playing__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "get_is_playing__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Ok(Player::get_is_playing(&api_that))
+        },
+    )
+}
 fn wire_open__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,

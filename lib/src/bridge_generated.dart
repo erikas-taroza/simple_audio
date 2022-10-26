@@ -39,6 +39,39 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: [],
       );
 
+  Stream<bool> playbackStateStreamStaticMethodPlayer({dynamic hint}) =>
+      _platform.executeStream(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner
+            .wire_playback_state_stream__static_method__Player(port_),
+        parseSuccessData: _wire2api_bool,
+        constMeta: kPlaybackStateStreamStaticMethodPlayerConstMeta,
+        argValues: [],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta
+      get kPlaybackStateStreamStaticMethodPlayerConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "playback_state_stream__static_method__Player",
+            argNames: [],
+          );
+
+  Future<bool> getIsPlayingMethodPlayer({required Player that, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_get_is_playing__method__Player(
+            port_, _platform.api2wire_box_autoadd_player(that)),
+        parseSuccessData: _wire2api_bool,
+        constMeta: kGetIsPlayingMethodPlayerConstMeta,
+        argValues: [that],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kGetIsPlayingMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "get_is_playing__method__Player",
+        argNames: ["that"],
+      );
+
   Future<void> openMethodPlayer(
           {required Player that, required String path, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
@@ -206,6 +239,39 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           'wire_new__static_method__Player');
   late final _wire_new__static_method__Player =
       _wire_new__static_method__PlayerPtr.asFunction<void Function(int)>();
+
+  void wire_playback_state_stream__static_method__Player(
+    int port_,
+  ) {
+    return _wire_playback_state_stream__static_method__Player(
+      port_,
+    );
+  }
+
+  late final _wire_playback_state_stream__static_method__PlayerPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_playback_state_stream__static_method__Player');
+  late final _wire_playback_state_stream__static_method__Player =
+      _wire_playback_state_stream__static_method__PlayerPtr
+          .asFunction<void Function(int)>();
+
+  void wire_get_is_playing__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+  ) {
+    return _wire_get_is_playing__method__Player(
+      port_,
+      that,
+    );
+  }
+
+  late final _wire_get_is_playing__method__PlayerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>)>>(
+      'wire_get_is_playing__method__Player');
+  late final _wire_get_is_playing__method__Player =
+      _wire_get_is_playing__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
   void wire_open__method__Player(
     int port_,

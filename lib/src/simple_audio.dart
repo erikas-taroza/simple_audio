@@ -5,8 +5,9 @@ class SimpleAudio
     SimpleAudio() : _player = Player(bridge: api, isPlaying: true);
 
     final Player _player;
+    late Stream<bool> playbackStateStream = api.playbackStateStreamStaticMethodPlayer();
 
-    bool get isPlaying => _player.isPlaying;
+    Future<bool> get isPlaying => _player.getIsPlaying();
 
     Future<void> open(String path) async
     {

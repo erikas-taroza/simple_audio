@@ -7,6 +7,16 @@ pub extern "C" fn wire_new__static_method__Player(port_: i64) {
 }
 
 #[no_mangle]
+pub extern "C" fn wire_playback_state_stream__static_method__Player(port_: i64) {
+    wire_playback_state_stream__static_method__Player_impl(port_)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_get_is_playing__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_get_is_playing__method__Player_impl(port_, that)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_open__method__Player(
     port_: i64,
     that: *mut wire_Player,

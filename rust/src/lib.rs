@@ -1,6 +1,8 @@
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod output;
+pub mod output;
+mod src;
 
+use flutter_rust_bridge::StreamSink;
 use symphonia::{
     core::{
         io::MediaSourceStream,
@@ -12,9 +14,11 @@ use symphonia::{
     }, default
 };
 
+use crate::src::playback_state_stream::*;
+
 pub struct Player
 {
-    is_playing:bool
+    is_playing:bool,
 }
 
 impl Player
@@ -26,6 +30,17 @@ impl Player
             is_playing: true,
         }
     }
+
+    // ---------------------------------
+    //            GETTERS
+    // ---------------------------------
+
+    pub fn playback_state_stream(stream:StreamSink<bool>) { playback_state_stream(stream); }
+    pub fn get_is_playing(&self) -> bool { self.is_playing }
+
+    // ---------------------------------
+    //            PLAYBACK
+    // ---------------------------------
 
     /// Opens a file for reading.
     pub fn open(&self, path:String) -> Result<(), std::io::Error>
@@ -62,7 +77,7 @@ impl Player
 
     /// Plays the probed file at the default track.
     /// Creates a new thread where the packets are being read.
-    fn start_playback(&self,/*is_playing:Arc<Mutex<bool>>,*/ reader:&mut Box<dyn FormatReader>)
+    fn start_playback(&self, reader:&mut Box<dyn FormatReader>)
     {
         let track = reader.default_track();
         if let None = track { return; }
@@ -73,6 +88,8 @@ impl Player
             .expect("Unsupported codec.");
 
         let mut output:Option<Box<dyn output::AudioOutput>> = None;
+
+        update_playback_state_stream(true);
 
         // Decode loop.
         loop
@@ -96,7 +113,7 @@ impl Player
             match decoder.decode(&packet)
             {
                 Ok(decoded) => {
-                    Player::handle_output(&mut output, &decoded);
+                    self.handle_output(&mut output, &decoded);
                 },
                 Err(err) => {
                     println!("Decoder Error: {}", err);
@@ -106,13 +123,13 @@ impl Player
         }
         
         if let Some(output) = output.as_mut()
-        {
-            output.flush();
-        }
+        { output.flush(); }
+
+        update_playback_state_stream(false);
     }
 
     /// Handles outputting the decoded output to an audio device.
-    fn handle_output(output:&mut Option<Box<dyn output::AudioOutput>>, decoded:&AudioBufferRef)
+    fn handle_output(&self, output:&mut Option<Box<dyn output::AudioOutput>>, decoded:&AudioBufferRef)
     {
         if output.is_none()
         {
@@ -127,15 +144,20 @@ impl Player
         }
     }
 
-    // Controls
+    // ---------------------------------
+    //             CONTROLS
+    // ---------------------------------
+
     pub fn play(&self)
     {
-        //player.is_playing = true;
+        //self.is_playing = true;
+        update_playback_state_stream(true);
     }
 
     pub fn pause(&self)
     {
-        //player.is_playing = false;
+        //self.is_playing = false;
+        update_playback_state_stream(false);
     }
 
     // pub fn seek(&self, seconds:i32)
@@ -148,20 +170,3 @@ impl Player
 
     // }
 }
-
-// mod tests
-// {
-//     #[test]
-//     fn open_and_play()
-//     {
-//         let mut player = crate::Player::new();
-//         player.open("/home/erikas/Music/test.mp3".to_string()).expect("Error");
-//         loop
-//         {
-//             player.play();
-//             std::thread::sleep(std::time::Duration::from_secs(2));
-//             player.pause();
-//             std::thread::sleep(std::time::Duration::from_secs(2));
-//         }
-//     }
-// }
