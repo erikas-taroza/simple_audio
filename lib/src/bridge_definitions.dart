@@ -32,6 +32,11 @@ abstract class SimpleAudio {
   Future<void> pauseMethodPlayer({required Player that, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kPauseMethodPlayerConstMeta;
+
+  Future<void> setVolumeMethodPlayer(
+      {required Player that, required double volume, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kSetVolumeMethodPlayerConstMeta;
 }
 
 class Player {
@@ -67,5 +72,11 @@ class Player {
 
   Future<void> pause({dynamic hint}) => bridge.pauseMethodPlayer(
         that: this,
+      );
+
+  Future<void> setVolume({required double volume, dynamic hint}) =>
+      bridge.setVolumeMethodPlayer(
+        that: this,
+        volume: volume,
       );
 }

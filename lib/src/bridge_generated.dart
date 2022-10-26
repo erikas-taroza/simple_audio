@@ -123,6 +123,25 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that"],
       );
 
+  Future<void> setVolumeMethodPlayer(
+          {required Player that, required double volume, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_set_volume__method__Player(
+            port_,
+            _platform.api2wire_box_autoadd_player(that),
+            api2wire_f32(volume)),
+        parseSuccessData: _wire2api_unit,
+        constMeta: kSetVolumeMethodPlayerConstMeta,
+        argValues: [that, volume],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kSetVolumeMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "set_volume__method__Player",
+        argNames: ["that", "volume"],
+      );
+
 // Section: wire2api
 
   bool _wire2api_bool(dynamic raw) {
@@ -149,6 +168,11 @@ class SimpleAudioImpl implements SimpleAudio {
 }
 
 // Section: api2wire
+
+@protected
+double api2wire_f32(double raw) {
+  return raw;
+}
 
 @protected
 int api2wire_i32(int raw) {
@@ -331,6 +355,26 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
               ffi.Pointer<wire_Player>)>>('wire_pause__method__Player');
   late final _wire_pause__method__Player = _wire_pause__method__PlayerPtr
       .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
+  void wire_set_volume__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+    double volume,
+  ) {
+    return _wire_set_volume__method__Player(
+      port_,
+      that,
+      volume,
+    );
+  }
+
+  late final _wire_set_volume__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
+              ffi.Float)>>('wire_set_volume__method__Player');
+  late final _wire_set_volume__method__Player =
+      _wire_set_volume__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>, double)>();
 
   ffi.Pointer<wire_Player> new_box_autoadd_player_0() {
     return _new_box_autoadd_player_0();

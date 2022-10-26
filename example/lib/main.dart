@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_audio/simple_audio.dart';
 
 void main() async
@@ -28,10 +31,20 @@ class _MyAppState extends State<MyApp>
                 body: Center(
                     child: Column(
                         children: [
+                            if(Platform.isAndroid || Platform.isIOS) ...{
+                                ElevatedButton(
+                                    child: const Text("Perms"),
+                                    onPressed: () async {
+                                        PermissionStatus status = await Permission.storage.request();
+                                        print(status);
+                                    },
+                                )
+                            },
                             ElevatedButton(
                                 child: const Text("Open"),
-                                onPressed: () async => {
-                                    await player.open("/home/erikas/Music/test.mp3")
+                                onPressed: () async {
+                                    //await player.open("/home/erikas/Music/test.mp3");
+                                    await player.open("/storage/emulated/0/Music/test.mp3");
                                 },
                             ),
                             StreamBuilder(

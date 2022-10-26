@@ -37,6 +37,8 @@ void wire_play__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_pause__method__Player(int64_t port_, struct wire_Player *that);
 
+void wire_set_volume__method__Player(int64_t port_, struct wire_Player *that, float volume);
+
 struct wire_Player *new_box_autoadd_player_0(void);
 
 struct wire_uint_8_list *new_uint_8_list_0(int32_t len);
@@ -51,6 +53,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_open__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_play__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_pause__method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_set_volume__method__Player);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_player_0);
     dummy_var ^= ((int64_t) (void*) new_uint_8_list_0);
     dummy_var ^= ((int64_t) (void*) free_WireSyncReturnStruct);

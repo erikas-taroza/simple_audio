@@ -101,6 +101,24 @@ fn wire_pause__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Playe
         },
     )
 }
+fn wire_set_volume__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+    volume: impl Wire2Api<f32> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "set_volume__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            let api_volume = volume.wire2api();
+            move |task_callback| Ok(Player::set_volume(&api_that, api_volume))
+        },
+    )
+}
 // Section: wrapper structs
 
 // Section: static checks
@@ -122,6 +140,11 @@ where
     }
 }
 
+impl Wire2Api<f32> for f32 {
+    fn wire2api(self) -> f32 {
+        self
+    }
+}
 impl Wire2Api<i32> for i32 {
     fn wire2api(self) -> i32 {
         self

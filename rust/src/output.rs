@@ -1,6 +1,6 @@
 use std::{path::Path, fs::File, io::{BufReader, Cursor}};
 
-use reqwest::IntoUrl;
+// use reqwest::IntoUrl;
 use rodio::{OutputStream, OutputStreamHandle, Sink, Decoder};
 
 pub struct Output
