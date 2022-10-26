@@ -2,23 +2,15 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 pub mod output;
 mod src;
 
-use std::sync::RwLock;
+use std::{sync::RwLock, path::Path};
 
 use flutter_rust_bridge::StreamSink;
-use symphonia::{
-    core::{
-        io::MediaSourceStream,
-        formats::{
-            FormatOptions,
-            FormatReader
-        },
-        audio::AudioBufferRef
-    }, default
-};
 
 use crate::src::playback_state_stream::*;
+use crate::output::Output;
 
 static IS_PLAYING:RwLock<bool> = RwLock::new(false);
+static OUTPUT:RwLock<Option<Output>> = RwLock::new(None);
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -30,6 +22,9 @@ impl Player
 {
     pub fn new() -> Player
     {
+        let mut w = OUTPUT.write().unwrap();
+        *w = Some(Output::new());
+
         Player { dummy: 0 }
     }
 
@@ -51,106 +46,20 @@ impl Player
     // ---------------------------------
 
     /// Opens a file for reading.
-    pub fn open(&self, path:String) -> Result<(), std::io::Error>
+    pub fn open(&self, path:String)
     {
-        //TODO: Handle web requests.
-        if path.contains("http") { return Ok(()); }
-
-        let file = std::fs::File::open(path)?;
-        let source = Box::new(file);
-        let source_stream = MediaSourceStream::new(source, Default::default());
-        let hint = symphonia::core::probe::Hint::new();
-
-        // Probe the source.
-        let probe_result = default::get_probe().format(
-            &hint,
-            source_stream,
-            &FormatOptions { enable_gapless: true, ..Default::default() },
-            &Default::default()
-        );
-
-        // If the source was successfully probed, start the playback.
-        match probe_result
+        if path.contains("http")
         {
-            Err(err) => {
-                panic!("Probe Error: {}", err)
-            },
-            Ok(mut probed) => {
-                self.start_playback(&mut probed.format);
-            }
+            return;
         }
-
-        Ok(())
-    }
-
-    /// Plays the probed file at the default track.
-    /// Creates a new thread where the packets are being read.
-    fn start_playback(&self, reader:&mut Box<dyn FormatReader>)
-    {
-        let track = reader.default_track();
-        if let None = track { return; }
-
-        let track = track.unwrap();
-        let track_id = track.id;
-        let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default())
-            .expect("Unsupported codec.");
-
-        let mut output:Option<Box<dyn output::AudioOutput>> = None;
-
-        update_playback_state_stream(true);
-        Self::set_is_playing(true);
-
-        // Decode loop.
-        loop
+        else
         {
-            if !self.is_playing() { continue; }
-
-            // Get the next packet.
-            let packet = match reader.next_packet()
+            let output = &*OUTPUT.read().unwrap();
+            if let Some(output) = output
             {
-                Ok(packet) => packet,
-                Err(err) => {
-                    println!("Packet Error: {}", err);
-                    break;
-                }
-            };
-
-            // Make sure that the packet is of the track we want.
-            if packet.track_id() != track_id { continue; }
-
-            // Decode the packet and produce audio output.
-            match decoder.decode(&packet)
-            {
-                Ok(decoded) => {
-                    self.handle_output(&mut output, &decoded);
-                },
-                Err(err) => {
-                    println!("Decoder Error: {}", err);
-                    break;
-                }
+                output.open_file(Path::new(&path));
+                output.sink.sleep_until_end();
             }
-        }
-        
-        if let Some(output) = output.as_mut()
-        { output.flush(); }
-
-        update_playback_state_stream(false);
-        Self::set_is_playing(false);
-    }
-
-    /// Handles outputting the decoded output to an audio device.
-    fn handle_output(&self, output:&mut Option<Box<dyn output::AudioOutput>>, decoded:&AudioBufferRef)
-    {
-        if output.is_none()
-        {
-            let spec = *decoded.spec();
-            let duration = decoded.capacity() as u64;
-            output.replace(output::try_open(spec, duration).unwrap());
-        }
-
-        if let Some(output) = output
-        {
-            output.write(decoded.clone()).unwrap();
         }
     }
 
@@ -162,12 +71,24 @@ impl Player
     {
         Self::set_is_playing(true);
         update_playback_state_stream(true);
+        
+        let output = &*OUTPUT.read().unwrap();
+        if let Some(output) = output
+        {
+            output.sink.play();
+        }
     }
 
     pub fn pause(&self)
     {
         Self::set_is_playing(false);
         update_playback_state_stream(false);
+
+        let output = &*OUTPUT.read().unwrap();
+        if let Some(output) = output
+        {
+            output.sink.pause();
+        }
     }
 
     // pub fn seek(&self, seconds:i32)
@@ -179,4 +100,14 @@ impl Player
     // {
 
     // }
+}
+
+mod tests
+{
+    #[test]
+    fn open_and_play()
+    {
+        let player = crate::Player::new();
+        player.open("/home/erikas/Music/test.mp3".to_string());
+    }
 }

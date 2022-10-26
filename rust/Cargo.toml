@@ -13,6 +13,12 @@ crate-type = ["staticlib", "cdylib"]
 # rb = "0.4.1"
 flutter_rust_bridge = "1"
 symphonia = { version = "0.5.1", features = ["aac", "alac", "mp3", "isomp4"] }
+reqwest = { version = "0.11.12", features = ["blocking"] }
+
+[dependencies.rodio]
+version = "0.16.0"
+features = ["symphonia-all", "symphonia"]
+default-features = false
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libpulse-binding = "2.26.0"
