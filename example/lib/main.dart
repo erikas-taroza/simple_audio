@@ -20,6 +20,7 @@ class MyApp extends StatefulWidget
 class _MyAppState extends State<MyApp>
 {
     final SimpleAudio player = SimpleAudio();
+    double volume = 1;
 
     @override
     Widget build(BuildContext context) {
@@ -30,6 +31,7 @@ class _MyAppState extends State<MyApp>
                 ),
                 body: Center(
                     child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                             if(Platform.isAndroid || Platform.isIOS) ...{
                                 ElevatedButton(
@@ -43,8 +45,8 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open"),
                                 onPressed: () async {
-                                    //await player.open("/home/erikas/Music/test.mp3");
-                                    await player.open("/storage/emulated/0/Music/test.mp3");
+                                    await player.open("/home/erikas/Music/test.mp3");
+                                    //await player.open("/storage/emulated/0/Music/test.mp3");
                                 },
                             ),
                             StreamBuilder(
@@ -66,6 +68,16 @@ class _MyAppState extends State<MyApp>
                                     await player.pause();
                                     print(await player.isPlaying);
                                 }
+                            ),
+                            SizedBox(
+                                width: 200,
+                                child: Slider(
+                                    value: volume,
+                                    onChanged: (value) {
+                                        setState(() => volume = value);
+                                        player.setVolume(value);
+                                    }
+                                ),
                             )
                         ],
                     )

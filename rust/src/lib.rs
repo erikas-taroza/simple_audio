@@ -9,6 +9,11 @@ use flutter_rust_bridge::StreamSink;
 use crate::src::playback_state_stream::*;
 use crate::output::Output;
 
+// NOTE: This is used to prevent flutter_rust_bridge
+// from generating a field in the struct.
+// It also allows the item to be mutable.
+// This prevents the use of mutable methods which
+// flutter_rust_bridge does not support.
 static OUTPUT:RwLock<Option<Output>> = RwLock::new(None);
 
 // NOTE: Code gen fails with empty structs.
@@ -20,6 +25,17 @@ pub struct Player
 impl Player
 {
     pub fn new() -> Player { Player { dummy: 0 } }
+
+    /// Insures that `OUTPUT` is initialized.
+    /// At first, it is set to `None` because `Output::new()`
+    /// is a non-static function.
+    fn insure_output_initialized()
+    {
+        let mut w = OUTPUT.write()
+            .expect(format!("ERR: Failed to open RwLock to WRITE new output.").as_str());
+        if w.is_none()
+        { *w = Some(Output::new()); }
+    }
 
     // ---------------------------------
     //          SETTERS/GETTERS
@@ -42,31 +58,46 @@ impl Player
     //            PLAYBACK
     // ---------------------------------
 
-    /// Opens a file for reading.
+    /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String)
     {
-        let mut w = OUTPUT.write().unwrap();
-        if w.is_none()
-        { *w = Some(Output::new()); }
-        drop(w);
+        Self::insure_output_initialized();
+
+        let output = &*OUTPUT.read()
+            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
+        let output = output.as_ref().unwrap();
 
         if path.contains("http")
-        {
-            return;
-        }
+        { output.append_network(&path); }
         else
+        { output.append_file(Path::new(&path)); }
+
+        update_playback_state_stream(true);
+        output.sink.sleep_until_end();
+        update_playback_state_stream(false);
+    }
+
+    /// Similar to open, except it opens multiple
+    /// sources at once.
+    pub fn open_list(&self, paths:Vec<String>)
+    {
+        Self::insure_output_initialized();
+
+        let output = &*OUTPUT.read()
+            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
+        let output = output.as_ref().unwrap();
+
+        for path in paths
         {
-            let output = &*OUTPUT.read().unwrap();
-            if let Some(output) = output
-            {
-                update_playback_state_stream(true);
-
-                output.open_file(Path::new(&path));
-                output.sink.sleep_until_end();
-
-                update_playback_state_stream(false);
-            }
+            if path.contains("http")
+            { output.append_network(&path); }
+            else
+            { output.append_file(Path::new(&path)); }
         }
+
+        update_playback_state_stream(true);
+        output.sink.sleep_until_end();
+        update_playback_state_stream(false);
     }
 
     // ---------------------------------
@@ -77,7 +108,8 @@ impl Player
     {
         update_playback_state_stream(true);
         
-        let output = &*OUTPUT.read().unwrap();
+        let output = &*OUTPUT.read()
+            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
         if let Some(output) = output
         {
             output.sink.play();
@@ -88,7 +120,8 @@ impl Player
     {
         update_playback_state_stream(false);
 
-        let output = &*OUTPUT.read().unwrap();
+        let output = &*OUTPUT.read()
+            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
         if let Some(output) = output
         {
             output.sink.pause();
@@ -97,7 +130,8 @@ impl Player
 
     pub fn set_volume(&self, volume:f32)
     {
-        let output = &*OUTPUT.read().unwrap();
+        let output = &*OUTPUT.read()
+            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
         if let Some(output) = output
         {
             output.sink.set_volume(volume.clamp(0.0, 1.0));
@@ -117,5 +151,19 @@ mod tests
     {
         let player = crate::Player::new();
         player.open("/home/erikas/Music/test.mp3".to_string());
+    }
+
+    #[test]
+    fn open_network_and_play()
+    {
+        let player = crate::Player::new();
+        player.open("".to_string());
+    }
+
+    #[test]
+    fn open_list_and_play()
+    {
+        let player = crate::Player::new();
+        player.open_list(vec!["/home/erikas/Music/test.mp3".to_string(), "/home/erikas/Music/test2.mp3".to_string()]);
     }
 }
