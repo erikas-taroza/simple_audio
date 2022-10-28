@@ -3,9 +3,9 @@ pub mod output;
 mod src;
 mod audio;
 
-use std::{sync::{RwLock, atomic::Ordering}, fs::File, io::Cursor};
+use std::{sync::RwLock, fs::File, io::Cursor};
 
-use audio::decoder::Decoder;
+use audio::{decoder::Decoder, controls::*};
 use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
@@ -18,7 +18,6 @@ use crate::src::playback_state_stream::*;
 // It also allows the item to be mutable.
 // This prevents the use of mutable methods which
 // flutter_rust_bridge does not support.
-//static OUTPUT:RwLock<Option<Output>> = RwLock::new(None);
 static DECODER:RwLock<Option<Decoder>> = RwLock::new(None);
 
 // NOTE: Code gen fails with empty structs.
@@ -49,15 +48,7 @@ impl Player
     pub fn playback_state_stream(stream:StreamSink<bool>) { playback_state_stream(stream); }
 
     pub fn is_playing(&self) -> bool
-    {
-        let decoder = &*DECODER.read().unwrap();
-        if let Some(decoder) = decoder
-        {
-            return decoder.playing.load(Ordering::Relaxed);
-        }
-
-        false
-    }
+    { IS_PLAYING.load(std::sync::atomic::Ordering::Relaxed) }
 
     // ---------------------------------
     //            PLAYBACK
@@ -122,30 +113,17 @@ impl Player
     pub fn play(&self)
     {
         update_playback_state_stream(true);
-        let decoder = &*DECODER.read()
-            .expect(format!("ERR: Failed to open RwLock to READ decoder.").as_str());
-        let decoder = decoder.as_ref().unwrap();
-        decoder.playing.store(true, Ordering::Relaxed);
+        IS_PLAYING.store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub fn pause(&self)
     {
         update_playback_state_stream(false);
-        let decoder = &*DECODER.read()
-            .expect(format!("ERR: Failed to open RwLock to READ decoder.").as_str());
-        let decoder = decoder.as_ref().unwrap();
-        decoder.playing.store(false, Ordering::Relaxed);
+        IS_PLAYING.store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub fn set_volume(&self, volume:f32)
-    {
-        let decoder = &*DECODER.read()
-            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
-        if let Some(decoder) = decoder
-        {
-            *decoder.volume.lock().unwrap() = volume.clamp(0.0, 1.0);
-        }
-    }
+    { *VOLUME.write().unwrap() = volume; }
 
     // pub fn seek(&self, seconds:i32)
     // {

@@ -1,25 +1,12 @@
-use std::sync::{atomic::AtomicBool, Mutex};
-
 use symphonia::{core::{formats::{FormatOptions, FormatReader}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, audio::AudioBufferRef}, default};
 
 use super::cpal_output::CpalOutput;
 
-pub struct Decoder
-{
-    pub playing:AtomicBool,
-    pub volume:Mutex<f32>
-}
+pub struct Decoder;
 
 impl Decoder
 {
-    pub fn new() -> Self
-    {
-        Decoder
-        {
-            playing: AtomicBool::new(true),
-            volume: Mutex::new(0.5)
-        }
-    }
+    pub fn new() -> Self { Decoder { } }
 
     pub fn open_stream(&self, source:Box<dyn MediaSource>)
     {
@@ -45,24 +32,6 @@ impl Decoder
 
         loop
         {
-            // if !self.playing.load(Ordering::Relaxed)
-            // {
-            //     if let Some(mut c) = cpal_output
-            //     {
-            //         c.pause();
-            //         cpal_output = Some(c);
-            //     }
-            //     continue;
-            // }
-            // else
-            // {
-            //     if let Some(mut c) = cpal_output
-            //     {
-            //         c.play();
-            //         cpal_output = Some(c);
-            //     }
-            // }
-
             let packet = match reader.next_packet()
             {
                 Ok(packet) => packet,

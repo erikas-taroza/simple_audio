@@ -2,6 +2,8 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::*;
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
+use super::controls::*;
+
 //TODO: Support i16 and u16 instead of only f32.
 pub struct CpalOutput
 {
@@ -52,9 +54,19 @@ impl CpalOutput
         let stream = device.build_output_stream(
             &config,
             move |data:&mut [f32], _:&cpal::OutputCallbackInfo| {
+                // Pause the stream.
+                if !IS_PLAYING.load(std::sync::atomic::Ordering::Relaxed)
+                {
+                    data.iter_mut().for_each(|s| *s = 0.0);
+                    return;
+                }
+
                 // This is where data should be modified (like changing volume).
                 // This will be the point where there is the lowest latency.
-                let _written = ring_buffer.consumer().read(data).unwrap_or(0);
+                let written = ring_buffer.consumer().read(data).unwrap_or(0);
+                
+                // Set the volume.
+                data[0..written].iter_mut().for_each(|s| *s = *s * (*VOLUME.read().unwrap()));
             },
             move |err| {
                 panic!("ERR: An error occurred during the stream. {err}");

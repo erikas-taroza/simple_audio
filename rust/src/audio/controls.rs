@@ -1,20 +1,6 @@
-//use std::sync::{atomic::AtomicBool, RwLock};
+// A file that defines controls globally.
 
-#[derive(Default)]
-pub struct Controls
-{
-    pub is_playing:bool,
-    pub volume:f32
-}
+use std::sync::{RwLock, atomic::AtomicBool};
 
-// impl Controls
-// {
-//     pub fn default() -> Self
-//     {
-//         Controls
-//         {
-//             is_playing: AtomicBool::new(true),
-//             volume: RwLock::new(0.5)
-//         }
-//     }
-// }
+pub static IS_PLAYING:AtomicBool = AtomicBool::new(true);
+pub static VOLUME:RwLock<f32> = RwLock::new(0.5);
