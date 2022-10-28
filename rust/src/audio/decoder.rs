@@ -17,7 +17,7 @@ impl Decoder
         Decoder
         {
             playing: AtomicBool::new(true),
-            volume: Mutex::new(1.0)
+            volume: Mutex::new(0.5)
         }
     }
 

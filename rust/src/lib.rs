@@ -143,7 +143,7 @@ impl Player
             .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
         if let Some(decoder) = decoder
         {
-            *decoder.volume.lock().unwrap() = volume;
+            *decoder.volume.lock().unwrap() = volume.clamp(0.0, 1.0);
         }
     }
 
