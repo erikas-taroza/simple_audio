@@ -3,7 +3,7 @@ pub mod output;
 mod src;
 mod audio;
 
-use std::{sync::RwLock, fs::File, io::Cursor};
+use std::{fs::File, io::Cursor};
 
 use audio::{decoder::Decoder, controls::*};
 use flutter_rust_bridge::StreamSink;
@@ -11,14 +11,6 @@ use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::src::playback_state_stream::*;
-//use crate::output::Output;
-
-// NOTE: This is used to prevent flutter_rust_bridge
-// from generating a field in the struct.
-// It also allows the item to be mutable.
-// This prevents the use of mutable methods which
-// flutter_rust_bridge does not support.
-static DECODER:RwLock<Option<Decoder>> = RwLock::new(None);
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -29,17 +21,6 @@ pub struct Player
 impl Player
 {
     pub fn new() -> Player { Player { dummy: 0 } }
-
-    /// Insures that `DECODER` is initialized.
-    /// At first, it is set to `None` because `Decoder::new()`
-    /// is a non-static function.
-    fn insure_output_initialized()
-    {
-        let mut w = DECODER.write()
-            .expect(format!("ERR: Failed to open RwLock to WRITE new decoder.").as_str());
-        if w.is_none()
-        { *w = Some(Decoder::new()); }
-    }
 
     // ---------------------------------
     //          SETTERS/GETTERS
@@ -57,15 +38,11 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String)
     {
-        Self::insure_output_initialized();
-
         let source:Box<dyn MediaSource> = if path.contains("http") {
             Box::new(Self::get_bytes_from_network(path))
         } else { Box::new(File::open(path).unwrap()) };
 
-        let decoder = &*DECODER.read()
-            .expect(format!("ERR: Failed to open RwLock to READ decoder.").as_str());
-        let decoder = decoder.as_ref().unwrap();
+        let decoder = Decoder::new();
 
         update_playback_state_stream(true);
         decoder.open_stream(source);

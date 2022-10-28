@@ -63,6 +63,3 @@ impl Decoder
         }
     }
 }
-
-unsafe impl Sync for Decoder {}
-unsafe impl Send for Decoder {}
