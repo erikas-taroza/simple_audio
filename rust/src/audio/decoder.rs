@@ -1,8 +1,8 @@
-use std::sync::{atomic::{AtomicBool, Ordering}, Mutex};
+use std::sync::{atomic::AtomicBool, Mutex};
 
 use symphonia::{core::{formats::{FormatOptions, FormatReader}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, audio::AudioBufferRef}, default};
 
-use super::cpal_output::{AudioOutput, self};
+use super::cpal_output::CpalOutput;
 
 pub struct Decoder
 {
@@ -41,27 +41,27 @@ impl Decoder
         let track_id = track.id;
 
         let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default()).unwrap();
-        let mut cpal_output:Option<Box<dyn AudioOutput>> = None;
+        let mut cpal_output:Option<CpalOutput> = None;
 
         loop
         {
-            if !self.playing.load(Ordering::Relaxed)
-            {
-                if let Some(mut c) = cpal_output
-                {
-                    c.pause();
-                    cpal_output = Some(c);
-                }
-                continue;
-            }
-            else
-            {
-                if let Some(mut c) = cpal_output
-                {
-                    c.play();
-                    cpal_output = Some(c);
-                }
-            }
+            // if !self.playing.load(Ordering::Relaxed)
+            // {
+            //     if let Some(mut c) = cpal_output
+            //     {
+            //         c.pause();
+            //         cpal_output = Some(c);
+            //     }
+            //     continue;
+            // }
+            // else
+            // {
+            //     if let Some(mut c) = cpal_output
+            //     {
+            //         c.play();
+            //         cpal_output = Some(c);
+            //     }
+            // }
 
             let packet = match reader.next_packet()
             {
@@ -79,19 +79,21 @@ impl Decoder
         }
     }
 
-    fn decode(&self, cpal_output:&mut Option<Box<dyn AudioOutput>>, decoded:AudioBufferRef)
+    fn decode(&self, cpal_output:&mut Option<CpalOutput>, decoded:AudioBufferRef)
     {
         if cpal_output.is_none()
         {
             let spec = *decoded.spec();
             let duration = decoded.capacity() as u64;
-            cpal_output.replace(cpal_output::try_open(spec, duration).unwrap());
+            cpal_output.replace(CpalOutput::build_stream(spec, duration));
         }
 
         if let Some(cpal_output) = cpal_output
         {
-            let vol = *self.volume.lock().unwrap();
-            cpal_output.write(decoded, vol).unwrap();
+            cpal_output.write(decoded);
         }
     }
 }
+
+unsafe impl Sync for Decoder {}
+unsafe impl Send for Decoder {}

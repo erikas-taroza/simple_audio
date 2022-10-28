@@ -1,196 +1,98 @@
-// Symphonia
-// Copyright (c) 2019-2022 The Project Symphonia Developers.
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
-use std::result;
-
-use symphonia::core::audio::{AudioBufferRef, SignalSpec};
-use symphonia::core::units::Duration;
-
-pub trait AudioOutput {
-    fn write(&mut self, decoded: AudioBufferRef<'_>, volume:f32) -> Result<()>;
-    fn play(&mut self);
-    fn pause(&mut self);
-}
-
-#[allow(dead_code)]
-#[allow(clippy::enum_variant_names)]
-#[derive(Debug)]
-pub enum AudioOutputError {
-    OpenStreamError,
-    PlayStreamError,
-    StreamClosedError,
-}
-
-pub type Result<T> = result::Result<T, AudioOutputError>;
-
-use symphonia::core::audio::{RawSample, SampleBuffer};
-use symphonia::core::conv::ConvertibleSample;
-
-use cpal;
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
 use rb::*;
+use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-pub struct CpalAudioOutput;
-
-trait AudioOutputSample:
-    cpal::Sample + ConvertibleSample + RawSample + std::marker::Send + 'static
+//TODO: Support i16 and u16 instead of only f32.
+pub struct CpalOutput
 {
-    fn amplify(&mut self, value:f32) -> Self;
+    _device:Device,
+    _stream:Stream,
+    _config:StreamConfig,
+    _spec:SignalSpec,
+    ring_buffer_writer:Producer<f32>,
+    sample_buffer:SampleBuffer<f32>
 }
 
-impl AudioOutputSample for f32 {
-    fn amplify(&mut self, value:f32) -> Self {
-        *self * value
-    }
-}
-impl AudioOutputSample for i16 {
-    fn amplify(&mut self, value:f32) -> Self {
-        *self * value as i16
-    }
-}
-impl AudioOutputSample for u16 {
-    fn amplify(&mut self, value:f32) -> Self {
-        *self * value as u16
-    }
-}
-
-impl CpalAudioOutput {
-    pub fn try_open(spec: SignalSpec, duration: Duration) -> Result<Box<dyn AudioOutput>> {
-        // Get default host.
+impl CpalOutput
+{
+    fn get_config(spec:SignalSpec) -> (Device, StreamConfig)
+    {
         let host = cpal::default_host();
+        let device = host.default_output_device().expect("ERR: Failed to get default output device.");
+        // let mut supported_configs = device.supported_output_configs()
+        //     .expect("ERR: Failed to get supported outputs.");
+        // let config = supported_configs.next()
+        //     .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
 
-        // Get the default audio output device.
-        let device = match host.default_output_device() {
-            Some(device) => device,
-            _ => {
-                panic!("failed to get default audio output device");
-            }
-        };
-
-        let config = match device.default_output_config() {
-            Ok(config) => config,
-            Err(err) => {
-                panic!("failed to get default audio output device config: {}", err);
-            }
-        };
-
-        // Select proper playback routine based on sample format.
-        match config.sample_format() {
-            cpal::SampleFormat::F32 => {
-                println!("f32");
-                CpalAudioOutputImpl::<f32>::try_open(spec, duration, &device)
-            }
-            cpal::SampleFormat::I16 => {
-                println!("i16");
-                CpalAudioOutputImpl::<i16>::try_open(spec, duration, &device)
-            }
-            cpal::SampleFormat::U16 => {
-                println!("u16");
-                CpalAudioOutputImpl::<u16>::try_open(spec, duration, &device)
-            }
-        }
-    }
-}
-
-struct CpalAudioOutputImpl<T: AudioOutputSample>
-where
-    T: AudioOutputSample,
-{
-    ring_buf_producer: rb::Producer<T>,
-    sample_buf: SampleBuffer<T>,
-    stream: cpal::Stream,
-}
-
-impl<T: AudioOutputSample> CpalAudioOutputImpl<T> {
-    pub fn try_open(
-        spec: SignalSpec,
-        duration: Duration,
-        device: &cpal::Device,
-    ) -> Result<Box<dyn AudioOutput>> {
-        let num_channels = spec.channels.count();
-
-        // Output audio stream config.
+        let channels = spec.channels.count();
         let config = cpal::StreamConfig {
-            channels: num_channels as cpal::ChannelCount,
+            channels: channels as cpal::ChannelCount,
             sample_rate: cpal::SampleRate(spec.rate),
             buffer_size: cpal::BufferSize::Default,
         };
 
+        (device, config)
+    }
+
+    /// Starts a new stream on the default device.
+    /// Creates a new ring buffer and sample buffer.
+    pub fn build_stream(spec:SignalSpec, duration:u64) -> Self
+    {
+        // Get the output config.
+        let (device, config) = Self::get_config(spec);
+
         // Create a ring buffer with a capacity for up-to 200ms of audio.
-        let ring_len = ((200 * spec.rate as usize) / 1000) * num_channels;
+        let channels = spec.channels.count();
+        let ring_len = ((200 * spec.rate as usize) / 1000) * channels;
+        let ring_buffer:SpscRb<f32> = SpscRb::new(ring_len);
+        // Create the buffers for the stream.
+        let ring_buffer_writer = ring_buffer.producer();
+        let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
 
-        let ring_buf = SpscRb::new(ring_len);
-        let (ring_buf_producer, ring_buf_consumer) = (ring_buf.producer(), ring_buf.consumer());
-
-        let stream_result = device.build_output_stream(
+        let stream = device.build_output_stream(
             &config,
-            move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
-                // Write out as many samples as possible from the ring buffer to the audio
-                // output.
-                let written = ring_buf_consumer.read(data).unwrap_or(0);
-                // Mute any remaining samples.
-                data[written..].iter_mut().for_each(|s| *s = T::MID);
+            move |data:&mut [f32], _:&cpal::OutputCallbackInfo| {
+                // This is where data should be modified (like changing volume).
+                // This will be the point where there is the lowest latency.
+                let _written = ring_buffer.consumer().read(data).unwrap_or(0);
             },
-            move |err| panic!("audio output error: {}", err),
+            move |err| {
+                panic!("ERR: An error occurred during the stream. {err}");
+            }
         );
 
-        if let Err(err) = stream_result {
-            panic!("audio output stream open error: {}", err);
+        if let Err(err) = stream
+        { panic!("ERR: An error occurred when building the stream. {err}"); }
+
+        let stream = stream.unwrap();
+        stream.play().expect("ERR: Failed to play the stream.");
+
+        let stream = stream;
+
+        CpalOutput
+        {
+            _device: device,
+            _config: config,
+            _spec: spec,
+            _stream: stream,
+            ring_buffer_writer,
+            sample_buffer
         }
-
-        let stream = stream_result.unwrap();
-
-        // Start the output stream.
-        if let Err(err) = stream.play() {
-            panic!("audio output stream play error: {}", err);
-        }
-
-        let sample_buf = SampleBuffer::<T>::new(duration, spec);
-
-        Ok(Box::new(CpalAudioOutputImpl { ring_buf_producer, sample_buf, stream }))
-    }
-}
-
-impl<T: AudioOutputSample> AudioOutput for CpalAudioOutputImpl<T> {
-    fn write(&mut self, decoded: AudioBufferRef<'_>, volume:f32) -> Result<()> {
-        // Do nothing if there are no audio frames.
-        if decoded.frames() == 0 {
-            return Ok(());
-        }
-
-        // Audio samples must be interleaved for cpal. Interleave the samples in the audio
-        // buffer into the sample buffer.
-        self.sample_buf.copy_interleaved_ref(decoded);
-
-        // Write all the interleaved samples to the ring buffer.
-        let mut samples = &mut *self.sample_buf.samples().to_owned();
-
-        samples.iter_mut().for_each(|s| {
-            *s = s.amplify(volume);
-        });
-
-        while let Some(written) = self.ring_buf_producer.write_blocking(samples) {
-            samples = &mut samples[written..];
-        }
-
-        Ok(())
     }
 
-    fn play(&mut self)
+    /// Write the `AudioBufferRef` to the buffers.
+    pub fn write(&mut self, decoded:AudioBufferRef)
     {
-        let _ = self.stream.play();
-    }
+        if decoded.frames() == 0 { return; }
 
-    fn pause(&mut self) {
-        // Flush is best-effort, ignore the returned result.
-        let _ = self.stream.pause();
+        // CPAL wants the audio interleaved.
+        self.sample_buffer.copy_interleaved_ref(decoded);
+        let mut samples = self.sample_buffer.samples();
+        
+        // Write the interleaved samples to the ring buffer which is output by CPAL.
+        while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
+        {
+            samples = &samples[written..];
+        }
     }
-}
-
-pub fn try_open(spec: SignalSpec, duration: Duration) -> Result<Box<dyn AudioOutput>> {
-    CpalAudioOutput::try_open(spec, duration)
 }

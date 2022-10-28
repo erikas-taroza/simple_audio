@@ -1,3 +1,3 @@
 pub mod decoder;
-pub mod cpal_output;
-mod custom;
+mod cpal_output;
+mod controls;
