@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{atomic::{AtomicBool, Ordering}, Mutex};
 
 use symphonia::{core::{formats::{FormatOptions, FormatReader}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, audio::AudioBufferRef}, default};
 
@@ -6,7 +6,8 @@ use super::cpal_output::{AudioOutput, self};
 
 pub struct Decoder
 {
-    pub playing:AtomicBool
+    pub playing:AtomicBool,
+    pub volume:Mutex<f32>
 }
 
 impl Decoder
@@ -15,7 +16,8 @@ impl Decoder
     {
         Decoder
         {
-            playing:AtomicBool::new(true)
+            playing: AtomicBool::new(true),
+            volume: Mutex::new(1.0)
         }
     }
 
@@ -88,7 +90,8 @@ impl Decoder
 
         if let Some(cpal_output) = cpal_output
         {
-            cpal_output.write(decoded).unwrap();
+            let vol = *self.volume.lock().unwrap();
+            cpal_output.write(decoded, vol).unwrap();
         }
     }
 }

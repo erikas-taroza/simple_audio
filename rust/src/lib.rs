@@ -137,14 +137,14 @@ impl Player
         decoder.playing.store(false, Ordering::Relaxed);
     }
 
-    pub fn set_volume(&self, _volume:f32)
+    pub fn set_volume(&self, volume:f32)
     {
-        // let output = &*OUTPUT.read()
-        //     .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
-        // if let Some(output) = output
-        // {
-        //     output.sink.set_volume(volume.clamp(0.0, 1.0));
-        // }
+        let decoder = &*DECODER.read()
+            .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
+        if let Some(decoder) = decoder
+        {
+            *decoder.volume.lock().unwrap() = volume;
+        }
     }
 
     // pub fn seek(&self, seconds:i32)
@@ -159,7 +159,7 @@ mod tests
     fn open_and_play()
     {
         let player = crate::Player::new();
-        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.open("/home/erikas/Music/BitBeat/HURT LXCKER [Prod. MCTR] by SCARLXRD.mp3".to_string());
     }
 
     #[test]

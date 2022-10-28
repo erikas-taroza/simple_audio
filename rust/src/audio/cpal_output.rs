@@ -11,7 +11,7 @@ use symphonia::core::audio::{AudioBufferRef, SignalSpec};
 use symphonia::core::units::Duration;
 
 pub trait AudioOutput {
-    fn write(&mut self, decoded: AudioBufferRef<'_>) -> Result<()>;
+    fn write(&mut self, decoded: AudioBufferRef<'_>, volume:f32) -> Result<()>;
     fn play(&mut self);
     fn pause(&mut self);
 }
@@ -39,11 +39,24 @@ pub struct CpalAudioOutput;
 trait AudioOutputSample:
     cpal::Sample + ConvertibleSample + RawSample + std::marker::Send + 'static
 {
+    fn amplify(&mut self, value:f32) -> Self;
 }
 
-impl AudioOutputSample for f32 {}
-impl AudioOutputSample for i16 {}
-impl AudioOutputSample for u16 {}
+impl AudioOutputSample for f32 {
+    fn amplify(&mut self, value:f32) -> Self {
+        *self * value
+    }
+}
+impl AudioOutputSample for i16 {
+    fn amplify(&mut self, value:f32) -> Self {
+        *self * value as i16
+    }
+}
+impl AudioOutputSample for u16 {
+    fn amplify(&mut self, value:f32) -> Self {
+        *self * value as u16
+    }
+}
 
 impl CpalAudioOutput {
     pub fn try_open(spec: SignalSpec, duration: Duration) -> Result<Box<dyn AudioOutput>> {
@@ -68,12 +81,15 @@ impl CpalAudioOutput {
         // Select proper playback routine based on sample format.
         match config.sample_format() {
             cpal::SampleFormat::F32 => {
+                println!("f32");
                 CpalAudioOutputImpl::<f32>::try_open(spec, duration, &device)
             }
             cpal::SampleFormat::I16 => {
+                println!("i16");
                 CpalAudioOutputImpl::<i16>::try_open(spec, duration, &device)
             }
             cpal::SampleFormat::U16 => {
+                println!("u16");
                 CpalAudioOutputImpl::<u16>::try_open(spec, duration, &device)
             }
         }
@@ -140,7 +156,7 @@ impl<T: AudioOutputSample> CpalAudioOutputImpl<T> {
 }
 
 impl<T: AudioOutputSample> AudioOutput for CpalAudioOutputImpl<T> {
-    fn write(&mut self, decoded: AudioBufferRef<'_>) -> Result<()> {
+    fn write(&mut self, decoded: AudioBufferRef<'_>, volume:f32) -> Result<()> {
         // Do nothing if there are no audio frames.
         if decoded.frames() == 0 {
             return Ok(());
@@ -151,10 +167,14 @@ impl<T: AudioOutputSample> AudioOutput for CpalAudioOutputImpl<T> {
         self.sample_buf.copy_interleaved_ref(decoded);
 
         // Write all the interleaved samples to the ring buffer.
-        let mut samples = self.sample_buf.samples();
+        let mut samples = &mut *self.sample_buf.samples().to_owned();
+
+        samples.iter_mut().for_each(|s| {
+            *s = s.amplify(volume);
+        });
 
         while let Some(written) = self.ring_buf_producer.write_blocking(samples) {
-            samples = &samples[written..];
+            samples = &mut samples[written..];
         }
 
         Ok(())
