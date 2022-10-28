@@ -54,7 +54,11 @@ impl CpalOutput
         let stream = device.build_output_stream(
             &config,
             move |data:&mut [f32], _:&cpal::OutputCallbackInfo| {
-                // Pause the stream.
+                // "Pause" the stream.
+                // What this really does is mute the stream.
+                // With only a return statement, the current sample still plays.
+                // CPAL states that `stream.pause()` may not work for all devices.
+                // `stream.pause()` is the ideal way to play/pause.
                 if !IS_PLAYING.load(std::sync::atomic::Ordering::Relaxed)
                 {
                     data.iter_mut().for_each(|s| *s = 0.0);
