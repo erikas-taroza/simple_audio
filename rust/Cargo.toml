@@ -12,6 +12,7 @@ flutter_rust_bridge = "1"
 reqwest = { version = "0.11.12", features = ["blocking"] }
 symphonia = { version = "0.5.1", features = ["aac", "alac", "isomp4", "mp3"] }
 rb = "0.4.1"
+crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 
 [dependencies.rodio]
 version = "0.16.0"

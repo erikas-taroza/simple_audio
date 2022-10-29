@@ -2,17 +2,17 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod src;
 mod audio;
 
-use std::{fs::File, io::Cursor, thread, sync::{RwLock, atomic::AtomicBool}};
+use std::{fs::File, io::Cursor, thread, sync::RwLock};
 
 use audio::{decoder::Decoder, controls::*};
+use crossbeam::channel::{Sender, Receiver, unbounded};
 use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::src::{playback_state_stream::*, progress_state_stream::*};
 
-static DECODER:RwLock<Decoder> = RwLock::new(Decoder::new());
-static FIRST_TIME:AtomicBool = AtomicBool::new(true);
+static TXRX:RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -23,6 +23,30 @@ pub struct Player
 impl Player
 {
     pub fn new() -> Player { Player { dummy: 0 } }
+
+    fn signal_to_stop()
+    {
+        // This should only happen once on new run.
+        if TXRX.read().unwrap().is_none()
+        {
+            let mut txrx = TXRX.write().unwrap();
+            *txrx = Some(unbounded());
+        }
+        
+        // If there are any threads in existence that were spawned when calling open(),
+        // they will read this value and break the decode loop if it is `true`.
+        // This closes the thread and the cpal stream.
+        { // Use a new scope here so that the lock is dropped.
+            let txrx = TXRX.read().unwrap();
+            let tx = &txrx.as_ref().unwrap().0;
+            tx.send(true).unwrap();
+        }
+
+        // After all the threads have been stopped, a new tx and rx is created.
+        // This will reset the `true` signal.
+        let mut txrx = TXRX.write().unwrap();
+        *txrx = Some(unbounded());
+    }
 
     // ---------------------------------
     //          SETTERS/GETTERS
@@ -41,16 +65,9 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String)
     {
-        let mut decoder = *DECODER.write()
-            .expect(format!("ERR: Failed to open RwLock to READ decoder.").as_str());
+        Self::signal_to_stop();
 
-        if !FIRST_TIME.load(std::sync::atomic::Ordering::SeqCst)
-        {
-            println!("Stop");
-            decoder.stop();
-        }
-
-        FIRST_TIME.store(false, std::sync::atomic::Ordering::SeqCst);
+        let mut decoder = Decoder::new();
 
         let source:Box<dyn MediaSource> = if path.contains("http") {
             Box::new(Self::get_bytes_from_network(path))
@@ -60,7 +77,6 @@ impl Player
         thread::spawn(move || {
             decoder.open_stream(source);
             update_playback_state_stream(false);
-            println!("Done in thread");
         });
     }
 
@@ -112,7 +128,9 @@ mod tests
         player.seek(30.0);
         thread::sleep(Duration::from_secs(2));
         player.open("/home/erikas/Music/test.mp3".to_string());
-        thread::sleep(Duration::from_secs(50));
+        thread::sleep(Duration::from_secs(10));
+        player.open("/home/erikas/Music/wavy.mp3".to_string());
+        thread::sleep(Duration::from_secs(10));
     }
 
     #[test]

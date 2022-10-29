@@ -1,22 +1,14 @@
-use std::sync::RwLock;
-
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
 
-use crate::src::progress_state_stream::*;
+use crate::{src::progress_state_stream::*, TXRX};
 
 use super::{cpal_output::CpalOutput, controls::*};
 
-static OUTPUT:RwLock<Option<CpalOutput>> = RwLock::new(None);
-
-#[derive(Clone, Copy)]
-pub struct Decoder
-{
-    stop:bool
-}
+pub struct Decoder;
 
 impl Decoder
 {
-    pub const fn new() -> Self { Decoder { stop: false } }
+    pub const fn new() -> Self { Decoder { } }
 
     pub fn open_stream(&mut self, source:Box<dyn MediaSource>)
     {
@@ -38,34 +30,26 @@ impl Decoder
         let track_id = track.id;
 
         let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default()).unwrap();
-        //let mut cpal_output:Option<CpalOutput> = None;
+        let mut cpal_output:Option<CpalOutput> = None;
 
         // Used only for outputting the current position and duration.
         let timebase = track.codec_params.time_base.unwrap();
         let duration = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
 
+        // Clone a receiver to listen for the stop signal.
+        let rx = TXRX.read().unwrap();
+        let rx = rx.as_ref().unwrap().1.clone();
+
         loop
         {
-            // If we break at the end of the loop,
-            // we give the chance for a new cpal_output to be created.
-            // So when we want to stop the current stream, in this case, it would just stop the next stream.
-            // When we break here, the cpal_output of the next song is not made.
-
-            // That is why cpal_output is set to none here. Because a new song means cpal_output is reinitialized.
-            // to None above;
-            //if self.stop { break; }
-
-            if self.stop
+            // Poll the status of the RX in lib.rs.
+            // If the value is true, that means we want to stop this stream.
+            // Breaking the loop drops everything which stops the cpal stream.
+            let result = rx.try_recv();
+            match result
             {
-                {
-                    let cpal_output = &*OUTPUT.write().unwrap();
-                    let _ = *cpal_output.as_ref().unwrap();
-                    let _ = reader;
-                }
-
-                let mut cpal_output = OUTPUT.write().unwrap();
-                *cpal_output = None;
-                break;
+                Err(_) => (),
+                Ok(message) => if message { break; }
             }
 
             // Seeking.
@@ -102,10 +86,7 @@ impl Decoder
                             duration: timebase.calc_time(duration).seconds
                         });
 
-                        //self.write_decoded(&mut cpal_output, decoded);
-
-                        let cpal_output = &mut *OUTPUT.write().unwrap();
-
+                        // Write the decoded packet to CPAL.
                         if cpal_output.is_none()
                         {
                             let spec = *decoded.spec();
@@ -117,32 +98,6 @@ impl Decoder
                     }
                 }
             }
-
-            // println!("{}", cpal_output.is_some());
-            // drop(cpal_output.as_ref().unwrap());
         }
-
-        self.stop = false;
-        println!("Finished");
-    }
-
-    // fn write_decoded(&self, cpal_output:&mut Option<CpalOutput>, decoded:AudioBufferRef)
-    // {
-    //     if cpal_output.is_none()
-    //     {
-    //         let spec = *decoded.spec();
-    //         let duration = decoded.capacity() as u64;
-    //         cpal_output.replace(CpalOutput::build_stream(spec, duration));
-    //     }
-
-    //     if let Some(cpal_output) = cpal_output
-    //     {
-    //         cpal_output.write(decoded);
-    //     }
-    // }
-
-    pub fn stop(&mut self)
-    {
-        self.stop = true;
     }
 }

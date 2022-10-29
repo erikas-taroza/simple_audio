@@ -59,7 +59,7 @@ impl CpalOutput
                 // With only a return statement, the current sample still plays.
                 // CPAL states that `stream.pause()` may not work for all devices.
                 // `stream.pause()` is the ideal way to play/pause.
-                if !IS_PLAYING.load(std::sync::atomic::Ordering::Relaxed)
+                if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
                 {
                     data.iter_mut().for_each(|s| *s = 0.0);
                     return;
@@ -110,16 +110,3 @@ impl CpalOutput
         }
     }
 }
-
-impl Drop for CpalOutput
-{
-    fn drop(&mut self)
-    {
-        // This doesnt even work.
-        self._stream.pause().unwrap();
-        let _ = self._stream;
-    }
-}
-
-unsafe impl Sync for CpalOutput {}
-unsafe impl Send for CpalOutput {}
