@@ -1,9 +1,8 @@
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-pub mod output;
 mod src;
 mod audio;
 
-use std::{fs::File, io::Cursor};
+use std::{fs::File, io::Cursor, thread, sync::{RwLock, atomic::AtomicBool}};
 
 use audio::{decoder::Decoder, controls::*};
 use flutter_rust_bridge::StreamSink;
@@ -11,6 +10,9 @@ use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::src::{playback_state_stream::*, progress_state_stream::*};
+
+static DECODER:RwLock<Decoder> = RwLock::new(Decoder::new());
+static FIRST_TIME:AtomicBool = AtomicBool::new(true);
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -30,7 +32,7 @@ impl Player
     pub fn progress_state_stream(stream:StreamSink<ProgressState>) { progress_state_stream(stream); }
 
     pub fn is_playing(&self) -> bool
-    { IS_PLAYING.load(std::sync::atomic::Ordering::Relaxed) }
+    { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }
 
     // ---------------------------------
     //            PLAYBACK
@@ -39,39 +41,28 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String)
     {
+        let mut decoder = *DECODER.write()
+            .expect(format!("ERR: Failed to open RwLock to READ decoder.").as_str());
+
+        if !FIRST_TIME.load(std::sync::atomic::Ordering::SeqCst)
+        {
+            println!("Stop");
+            decoder.stop();
+        }
+
+        FIRST_TIME.store(false, std::sync::atomic::Ordering::SeqCst);
+
         let source:Box<dyn MediaSource> = if path.contains("http") {
             Box::new(Self::get_bytes_from_network(path))
         } else { Box::new(File::open(path).unwrap()) };
 
-        let decoder = Decoder::new();
-
         update_playback_state_stream(true);
-        decoder.open_stream(source);
-        update_playback_state_stream(false);
+        thread::spawn(move || {
+            decoder.open_stream(source);
+            update_playback_state_stream(false);
+            println!("Done in thread");
+        });
     }
-
-    /// Similar to open, except it opens multiple
-    /// sources at once.
-    // pub fn open_list(&self, paths:Vec<String>)
-    // {
-    //     Self::insure_output_initialized();
-
-    //     let output = &*OUTPUT.read()
-    //         .expect(format!("ERR: Failed to open RwLock to READ output.").as_str());
-    //     let output = output.as_ref().unwrap();
-
-    //     for path in paths
-    //     {
-    //         if path.contains("http")
-    //         { output.append_network(&path); }
-    //         else
-    //         { output.append_file(Path::new(&path)); }
-    //     }
-
-    //     update_playback_state_stream(true);
-    //     output.sink.sleep_until_end();
-    //     update_playback_state_stream(false);
-    // }
 
     fn get_bytes_from_network(url:String) -> Cursor<Vec<u8>>
     {
@@ -91,13 +82,13 @@ impl Player
     pub fn play(&self)
     {
         update_playback_state_stream(true);
-        IS_PLAYING.store(true, std::sync::atomic::Ordering::Relaxed);
+        IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
     }
 
     pub fn pause(&self)
     {
         update_playback_state_stream(false);
-        IS_PLAYING.store(false, std::sync::atomic::Ordering::Relaxed);
+        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
     pub fn set_volume(&self, volume:f32)
@@ -107,13 +98,21 @@ impl Player
     { *SEEK_TS.write().unwrap() = Some(seconds.floor()); }
 }
 
+#[cfg(test)]
 mod tests
 {
+    use std::{thread, time::Duration};
+
     #[test]
     fn open_and_play()
     {
         let player = crate::Player::new();
-        player.open("/home/erikas/Music/BitBeat/HURT LXCKER [Prod. MCTR] by SCARLXRD.mp3".to_string());
+        player.set_volume(0.2);
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.seek(30.0);
+        thread::sleep(Duration::from_secs(2));
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        thread::sleep(Duration::from_secs(50));
     }
 
     #[test]
@@ -122,11 +121,4 @@ mod tests
         let player = crate::Player::new();
         player.open("".to_string());
     }
-
-    // #[test]
-    // fn open_list_and_play()
-    // {
-    //     let player = crate::Player::new();
-    //     player.open_list(vec!["/home/erikas/Music/test.mp3".to_string(), "/home/erikas/Music/test2.mp3".to_string()]);
-    // }
 }

@@ -70,7 +70,7 @@ impl CpalOutput
                 let written = ring_buffer.consumer().read(data).unwrap_or(0);
                 
                 // Set the volume.
-                data[0..written].iter_mut().for_each(|s| *s = *s * (*VOLUME.read().unwrap()));
+                data[0..written].iter_mut().for_each(|s| *s = *s * *VOLUME.read().unwrap());
             },
             move |err| {
                 panic!("ERR: An error occurred during the stream. {err}");
@@ -82,8 +82,6 @@ impl CpalOutput
 
         let stream = stream.unwrap();
         stream.play().expect("ERR: Failed to play the stream.");
-
-        let stream = stream;
 
         CpalOutput
         {
@@ -112,3 +110,16 @@ impl CpalOutput
         }
     }
 }
+
+impl Drop for CpalOutput
+{
+    fn drop(&mut self)
+    {
+        // This doesnt even work.
+        self._stream.pause().unwrap();
+        let _ = self._stream;
+    }
+}
+
+unsafe impl Sync for CpalOutput {}
+unsafe impl Send for CpalOutput {}
