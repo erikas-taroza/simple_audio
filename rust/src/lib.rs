@@ -2,17 +2,15 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod dart_streams;
 mod audio;
 
-use std::{fs::File, io::Cursor, thread, sync::RwLock};
+use std::{fs::File, io::Cursor, thread};
 
 use audio::{decoder::Decoder, controls::*};
-use crossbeam::channel::{Sender, Receiver, unbounded};
+use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::dart_streams::{playback_state_stream::*, progress_state_stream::*};
-
-static TXRX:RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
