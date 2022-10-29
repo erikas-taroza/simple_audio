@@ -1,5 +1,5 @@
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod src;
+mod dart_streams;
 mod audio;
 
 use std::{fs::File, io::Cursor, thread, sync::RwLock};
@@ -10,7 +10,7 @@ use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use crate::src::{playback_state_stream::*, progress_state_stream::*};
+use crate::dart_streams::{playback_state_stream::*, progress_state_stream::*};
 
 static TXRX:RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
 

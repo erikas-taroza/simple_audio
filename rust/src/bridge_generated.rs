@@ -17,7 +17,7 @@ use flutter_rust_bridge::*;
 
 // Section: imports
 
-use crate::src::progress_state_stream::ProgressState;
+use crate::dart_streams::progress_state_stream::ProgressState;
 use crate::Player;
 
 // Section: wire functions
