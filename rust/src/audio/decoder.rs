@@ -99,5 +99,12 @@ impl Decoder
                 }
             }
         }
+
+        // Fix race condition.
+        // If this gets called in `thread::spawn` in Player::open,
+        // the playback state stream will produce false instead of true.
+        // Calling it here makes it so that it is set to false before it is
+        // set to true.
+        crate::Player::internal_pause();
     }
 }

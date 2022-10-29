@@ -73,10 +73,9 @@ impl Player
             Box::new(Self::get_bytes_from_network(path))
         } else { Box::new(File::open(path).unwrap()) };
 
-        update_playback_state_stream(true);
+        Self::internal_play();
         thread::spawn(move || {
             decoder.open_stream(source);
-            update_playback_state_stream(false);
         });
     }
 
@@ -91,21 +90,33 @@ impl Player
         Cursor::new(bytes)
     }
 
+    /// Allows for access in other places
+    /// where we would want to update the stream and
+    /// the `IS_PLAYING` AtomicBool.
+    fn internal_play()
+    {
+        update_playback_state_stream(true);
+        IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+    
+    /// Allows for access in other places
+    /// where we would want to update the stream and
+    /// the `IS_PLAYING` AtomicBool.
+    fn internal_pause()
+    {
+        update_playback_state_stream(false);
+        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+    }
+
     // ---------------------------------
     //             CONTROLS
     // ---------------------------------
 
     pub fn play(&self)
-    {
-        update_playback_state_stream(true);
-        IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
-    }
+    { Self::internal_play(); }
 
     pub fn pause(&self)
-    {
-        update_playback_state_stream(false);
-        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-    }
+    { Self::internal_pause(); }
 
     pub fn set_volume(&self, volume:f32)
     { *VOLUME.write().unwrap() = volume; }
