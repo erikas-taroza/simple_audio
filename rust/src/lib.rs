@@ -10,7 +10,7 @@ use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use crate::src::playback_state_stream::*;
+use crate::src::{playback_state_stream::*, progress_state_stream::*};
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -27,6 +27,7 @@ impl Player
     // ---------------------------------
 
     pub fn playback_state_stream(stream:StreamSink<bool>) { playback_state_stream(stream); }
+    pub fn progress_state_stream(stream:StreamSink<ProgressState>) { progress_state_stream(stream); }
 
     pub fn is_playing(&self) -> bool
     { IS_PLAYING.load(std::sync::atomic::Ordering::Relaxed) }

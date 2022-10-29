@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp>
 {
     final SimpleAudio player = SimpleAudio();
     double volume = 1;
+    double position = 0;
 
     @override
     Widget build(BuildContext context) {
@@ -85,6 +86,23 @@ class _MyAppState extends State<MyApp>
                                     await player.seek(20);
                                 }
                             ),
+                            SizedBox(
+                                width: 500,
+                                child: StreamBuilder(
+                                    stream: player.progressStateStream,
+                                    builder: (_, data) {
+                                        if(data.data == null) return Container();
+
+                                        return Slider(
+                                            value: data.data!.position.toDouble(),
+                                            max: data.data!.duration.toDouble(),
+                                            onChanged: (value) {
+                                                player.seek(value);
+                                            },
+                                        );
+                                    },
+                                ),
+                            )
                         ],
                     )
                 ),

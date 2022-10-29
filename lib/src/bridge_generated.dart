@@ -56,6 +56,23 @@ class SimpleAudioImpl implements SimpleAudio {
             argNames: [],
           );
 
+  Stream<ProgressState> progressStateStreamStaticMethodPlayer({dynamic hint}) =>
+      _platform.executeStream(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner
+            .wire_progress_state_stream__static_method__Player(port_),
+        parseSuccessData: _wire2api_progress_state,
+        constMeta: kProgressStateStreamStaticMethodPlayerConstMeta,
+        argValues: [],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta
+      get kProgressStateStreamStaticMethodPlayerConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "progress_state_stream__static_method__Player",
+            argNames: [],
+          );
+
   Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_is_playing__method__Player(
@@ -177,6 +194,20 @@ class SimpleAudioImpl implements SimpleAudio {
       bridge: this,
       dummy: _wire2api_i32(arr[0]),
     );
+  }
+
+  ProgressState _wire2api_progress_state(dynamic raw) {
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ProgressState(
+      position: _wire2api_u64(arr[0]),
+      duration: _wire2api_u64(arr[1]),
+    );
+  }
+
+  int _wire2api_u64(dynamic raw) {
+    return castInt(raw);
   }
 
   void _wire2api_unit(dynamic raw) {
@@ -303,6 +334,21 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           'wire_playback_state_stream__static_method__Player');
   late final _wire_playback_state_stream__static_method__Player =
       _wire_playback_state_stream__static_method__PlayerPtr
+          .asFunction<void Function(int)>();
+
+  void wire_progress_state_stream__static_method__Player(
+    int port_,
+  ) {
+    return _wire_progress_state_stream__static_method__Player(
+      port_,
+    );
+  }
+
+  late final _wire_progress_state_stream__static_method__PlayerPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_progress_state_stream__static_method__Player');
+  late final _wire_progress_state_stream__static_method__Player =
+      _wire_progress_state_stream__static_method__PlayerPtr
           .asFunction<void Function(int)>();
 
   void wire_is_playing__method__Player(

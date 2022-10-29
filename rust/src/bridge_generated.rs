@@ -17,6 +17,7 @@ use flutter_rust_bridge::*;
 
 // Section: imports
 
+use crate::src::progress_state_stream::ProgressState;
 use crate::Player;
 
 // Section: wire functions
@@ -39,6 +40,16 @@ fn wire_playback_state_stream__static_method__Player_impl(port_: MessagePort) {
             mode: FfiCallMode::Stream,
         },
         move || move |task_callback| Ok(Player::playback_state_stream(task_callback.stream_sink())),
+    )
+}
+fn wire_progress_state_stream__static_method__Player_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "progress_state_stream__static_method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || move |task_callback| Ok(Player::progress_state_stream(task_callback.stream_sink())),
     )
 }
 fn wire_is_playing__method__Player_impl(
@@ -188,6 +199,13 @@ impl support::IntoDart for Player {
     }
 }
 impl support::IntoDartExceptPrimitive for Player {}
+
+impl support::IntoDart for ProgressState {
+    fn into_dart(self) -> support::DartAbi {
+        vec![self.position.into_dart(), self.duration.into_dart()].into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for ProgressState {}
 
 // Section: executor
 

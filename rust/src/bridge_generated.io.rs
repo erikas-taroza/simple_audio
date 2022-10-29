@@ -12,6 +12,11 @@ pub extern "C" fn wire_playback_state_stream__static_method__Player(port_: i64) 
 }
 
 #[no_mangle]
+pub extern "C" fn wire_progress_state_stream__static_method__Player(port_: i64) {
+    wire_progress_state_stream__static_method__Player_impl(port_)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_is_playing__method__Player(port_: i64, that: *mut wire_Player) {
     wire_is_playing__method__Player_impl(port_, that)
 }

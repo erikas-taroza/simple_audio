@@ -1,5 +1,7 @@
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, audio::AudioBufferRef, units::Time}, default};
 
+use crate::src::progress_state_stream::*;
+
 use super::{cpal_output::CpalOutput, controls::SEEK_TS};
 
 pub struct Decoder;
@@ -30,6 +32,10 @@ impl Decoder
         let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default()).unwrap();
         let mut cpal_output:Option<CpalOutput> = None;
 
+        // Used only for outputting the current position and duration.
+        let timebase = track.codec_params.time_base.unwrap();
+        let duration = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
+
         loop
         {
             // Seeking.
@@ -57,7 +63,16 @@ impl Decoder
             {
                 Err(err) => panic!("ERR: Failed to decode sound. {err}"),
                 Ok(decoded) => {
-                    if packet.ts() >= seek_ts { self.decode(&mut cpal_output, decoded); }
+                    if packet.ts() >= seek_ts
+                    {
+                        // Update the progress stream with calculated times.
+                        update_progress_state_stream(ProgressState {
+                            position: timebase.calc_time(packet.ts()).seconds,
+                            duration: timebase.calc_time(duration).seconds
+                        });
+                        
+                        self.decode(&mut cpal_output, decoded);
+                    }
                 }
             }
         }

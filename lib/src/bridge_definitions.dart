@@ -16,6 +16,11 @@ abstract class SimpleAudio {
   FlutterRustBridgeTaskConstMeta
       get kPlaybackStateStreamStaticMethodPlayerConstMeta;
 
+  Stream<ProgressState> progressStateStreamStaticMethodPlayer({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta
+      get kProgressStateStreamStaticMethodPlayerConstMeta;
+
   Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta;
@@ -61,6 +66,10 @@ class Player {
           {required SimpleAudio bridge, dynamic hint}) =>
       bridge.playbackStateStreamStaticMethodPlayer(hint: hint);
 
+  static Stream<ProgressState> progressStateStream(
+          {required SimpleAudio bridge, dynamic hint}) =>
+      bridge.progressStateStreamStaticMethodPlayer(hint: hint);
+
   Future<bool> isPlaying({dynamic hint}) => bridge.isPlayingMethodPlayer(
         that: this,
       );
@@ -90,4 +99,14 @@ class Player {
         that: this,
         seconds: seconds,
       );
+}
+
+class ProgressState {
+  final int position;
+  final int duration;
+
+  ProgressState({
+    required this.position,
+    required this.duration,
+  });
 }

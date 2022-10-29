@@ -4,6 +4,7 @@ class SimpleAudio
 {
     final Player _player = Player(bridge: api, dummy: 0);
     late Stream<bool> playbackStateStream = api.playbackStateStreamStaticMethodPlayer();
+    late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer();
 
     Future<bool> get isPlaying => _player.isPlaying();
 
