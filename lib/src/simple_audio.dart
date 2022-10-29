@@ -26,4 +26,9 @@ class SimpleAudio
     {
         return api.setVolumeMethodPlayer(that: _player, volume: volume);
     }
+
+    Future<void> seek(double seconds) async
+    {
+        return api.seekMethodPlayer(that: _player, seconds: seconds);
+    }
 }

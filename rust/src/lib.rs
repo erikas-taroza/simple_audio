@@ -102,10 +102,8 @@ impl Player
     pub fn set_volume(&self, volume:f32)
     { *VOLUME.write().unwrap() = volume; }
 
-    // pub fn seek(&self, seconds:i32)
-    // {
-
-    // }
+    pub fn seek(&self, seconds:f64)
+    { *SEEK_TS.write().unwrap() = Some(seconds.floor()); }
 }
 
 mod tests

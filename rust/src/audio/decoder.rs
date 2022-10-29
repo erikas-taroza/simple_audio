@@ -1,6 +1,6 @@
-use symphonia::{core::{formats::{FormatOptions, FormatReader}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, audio::AudioBufferRef}, default};
+use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, audio::AudioBufferRef, units::Time}, default};
 
-use super::cpal_output::CpalOutput;
+use super::{cpal_output::CpalOutput, controls::SEEK_TS};
 
 pub struct Decoder;
 
@@ -32,6 +32,19 @@ impl Decoder
 
         loop
         {
+            // Seeking.
+            let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
+            {
+                let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(track_id) };
+                match reader.seek(SeekMode::Accurate, seek_to)
+                {
+                    Ok(seeked_to) => seeked_to.required_ts,
+                    Err(_) => 0
+                }
+            } else { 0 };
+
+            *SEEK_TS.write().unwrap() = None;
+
             let packet = match reader.next_packet()
             {
                 Ok(packet) => packet,
@@ -43,7 +56,9 @@ impl Decoder
             match decoder.decode(&packet)
             {
                 Err(err) => panic!("ERR: Failed to decode sound. {err}"),
-                Ok(decoded) => self.decode(&mut cpal_output, decoded)
+                Ok(decoded) => {
+                    if packet.ts() >= seek_ts { self.decode(&mut cpal_output, decoded); }
+                }
             }
         }
     }

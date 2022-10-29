@@ -119,6 +119,24 @@ fn wire_set_volume__method__Player_impl(
         },
     )
 }
+fn wire_seek__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+    seconds: impl Wire2Api<f64> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "seek__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            let api_seconds = seconds.wire2api();
+            move |task_callback| Ok(Player::seek(&api_that, api_seconds))
+        },
+    )
+}
 // Section: wrapper structs
 
 // Section: static checks
@@ -142,6 +160,11 @@ where
 
 impl Wire2Api<f32> for f32 {
     fn wire2api(self) -> f32 {
+        self
+    }
+}
+impl Wire2Api<f64> for f64 {
+    fn wire2api(self) -> f64 {
         self
     }
 }

@@ -142,6 +142,23 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that", "volume"],
       );
 
+  Future<void> seekMethodPlayer(
+          {required Player that, required double seconds, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_seek__method__Player(port_,
+            _platform.api2wire_box_autoadd_player(that), api2wire_f64(seconds)),
+        parseSuccessData: _wire2api_unit,
+        constMeta: kSeekMethodPlayerConstMeta,
+        argValues: [that, seconds],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kSeekMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "seek__method__Player",
+        argNames: ["that", "seconds"],
+      );
+
 // Section: wire2api
 
   bool _wire2api_bool(dynamic raw) {
@@ -171,6 +188,11 @@ class SimpleAudioImpl implements SimpleAudio {
 
 @protected
 double api2wire_f32(double raw) {
+  return raw;
+}
+
+@protected
+double api2wire_f64(double raw) {
   return raw;
 }
 
@@ -375,6 +397,25 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _wire_set_volume__method__Player =
       _wire_set_volume__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>, double)>();
+
+  void wire_seek__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+    double seconds,
+  ) {
+    return _wire_seek__method__Player(
+      port_,
+      that,
+      seconds,
+    );
+  }
+
+  late final _wire_seek__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
+              ffi.Double)>>('wire_seek__method__Player');
+  late final _wire_seek__method__Player = _wire_seek__method__PlayerPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_Player>, double)>();
 
   ffi.Pointer<wire_Player> new_box_autoadd_player_0() {
     return _new_box_autoadd_player_0();

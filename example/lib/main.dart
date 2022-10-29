@@ -78,7 +78,13 @@ class _MyAppState extends State<MyApp>
                                         player.setVolume(value);
                                     }
                                 ),
-                            )
+                            ),
+                            ElevatedButton(
+                                child: const Text("Seek 20s"),
+                                onPressed: () async {
+                                    await player.seek(20);
+                                }
+                            ),
                         ],
                     )
                 ),
