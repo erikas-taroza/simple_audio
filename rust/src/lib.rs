@@ -51,7 +51,7 @@ impl Player
     // ---------------------------------
 
     /// Opens a file or network resource for reading and playing.
-    pub fn open(&self, path:String)
+    pub fn open(&self, path:String, autoplay:bool)
     {
         Self::internal_stop();
 
@@ -59,7 +59,9 @@ impl Player
             Box::new(Self::get_bytes_from_network(path))
         } else { Box::new(File::open(path).unwrap()) };
 
-        Self::internal_play();
+        if autoplay { Self::internal_play(); }
+        else { Self::internal_pause(); }
+
         thread::spawn(|| {
             Decoder::default().open_stream(source);
         });
@@ -135,7 +137,7 @@ mod tests
     {
         let player = crate::Player::new();
         player.set_volume(0.5);
-        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.open("/home/erikas/Music/test.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
 
@@ -143,6 +145,6 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::new();
-        player.open("".to_string());
+        player.open("".to_string(), true);
     }
 }

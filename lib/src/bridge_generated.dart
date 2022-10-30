@@ -90,22 +90,26 @@ class SimpleAudioImpl implements SimpleAudio {
       );
 
   Future<void> openMethodPlayer(
-          {required Player that, required String path, dynamic hint}) =>
+          {required Player that,
+          required String path,
+          required bool autoplay,
+          dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_open__method__Player(
             port_,
             _platform.api2wire_box_autoadd_player(that),
-            _platform.api2wire_String(path)),
+            _platform.api2wire_String(path),
+            autoplay),
         parseSuccessData: _wire2api_unit,
         constMeta: kOpenMethodPlayerConstMeta,
-        argValues: [that, path],
+        argValues: [that, path, autoplay],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kOpenMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "open__method__Player",
-        argNames: ["that", "path"],
+        argNames: ["that", "path", "autoplay"],
       );
 
   Future<void> playMethodPlayer({required Player that, dynamic hint}) =>
@@ -232,6 +236,11 @@ class SimpleAudioImpl implements SimpleAudio {
 }
 
 // Section: api2wire
+
+@protected
+bool api2wire_bool(bool raw) {
+  return raw;
+}
 
 @protected
 double api2wire_f32(double raw) {
@@ -389,22 +398,27 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
     int port_,
     ffi.Pointer<wire_Player> that,
     ffi.Pointer<wire_uint_8_list> path,
+    bool autoplay,
   ) {
     return _wire_open__method__Player(
       port_,
       that,
       path,
+      autoplay,
     );
   }
 
   late final _wire_open__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
-              ffi.Pointer<wire_uint_8_list>)>>('wire_open__method__Player');
+          ffi.Void Function(
+              ffi.Int64,
+              ffi.Pointer<wire_Player>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Bool)>>('wire_open__method__Player');
   late final _wire_open__method__Player =
       _wire_open__method__PlayerPtr.asFunction<
-          void Function(
-              int, ffi.Pointer<wire_Player>, ffi.Pointer<wire_uint_8_list>)>();
+          void Function(int, ffi.Pointer<wire_Player>,
+              ffi.Pointer<wire_uint_8_list>, bool)>();
 
   void wire_play__method__Player(
     int port_,

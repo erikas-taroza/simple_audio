@@ -72,6 +72,7 @@ fn wire_open__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,
     path: impl Wire2Api<String> + UnwindSafe,
+    autoplay: impl Wire2Api<bool> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -82,7 +83,8 @@ fn wire_open__method__Player_impl(
         move || {
             let api_that = that.wire2api();
             let api_path = path.wire2api();
-            move |task_callback| Ok(Player::open(&api_that, api_path))
+            let api_autoplay = autoplay.wire2api();
+            move |task_callback| Ok(Player::open(&api_that, api_path, api_autoplay))
         },
     )
 }
@@ -179,6 +181,12 @@ where
 {
     fn wire2api(self) -> Option<T> {
         (!self.is_null()).then(|| self.wire2api())
+    }
+}
+
+impl Wire2Api<bool> for bool {
+    fn wire2api(self) -> bool {
+        self
     }
 }
 

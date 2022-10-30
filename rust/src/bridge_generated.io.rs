@@ -26,8 +26,9 @@ pub extern "C" fn wire_open__method__Player(
     port_: i64,
     that: *mut wire_Player,
     path: *mut wire_uint_8_list,
+    autoplay: bool,
 ) {
-    wire_open__method__Player_impl(port_, that, path)
+    wire_open__method__Player_impl(port_, that, path, autoplay)
 }
 
 #[no_mangle]
@@ -79,6 +80,7 @@ impl Wire2Api<String> for *mut wire_uint_8_list {
         String::from_utf8_lossy(&vec).into_owned()
     }
 }
+
 impl Wire2Api<Player> for *mut wire_Player {
     fn wire2api(self) -> Player {
         let wrap = unsafe { support::box_from_leak_ptr(self) };

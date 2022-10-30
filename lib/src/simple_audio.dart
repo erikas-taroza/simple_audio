@@ -9,9 +9,9 @@ class SimpleAudio
 
     Future<bool> get isPlaying => _player.isPlaying();
 
-    Future<void> open(String path) async
+    Future<void> open(String path, [bool autoplay = true]) async
     {
-        return await api.openMethodPlayer(that: _player, path: path);
+        return await api.openMethodPlayer(that: _player, path: path, autoplay: autoplay);
     }
 
     Future<void> play() async

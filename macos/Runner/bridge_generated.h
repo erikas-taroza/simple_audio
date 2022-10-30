@@ -43,7 +43,8 @@ void wire_is_playing__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_open__method__Player(int64_t port_,
                                struct wire_Player *that,
-                               struct wire_uint_8_list *path);
+                               struct wire_uint_8_list *path,
+                               bool autoplay);
 
 void wire_play__method__Player(int64_t port_, struct wire_Player *that);
 
