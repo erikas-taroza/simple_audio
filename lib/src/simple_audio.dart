@@ -24,6 +24,11 @@ class SimpleAudio
         return await api.pauseMethodPlayer(that: _player);
     }
 
+    Future<void> stop() async
+    {
+        return await api.stopMethodPlayer(that: _player);
+    }
+
     Future<void> setVolume(double volume) async
     {
         return api.setVolumeMethodPlayer(that: _player, volume: volume);
