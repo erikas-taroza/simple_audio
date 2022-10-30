@@ -2,7 +2,7 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod dart_streams;
 mod audio;
 
-use std::{fs::File, io::Cursor, thread};
+use std::{fs::File, io::Cursor, thread, sync::atomic::AtomicBool};
 
 use audio::{decoder::Decoder, controls::*};
 use crossbeam::channel::unbounded;
@@ -11,6 +11,8 @@ use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::dart_streams::{playback_state_stream::*, progress_state_stream::*};
+
+static FIRST_TIME:AtomicBool = AtomicBool::new(true);
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -55,6 +57,7 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String)
     {
+        FIRST_TIME.store(false, std::sync::atomic::Ordering::SeqCst);
         Self::signal_to_stop();
         println!("Go");
 
@@ -104,6 +107,8 @@ impl Player
     /// This stops all threads that are streaming.
     fn internal_stop(sender:&str)
     {
+        if FIRST_TIME.load(std::sync::atomic::Ordering::SeqCst) { return; }
+
         println!("internal_stop, {sender}");
 
         update_playback_state_stream(crate::dart_streams::playback_state_stream::DONE);
@@ -231,6 +236,7 @@ mod tests
     {
         let player = crate::Player::new();
         player.set_volume(0.5);
+        player.stop();
         player.open("/home/erikas/Music/test.mp3".to_string());
         player.seek(50.0);
         thread::sleep(Duration::from_secs(2));
