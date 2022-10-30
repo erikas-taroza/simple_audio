@@ -6,6 +6,10 @@
 
 #define PAUSE 1
 
+/**
+ * The only time this should be used is
+ * when the decoder is finished playing the audio.
+ */
 #define DONE 2
 
 typedef int64_t DartPort;

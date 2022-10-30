@@ -6,6 +6,8 @@ lazy_static! { static ref PLAYBACK_STATE_STREAM:RwLock<Option<StreamSink<i32>>> 
 
 pub const PLAY:i32 = 0;
 pub const PAUSE:i32 = 1;
+/// The only time this should be used is
+/// when the decoder is finished playing the audio.
 pub const DONE:i32 = 2;
 
 /// Creates a new playback stream.

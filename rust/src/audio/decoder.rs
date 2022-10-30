@@ -1,6 +1,6 @@
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
 
-use crate::dart_streams::progress_state_stream::*;
+use crate::dart_streams::{progress_state_stream::*, playback_state_stream::update_playback_state_stream};
 
 use super::{cpal_output::CpalOutput, controls::*};
 
@@ -73,7 +73,14 @@ impl Decoder
             let packet = match reader.next_packet()
             {
                 Ok(packet) => packet,
-                Err(_err) => break
+                // An error occurs when the stream ends
+                // so we handle sending the DONE update here.
+                Err(_) => {
+                    update_playback_state_stream(crate::dart_streams::playback_state_stream::DONE);
+                    update_progress_state_stream(ProgressState { position: 0, duration: 0 });
+                    IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+                    break;
+                }
             };
 
             if packet.track_id() != track_id { continue; }
@@ -102,14 +109,5 @@ impl Decoder
                 }
             }
         }
-
-        // Fix race condition.
-        // If this gets called in `thread::spawn` in Player::open,
-        // the playback state stream will produce false instead of true.
-        // Calling it here makes it so that it is set to false before it is
-        // set to true.
-        println!("decoder break loop");
-        if IS_DONE.load(std::sync::atomic::Ordering::SeqCst) { return; }
-        crate::Player::internal_stop("decoder");
     }
 }
