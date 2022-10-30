@@ -24,20 +24,12 @@ impl Player
 
     fn signal_to_stop()
     {
-        // This should only happen once on new run.
-        if TXRX.read().unwrap().is_none()
-        {
-            let mut txrx = TXRX.write().unwrap();
-            *txrx = Some(unbounded());
-        }
-        
         // If there are any threads in existence that were spawned when calling open(),
         // they will read this value and break the decode loop if it is `true`.
         // This closes the thread and the cpal stream.
-        { // Use a new scope here so that the lock is dropped.
-            let txrx = TXRX.read().unwrap();
-            let tx = &txrx.as_ref().unwrap().0;
-            tx.send(true).unwrap();
+        if let Some(txrx) = &*TXRX.read().unwrap()
+        {
+            txrx.0.send(true).unwrap();
         }
 
         // After all the threads have been stopped, a new tx and rx is created.
@@ -64,6 +56,7 @@ impl Player
     pub fn open(&self, path:String)
     {
         Self::signal_to_stop();
+        println!("Go");
 
         let source:Box<dyn MediaSource> = if path.contains("http") {
             Box::new(Self::get_bytes_from_network(path))
@@ -72,6 +65,7 @@ impl Player
         Self::internal_play();
         thread::spawn(|| {
             Decoder::default().open_stream(source);
+            IS_DONE.store(false, std::sync::atomic::Ordering::SeqCst);
         });
     }
 
@@ -106,13 +100,16 @@ impl Player
 
     /// Allows for access in other places
     /// where we would want to update the stream and
-    /// the `IS_PLAYING` AtomicBool.
+    /// the `IS_PLAYING` AtomicBool.)
     /// This stops all threads that are streaming.
-    fn internal_stop()
+    fn internal_stop(sender:&str)
     {
+        println!("internal_stop, {sender}");
+
         update_playback_state_stream(crate::dart_streams::playback_state_stream::DONE);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         Self::signal_to_stop();
+        IS_DONE.store(true, std::sync::atomic::Ordering::SeqCst);
     }
 
     // ---------------------------------
@@ -126,7 +123,7 @@ impl Player
     { Self::internal_pause(); }
 
     pub fn stop(&self)
-    { Self::internal_stop(); }
+    { Self::internal_stop("player"); }
 
     pub fn set_volume(&self, volume:f32)
     { *VOLUME.write().unwrap() = volume; }
@@ -148,12 +145,16 @@ mod tests
         //player.open("/home/erikas/Music/test.mp3".to_string());
         // player.seek(30.0);
         // thread::sleep(Duration::from_secs(2));
-        // player.open("/home/erikas/Music/test.mp3".to_string());
-        // thread::sleep(Duration::from_secs(10));
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.seek(48.0);
+        thread::sleep(Duration::from_secs(5));
+        player.stop(); // This gets called first before the decoder says its done.
         player.open("/home/erikas/Music/wavy.mp3".to_string());
         thread::sleep(Duration::from_secs(1));
-        println!("now");
-        player.seek(150.0);
+        player.stop();
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        //println!("now");
+        //player.seek(150.0);
         thread::sleep(Duration::from_secs(10));
     }
 
@@ -162,5 +163,90 @@ mod tests
     {
         let player = crate::Player::new();
         player.open("".to_string());
+    }
+
+    #[test]
+    fn decoder_stops_stream()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.seek(48.0);
+        thread::sleep(Duration::from_secs(5));
+        // Go
+        // 0
+        // 2
+    }
+
+    #[test]
+    fn opening_stops_stream()
+    {
+        // Failing
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.seek(48.0);
+        thread::sleep(Duration::from_secs(2));
+        player.open("/home/erikas/Music/wavy.mp3".to_string());
+        thread::sleep(Duration::from_secs(2));
+        // Go
+        // 0
+        // 2
+        // Go
+        // 0
+    }
+
+    #[test]
+    fn player_stops_stream()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        thread::sleep(Duration::from_secs(2));
+        player.stop();
+        // Go
+        // 0
+        // 2
+    }
+
+    #[test]
+    fn player_stops_and_opens()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        thread::sleep(Duration::from_secs(2));
+        player.stop();
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        thread::sleep(Duration::from_secs(2));
+        // Go
+        // 0
+        // 2
+        // Go
+        // 0
+    }
+
+    #[test]
+    fn player_stops_and_opens_when_song_end()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        player.seek(50.0);
+        thread::sleep(Duration::from_secs(2));
+        player.stop();
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        thread::sleep(Duration::from_secs(2));
+        player.stop();
+        player.open("/home/erikas/Music/test.mp3".to_string());
+        thread::sleep(Duration::from_secs(2));
+        // Go
+        // 0
+        // 2
+        // Go
+        // 0
+        // 2
+        // Go
+        // 0
     }
 }

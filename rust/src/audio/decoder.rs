@@ -36,8 +36,9 @@ impl Decoder
         let duration = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
 
         // Clone a receiver to listen for the stop signal.
-        let rx = TXRX.read().unwrap();
-        let rx = rx.as_ref().unwrap().1.clone();
+        let lock = TXRX.read().unwrap();
+        let rx = lock.as_ref().unwrap().1.clone();
+        drop(lock);
 
         loop
         {
@@ -107,6 +108,8 @@ impl Decoder
         // the playback state stream will produce false instead of true.
         // Calling it here makes it so that it is set to false before it is
         // set to true.
-        crate::Player::internal_stop();
+        println!("decoder break loop");
+        if IS_DONE.load(std::sync::atomic::Ordering::SeqCst) { return; }
+        crate::Player::internal_stop("decoder");
     }
 }
