@@ -4,12 +4,11 @@ use crate::dart_streams::progress_state_stream::*;
 
 use super::{cpal_output::CpalOutput, controls::*};
 
+#[derive(Default)]
 pub struct Decoder;
 
 impl Decoder
 {
-    pub const fn new() -> Self { Decoder { } }
-
     pub fn open_stream(&mut self, source:Box<dyn MediaSource>)
     {
         let mss = MediaSourceStream::new(source, Default::default());
@@ -63,7 +62,11 @@ impl Decoder
                 }
             } else { 0 };
 
-            *SEEK_TS.write().unwrap() = None;
+            if SEEK_TS.read().unwrap().is_some()
+            {
+                *SEEK_TS.write().unwrap() = None;
+                decoder.reset();
+            }
 
             // Decode the next packet.
             let packet = match reader.next_packet()
@@ -78,24 +81,23 @@ impl Decoder
             {
                 Err(err) => panic!("ERR: Failed to decode sound. {err}"),
                 Ok(decoded) => {
-                    if packet.ts() >= seek_ts
+                    if packet.ts() < seek_ts { continue; }
+                    
+                    // Update the progress stream with calculated times.
+                    update_progress_state_stream(ProgressState {
+                        position: timebase.calc_time(packet.ts()).seconds,
+                        duration: timebase.calc_time(duration).seconds
+                    });
+
+                    // Write the decoded packet to CPAL.
+                    if cpal_output.is_none()
                     {
-                        // Update the progress stream with calculated times.
-                        update_progress_state_stream(ProgressState {
-                            position: timebase.calc_time(packet.ts()).seconds,
-                            duration: timebase.calc_time(duration).seconds
-                        });
-
-                        // Write the decoded packet to CPAL.
-                        if cpal_output.is_none()
-                        {
-                            let spec = *decoded.spec();
-                            let duration = decoded.capacity() as u64;
-                            cpal_output.replace(CpalOutput::build_stream(spec, duration));
-                        }
-
-                        cpal_output.as_mut().unwrap().write(decoded);
+                        let spec = *decoded.spec();
+                        let duration = decoded.capacity() as u64;
+                        cpal_output.replace(CpalOutput::build_stream(spec, duration));
                     }
+
+                    cpal_output.as_mut().unwrap().write(decoded);
                 }
             }
         }

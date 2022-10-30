@@ -65,15 +65,13 @@ impl Player
     {
         Self::signal_to_stop();
 
-        let mut decoder = Decoder::new();
-
         let source:Box<dyn MediaSource> = if path.contains("http") {
             Box::new(Self::get_bytes_from_network(path))
         } else { Box::new(File::open(path).unwrap()) };
 
         Self::internal_play();
-        thread::spawn(move || {
-            decoder.open_stream(source);
+        thread::spawn(|| {
+            Decoder::default().open_stream(source);
         });
     }
 
@@ -132,13 +130,16 @@ mod tests
     fn open_and_play()
     {
         let player = crate::Player::new();
-        player.set_volume(0.2);
-        player.open("/home/erikas/Music/test.mp3".to_string());
-        player.seek(30.0);
-        thread::sleep(Duration::from_secs(2));
-        player.open("/home/erikas/Music/test.mp3".to_string());
-        thread::sleep(Duration::from_secs(10));
+        player.set_volume(0.5);
+        //player.open("/home/erikas/Music/test.mp3".to_string());
+        // player.seek(30.0);
+        // thread::sleep(Duration::from_secs(2));
+        // player.open("/home/erikas/Music/test.mp3".to_string());
+        // thread::sleep(Duration::from_secs(10));
         player.open("/home/erikas/Music/wavy.mp3".to_string());
+        thread::sleep(Duration::from_secs(1));
+        println!("now");
+        player.seek(150.0);
         thread::sleep(Duration::from_secs(10));
     }
 
