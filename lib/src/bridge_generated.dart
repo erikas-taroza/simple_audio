@@ -39,11 +39,11 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: [],
       );
 
-  Stream<bool> playbackStateStreamStaticMethodPlayer({dynamic hint}) =>
+  Stream<int> playbackStateStreamStaticMethodPlayer({dynamic hint}) =>
       _platform.executeStream(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner
             .wire_playback_state_stream__static_method__Player(port_),
-        parseSuccessData: _wire2api_bool,
+        parseSuccessData: _wire2api_i32,
         constMeta: kPlaybackStateStreamStaticMethodPlayerConstMeta,
         argValues: [],
         hint: hint,
@@ -137,6 +137,22 @@ class SimpleAudioImpl implements SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kPauseMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "pause__method__Player",
+        argNames: ["that"],
+      );
+
+  Future<void> stopMethodPlayer({required Player that, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_stop__method__Player(
+            port_, _platform.api2wire_box_autoadd_player(that)),
+        parseSuccessData: _wire2api_unit,
+        constMeta: kStopMethodPlayerConstMeta,
+        argValues: [that],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kStopMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "stop__method__Player",
         argNames: ["that"],
       );
 
@@ -424,6 +440,23 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _wire_pause__method__Player = _wire_pause__method__PlayerPtr
       .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
+  void wire_stop__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+  ) {
+    return _wire_stop__method__Player(
+      port_,
+      that,
+    );
+  }
+
+  late final _wire_stop__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_Player>)>>('wire_stop__method__Player');
+  late final _wire_stop__method__Player = _wire_stop__method__PlayerPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
   void wire_set_volume__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
@@ -518,3 +551,9 @@ class wire_uint_8_list extends ffi.Struct {
 typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<ffi.Bool Function(DartPort, ffi.Pointer<ffi.Void>)>>;
 typedef DartPort = ffi.Int64;
+
+const int PLAY = 0;
+
+const int PAUSE = 1;
+
+const int DONE = 2;

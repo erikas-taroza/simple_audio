@@ -3,7 +3,8 @@ import './ffi.dart';
 class SimpleAudio
 {
     final Player _player = Player(bridge: api, dummy: 0);
-    late Stream<bool> playbackStateStream = api.playbackStateStreamStaticMethodPlayer();
+    late Stream<PlaybackState> playbackStateStream = api.playbackStateStreamStaticMethodPlayer()
+        .map((event) => PlaybackState.values[event]); // Map the int event to a dart enum.
     late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer();
 
     Future<bool> get isPlaying => _player.isPlaying();
@@ -32,4 +33,11 @@ class SimpleAudio
     {
         return api.seekMethodPlayer(that: _player, seconds: seconds);
     }
+}
+
+enum PlaybackState
+{
+    play,
+    pause,
+    done
 }

@@ -41,6 +41,11 @@ pub extern "C" fn wire_pause__method__Player(port_: i64, that: *mut wire_Player)
 }
 
 #[no_mangle]
+pub extern "C" fn wire_stop__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_stop__method__Player_impl(port_, that)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_set_volume__method__Player(port_: i64, that: *mut wire_Player, volume: f32) {
     wire_set_volume__method__Player_impl(port_, that, volume)
 }

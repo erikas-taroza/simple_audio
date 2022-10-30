@@ -50,7 +50,7 @@ impl Player
     //          SETTERS/GETTERS
     // ---------------------------------
 
-    pub fn playback_state_stream(stream:StreamSink<bool>) { playback_state_stream(stream); }
+    pub fn playback_state_stream(stream:StreamSink<i32>) { playback_state_stream(stream); }
     pub fn progress_state_stream(stream:StreamSink<ProgressState>) { progress_state_stream(stream); }
 
     pub fn is_playing(&self) -> bool
@@ -91,7 +91,7 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play()
     {
-        update_playback_state_stream(true);
+        update_playback_state_stream(crate::dart_streams::playback_state_stream::PLAY);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
     }
     
@@ -100,8 +100,19 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause()
     {
-        update_playback_state_stream(false);
+        update_playback_state_stream(crate::dart_streams::playback_state_stream::PAUSE);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// Allows for access in other places
+    /// where we would want to update the stream and
+    /// the `IS_PLAYING` AtomicBool.
+    /// This stops all threads that are streaming.
+    fn internal_stop()
+    {
+        update_playback_state_stream(crate::dart_streams::playback_state_stream::DONE);
+        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        Self::signal_to_stop();
     }
 
     // ---------------------------------
@@ -113,6 +124,9 @@ impl Player
 
     pub fn pause(&self)
     { Self::internal_pause(); }
+
+    pub fn stop(&self)
+    { Self::internal_stop(); }
 
     pub fn set_volume(&self, volume:f32)
     { *VOLUME.write().unwrap() = volume; }

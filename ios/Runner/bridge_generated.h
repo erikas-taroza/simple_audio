@@ -2,6 +2,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define PLAY 0
+
+#define PAUSE 1
+
+#define DONE 2
+
 typedef int64_t DartPort;
 
 typedef bool (*DartPostCObjectFnType)(DartPort port_id, void *message);
@@ -39,6 +45,8 @@ void wire_play__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_pause__method__Player(int64_t port_, struct wire_Player *that);
 
+void wire_stop__method__Player(int64_t port_, struct wire_Player *that);
+
 void wire_set_volume__method__Player(int64_t port_, struct wire_Player *that, float volume);
 
 void wire_seek__method__Player(int64_t port_, struct wire_Player *that, double seconds);
@@ -58,6 +66,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_open__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_play__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_pause__method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_stop__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_set_volume__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_seek__method__Player);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_player_0);
