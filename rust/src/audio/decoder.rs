@@ -49,12 +49,7 @@ impl Decoder
             match rx.try_recv()
             {
                 Err(_) => (),
-                Ok(message) => {
-                    if !message { () }
-
-                    cpal_output.unwrap().stream.pause().unwrap();
-                    break;
-                }
+                Ok(message) => if message { break; }
             }
 
             // Seeking.
@@ -114,5 +109,7 @@ impl Decoder
                 }
             }
         }
+
+        cpal_output.unwrap().stream.pause().unwrap();
     }
 }
