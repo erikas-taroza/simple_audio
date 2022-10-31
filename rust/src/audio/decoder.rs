@@ -1,3 +1,4 @@
+use cpal::traits::StreamTrait;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
 
 use crate::dart_streams::{progress_state_stream::*, playback_state_stream::update_playback_state_stream};
@@ -45,12 +46,18 @@ impl Decoder
             // Poll the status of the RX in lib.rs.
             // If the value is true, that means we want to stop this stream.
             // Breaking the loop drops everything which stops the cpal stream.
-            let result = rx.try_recv();
-            match result
+            match rx.try_recv()
             {
                 Err(_) => (),
-                Ok(message) => if message { break; }
+                Ok(message) => {
+                    if !message { () }
+
+                    cpal_output.unwrap().stream.pause().unwrap();
+                    break;
+                }
             }
+
+            if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { continue; }
 
             // Seeking.
             let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()

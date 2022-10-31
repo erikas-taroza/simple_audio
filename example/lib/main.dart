@@ -46,7 +46,7 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open"),
                                 onPressed: () async {
-                                    //await player.open("/home/erikas/Music/test.mp3");
+                                    //await player.open("/home/erikas/Music/test2.mp3");
                                     await player.open("/storage/emulated/0/Music/test.mp3");
                                 },
                             ),
@@ -67,6 +67,13 @@ class _MyAppState extends State<MyApp>
                                 child: const Text("Pause"),
                                 onPressed: () async {
                                     await player.pause();
+                                    print(await player.isPlaying);
+                                }
+                            ),
+                            ElevatedButton(
+                                child: const Text("Stop"),
+                                onPressed: () async {
+                                    await player.stop();
                                     print(await player.isPlaying);
                                 }
                             ),

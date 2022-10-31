@@ -5,7 +5,7 @@ mod audio;
 use std::{fs::File, io::Cursor, thread};
 
 use audio::{decoder::Decoder, controls::*};
-use crossbeam::channel::unbounded;
+use crossbeam::channel::bounded;
 use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
@@ -33,7 +33,7 @@ impl Player
         // After all the threads have been stopped, a new tx and rx is created.
         // This will reset the `true` signal.
         let mut txrx = TXRX.write().unwrap();
-        *txrx = Some(unbounded());
+        *txrx = Some(bounded(1));
     }
 
     // ---------------------------------
@@ -62,7 +62,7 @@ impl Player
         if autoplay { Self::internal_play(); }
         else { Self::internal_pause(); }
 
-        thread::spawn(|| {
+        thread::spawn(move || {
             Decoder::default().open_stream(source);
         });
     }
@@ -136,7 +136,7 @@ mod tests
     fn open_and_play()
     {
         let player = crate::Player::new();
-        player.set_volume(0.1);
+        player.set_volume(0.5);
         player.open("/home/erikas/Music/test2.mp3".to_string(), true);
         player.seek(30);
         thread::sleep(Duration::from_secs(10));
@@ -187,6 +187,23 @@ mod tests
         thread::sleep(Duration::from_secs(1));
         println!("Seeking now");
         player.seek(50);
+        thread::sleep(Duration::from_secs(10));
+    }
+
+    #[test]
+    fn stop()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+
+        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.seek(10);
+        thread::sleep(Duration::from_secs(5));
+        println!("Stopping now");
+        player.stop();
+        thread::sleep(Duration::from_secs(5));
+        println!("Playing now");
+        player.open("/home/erikas/Music/test.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
 }
