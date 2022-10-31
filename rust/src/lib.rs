@@ -62,7 +62,7 @@ impl Player
         if autoplay { Self::internal_play(); }
         else { Self::internal_pause(); }
 
-        thread::spawn(move || {
+        thread::spawn(|| {
             Decoder::default().open_stream(source);
         });
     }

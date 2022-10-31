@@ -13,9 +13,9 @@ const BASE_VOLUME:f32 = 0.7;
 pub struct CpalOutput
 {
     _device:Device,
-    pub stream:Stream,
     _config:StreamConfig,
     _spec:SignalSpec,
+    pub stream:Stream,
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>
 }
@@ -93,7 +93,7 @@ impl CpalOutput
             _device: device,
             _config: config,
             _spec: spec,
-            stream: stream,
+            stream,
             ring_buffer_writer,
             sample_buffer
         }
@@ -109,10 +109,6 @@ impl CpalOutput
         let mut samples = self.sample_buffer.samples();
         
         // Write the interleaved samples to the ring buffer which is output by CPAL.
-        // while let Ok(Some(written)) = self.ring_buffer_writer.write_blocking_timeout(samples, std::time::Duration::from_millis(50))
-        // {
-        //     samples = &samples[written..];
-        // }
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
         {
             samples = &samples[written..];

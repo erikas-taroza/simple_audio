@@ -57,8 +57,6 @@ impl Decoder
                 }
             }
 
-            if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { continue; }
-
             // Seeking.
             let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
             {
