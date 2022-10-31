@@ -97,7 +97,7 @@ class _MyAppState extends State<MyApp>
                                             value: data.data!.position.toDouble(),
                                             max: data.data!.duration.toDouble(),
                                             onChanged: (value) {
-                                                player.seek(value);
+                                                player.seek(value.floor());
                                             },
                                         );
                                     },

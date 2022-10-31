@@ -51,7 +51,7 @@ abstract class SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kSetVolumeMethodPlayerConstMeta;
 
   Future<void> seekMethodPlayer(
-      {required Player that, required double seconds, dynamic hint});
+      {required Player that, required int seconds, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kSeekMethodPlayerConstMeta;
 }
@@ -107,7 +107,7 @@ class Player {
         volume: volume,
       );
 
-  Future<void> seek({required double seconds, dynamic hint}) =>
+  Future<void> seek({required int seconds, dynamic hint}) =>
       bridge.seekMethodPlayer(
         that: this,
         seconds: seconds,

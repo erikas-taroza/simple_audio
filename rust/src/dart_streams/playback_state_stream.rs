@@ -20,7 +20,6 @@ pub fn playback_state_stream(stream:StreamSink<i32>)
 /// Updates the playback stream with the given value.
 pub fn update_playback_state_stream(value:i32)
 {
-    println!("{value}");
     if let Some(stream) = &*PLAYBACK_STATE_STREAM.read().unwrap()
     { stream.add(value); }
 }

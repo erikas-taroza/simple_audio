@@ -54,7 +54,7 @@ void wire_stop__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_set_volume__method__Player(int64_t port_, struct wire_Player *that, float volume);
 
-void wire_seek__method__Player(int64_t port_, struct wire_Player *that, double seconds);
+void wire_seek__method__Player(int64_t port_, struct wire_Player *that, uint64_t seconds);
 
 struct wire_Player *new_box_autoadd_player_0(void);
 

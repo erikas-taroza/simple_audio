@@ -4,6 +4,11 @@ use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
 use super::controls::*;
 
+/// The default output volume is way too high.
+/// Multiplying the volume input by this number
+/// will help to reduce it.
+const BASE_VOLUME:f32 = 0.7;
+
 //TODO: Support i16 and u16 instead of only f32.
 pub struct CpalOutput
 {
@@ -70,7 +75,7 @@ impl CpalOutput
                 let written = ring_buffer.consumer().read(data).unwrap_or(0);
                 
                 // Set the volume.
-                data[0..written].iter_mut().for_each(|s| *s = *s * *VOLUME.read().unwrap());
+                data[0..written].iter_mut().for_each(|s| *s = *s * (BASE_VOLUME * *VOLUME.read().unwrap()));
             },
             move |err| {
                 panic!("ERR: An error occurred during the stream. {err}");

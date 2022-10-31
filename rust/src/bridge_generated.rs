@@ -148,7 +148,7 @@ fn wire_set_volume__method__Player_impl(
 fn wire_seek__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,
-    seconds: impl Wire2Api<f64> + UnwindSafe,
+    seconds: impl Wire2Api<u64> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -195,17 +195,17 @@ impl Wire2Api<f32> for f32 {
         self
     }
 }
-impl Wire2Api<f64> for f64 {
-    fn wire2api(self) -> f64 {
-        self
-    }
-}
 impl Wire2Api<i32> for i32 {
     fn wire2api(self) -> i32 {
         self
     }
 }
 
+impl Wire2Api<u64> for u64 {
+    fn wire2api(self) -> u64 {
+        self
+    }
+}
 impl Wire2Api<u8> for u8 {
     fn wire2api(self) -> u8 {
         self

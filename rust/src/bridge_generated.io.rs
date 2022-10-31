@@ -52,7 +52,7 @@ pub extern "C" fn wire_set_volume__method__Player(port_: i64, that: *mut wire_Pl
 }
 
 #[no_mangle]
-pub extern "C" fn wire_seek__method__Player(port_: i64, that: *mut wire_Player, seconds: f64) {
+pub extern "C" fn wire_seek__method__Player(port_: i64, that: *mut wire_Player, seconds: u64) {
     wire_seek__method__Player_impl(port_, that, seconds)
 }
 

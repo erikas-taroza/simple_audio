@@ -123,8 +123,8 @@ impl Player
     pub fn set_volume(&self, volume:f32)
     { *VOLUME.write().unwrap() = volume; }
 
-    pub fn seek(&self, seconds:f64)
-    { *SEEK_TS.write().unwrap() = Some(seconds.floor()); }
+    pub fn seek(&self, seconds:u64)
+    { *SEEK_TS.write().unwrap() = Some(seconds); }
 }
 
 #[cfg(test)]
@@ -136,8 +136,9 @@ mod tests
     fn open_and_play()
     {
         let player = crate::Player::new();
-        player.set_volume(0.5);
-        player.open("/home/erikas/Music/test.mp3".to_string(), true);
+        player.set_volume(0.1);
+        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.seek(30);
         thread::sleep(Duration::from_secs(10));
     }
 
@@ -145,6 +146,47 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::new();
-        player.open("".to_string(), true);
+        player.open("https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3?raw=true".to_string(), true);
+        thread::sleep(Duration::from_secs(10));
+    }
+
+    // The following tests are to check the responsiveness.
+    #[test]
+    fn play_pause()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+
+        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        thread::sleep(Duration::from_secs(1));
+        println!("Pausing now");
+        player.pause();
+        thread::sleep(Duration::from_secs(5));
+        println!("Playing now");
+        player.play();
+        thread::sleep(Duration::from_secs(10));
+    }
+
+    #[test]
+    fn volume()
+    {
+        let player = crate::Player::new();
+        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        thread::sleep(Duration::from_secs(1));
+        println!("Changing volume now");
+        player.set_volume(0.2);
+        thread::sleep(Duration::from_secs(10));
+    }
+
+    #[test]
+    fn seeking()
+    {
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        thread::sleep(Duration::from_secs(1));
+        println!("Seeking now");
+        player.seek(50);
+        thread::sleep(Duration::from_secs(10));
     }
 }
