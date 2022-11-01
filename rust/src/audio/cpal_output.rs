@@ -16,6 +16,7 @@ pub struct CpalOutput
     _config:StreamConfig,
     _spec:SignalSpec,
     pub stream:Stream,
+    pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>
 }
@@ -53,6 +54,7 @@ impl CpalOutput
         let ring_len = ((200 * spec.rate as usize) / 1000) * channels;
         let ring_buffer:SpscRb<f32> = SpscRb::new(ring_len);
         // Create the buffers for the stream.
+        let ring_buffer_reader = ring_buffer.consumer();
         let ring_buffer_writer = ring_buffer.producer();
         let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
 
@@ -72,7 +74,7 @@ impl CpalOutput
 
                 // This is where data should be modified (like changing volume).
                 // This will be the point where there is the lowest latency.
-                let written = ring_buffer.consumer().read(data).unwrap_or(0);
+                let written = ring_buffer_reader.read(data).unwrap_or(0);
                 
                 // Set the volume.
                 data[0..written].iter_mut().for_each(|s| *s = *s * (BASE_VOLUME * *VOLUME.read().unwrap()));
@@ -94,6 +96,7 @@ impl CpalOutput
             _config: config,
             _spec: spec,
             stream,
+            ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
             sample_buffer
         }

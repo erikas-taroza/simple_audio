@@ -1,4 +1,5 @@
 use cpal::traits::StreamTrait;
+use rb::RbConsumer;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
 
 use crate::dart_streams::{progress_state_stream::*, playback_state_stream::update_playback_state_stream};
@@ -63,12 +64,6 @@ impl Decoder
                 }
             } else { 0 };
 
-            if SEEK_TS.read().unwrap().is_some()
-            {
-                *SEEK_TS.write().unwrap() = None;
-                decoder.reset();
-            }
-
             // Decode the next packet.
             let packet = match reader.next_packet()
             {
@@ -84,6 +79,17 @@ impl Decoder
             };
 
             if packet.track_id() != track_id { continue; }
+
+            // Clean up seek stuff.
+            if SEEK_TS.read().unwrap().is_some()
+            {
+                *SEEK_TS.write().unwrap() = None;
+                decoder.reset();
+                // Clear the ring buffer which prevents the writer
+                // from blocking.
+                cpal_output.as_ref().unwrap().ring_buffer_reader.skip(usize::MAX).unwrap();
+                continue;
+            }
 
             match decoder.decode(&packet)
             {

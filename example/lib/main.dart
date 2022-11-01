@@ -24,6 +24,9 @@ class _MyAppState extends State<MyApp>
     double volume = 1;
     double position = 0;
 
+    final String path = "/home/erikas/Music/test2.mp3";
+    //"/storage/emulated/0/Music/test.mp3"
+
     @override
     Widget build(BuildContext context) {
         return MaterialApp(
@@ -47,8 +50,7 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open"),
                                 onPressed: () async {
-                                    await player.open("/home/erikas/Music/test2.mp3");
-                                    //await player.open("/storage/emulated/0/Music/test.mp3");
+                                    await player.open(path);
                                 },
                             ),
                             StreamBuilder(
