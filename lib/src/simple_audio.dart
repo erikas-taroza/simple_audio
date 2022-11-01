@@ -1,3 +1,5 @@
+export 'bridge_definitions.dart' show ProgressState;
+
 import 'dart:io';
 
 import 'package:wakelock/wakelock.dart';
@@ -9,8 +11,8 @@ late final Player _player;
 class SimpleAudio
 {
     late Stream<PlaybackState> playbackStateStream = api.playbackStateStreamStaticMethodPlayer()
-        .map((event) => PlaybackState.values[event]); // Map the int event to a dart enum.
-    late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer();
+        .map((event) => PlaybackState.values[event]).asBroadcastStream(); // Map the int event to a dart enum.
+    late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer().asBroadcastStream();
 
     Future<bool> get isPlaying => _player.isPlaying();
 

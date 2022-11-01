@@ -21,18 +21,48 @@ class MyApp extends StatefulWidget
 class _MyAppState extends State<MyApp>
 {
     final SimpleAudio player = SimpleAudio();
-    double volume = 1;
-    double position = 0;
 
-    final String path = "/home/erikas/Music/1.mp3";
-    //"/storage/emulated/0/Music/test.mp3"
+    PlaybackState playbackState = PlaybackState.done;
+    bool get isPlaying => playbackState == PlaybackState.play;
+
+    bool get isMuted => volume == 0;
+    double trueVolume = 1;
+    double volume = 1;
+    
+    double position = 0;
+    double duration = 0;
+
+    String convertSecondsToReadableString(int seconds)
+    {
+        int m = seconds ~/ 60;
+        int s = seconds % 60;
+        
+        return "$m:${s > 9 ? s : "0$s"}";
+    }
+
+    @override
+    void initState()
+    {
+        super.initState();
+
+        player.playbackStateStream.listen((event) {
+            setState(() => playbackState = event);
+        });
+
+        player.progressStateStream.listen((event) {
+            setState(() {
+                position = event.position.toDouble();
+                duration = event.duration.toDouble();
+            });
+        });
+    }
 
     @override
     Widget build(BuildContext context) {
         return MaterialApp(
             home: Scaffold(
                 appBar: AppBar(
-                    title: const Text('Plugin example app'),
+                    title: const Text('Simple Audio Example'),
                 ),
                 body: Center(
                     child: Column(
@@ -40,80 +70,152 @@ class _MyAppState extends State<MyApp>
                         children: [
                             if(Platform.isAndroid || Platform.isIOS) ...{
                                 ElevatedButton(
-                                    child: const Text("Perms"),
+                                    child: const Text("Get Storage Perms"),
                                     onPressed: () async {
                                         PermissionStatus status = await Permission.storage.request();
                                         print(status);
                                     },
-                                )
-                            },
-                            ElevatedButton(
-                                child: const Text("Open"),
-                                onPressed: () async {
-                                    await player.open(path);
-                                },
-                            ),
-                            StreamBuilder(
-                                stream: player.playbackStateStream,
-                                builder: (_, data) {
-                                    return Text("Is playing: ${data.data}");
-                                },
-                            ),
-                            ElevatedButton(
-                                child: const Text("Play"),
-                                onPressed: () async {
-                                    await player.play();
-                                    print(await player.isPlaying);
-                                },
-                            ),
-                            ElevatedButton(
-                                child: const Text("Pause"),
-                                onPressed: () async {
-                                    await player.pause();
-                                    print(await player.isPlaying);
-                                }
-                            ),
-                            ElevatedButton(
-                                child: const Text("Stop"),
-                                onPressed: () async {
-                                    await player.stop();
-                                    print(await player.isPlaying);
-                                }
-                            ),
-                            SizedBox(
-                                width: 200,
-                                child: Slider(
-                                    value: volume,
-                                    onChanged: (value) {
-                                        setState(() => volume = value);
-                                        player.setVolume(value);
-                                    }
                                 ),
-                            ),
+                            },
+                            const SizedBox(height: 5),
                             ElevatedButton(
-                                child: const Text("Seek 20s"),
+                                child: const Text("Open File"),
                                 onPressed: () async {
-                                    await player.seek(20);
-                                }
+                                    //TODO: File picker.
+                                    await player.open("/home/erikas/Music/1.mp3");
+                                },
                             ),
-                            SizedBox(
-                                width: 500,
-                                child: StreamBuilder(
-                                    stream: player.progressStateStream,
-                                    builder: (_, data) {
-                                        if(data.data == null) return Container();
+                            const SizedBox(height: 20),
 
-                                        return Slider(
-                                            value: data.data!.position.toDouble(),
-                                            max: data.data!.duration.toDouble(),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    // Stop button.
+                                    CircleButton(
+                                        size: 35,
+                                        onPressed: playbackState != PlaybackState.done ? player.stop : null,
+                                        child: const Icon(
+                                            Icons.stop, 
+                                            color: Colors.white
+                                        ),
+                                    ),
+                                    const SizedBox(width: 10),
+
+                                    // Play/pause button.
+                                    CircleButton(
+                                        size: 40,
+                                        onPressed: () {
+                                            if(isPlaying) { player.pause(); }
+                                            else { player.play(); }
+                                        },
+                                        child: Icon(
+                                            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, 
+                                            color: Colors.white
+                                        ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    
+                                    // Toggle mute button.
+                                    CircleButton(
+                                        size: 35,
+                                        onPressed: () {
+                                            if(!isMuted)
+                                            {
+                                                player.setVolume(0);
+                                                setState(() => volume = 0);
+                                            }
+                                            else
+                                            {
+                                                player.setVolume(trueVolume);
+                                                setState(() => volume = trueVolume);
+                                            }
+                                        },
+                                        child: Icon(
+                                            isMuted ? Icons.volume_off : Icons.volume_up, 
+                                            color: Colors.white
+                                        ),
+                                    ),
+                                ],
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Volume control.
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    const Text("Volume: "),
+                                    SizedBox(
+                                        width: 200,
+                                        child: Slider(
+                                            value: volume,
+                                            onChanged: (value) {
+                                                setState(() {
+                                                    volume = value;
+                                                    trueVolume = value;
+                                                });
+                                                player.setVolume(value);
+                                            }
+                                        ),
+                                    ),
+                                ],
+                            ),
+                            
+                            // Progress bar with time.
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    Text(convertSecondsToReadableString(position.floor())),
+
+                                    SizedBox(
+                                        width: 450,
+                                        child: Slider(
+                                            value: position,
+                                            max: duration,
                                             onChanged: (value) {
                                                 player.seek(value.floor());
                                             },
-                                        );
-                                    },
-                                ),
+                                        ),
+                                    ),
+
+                                    Text(convertSecondsToReadableString(duration.floor())),
+                                ],
                             )
                         ],
+                    )
+                ),
+            ),
+        );
+    }
+}
+
+class CircleButton extends StatelessWidget
+{
+    const CircleButton(
+    {
+        required this.onPressed,
+        required this.child,
+        this.size = 35,
+        this.color = Colors.blue,
+        super.key
+    });
+
+    final void Function()? onPressed;
+    final Widget child;
+    final double size;
+    final Color color;
+
+    @override
+    Widget build(BuildContext context)
+    {
+        return SizedBox(
+            height: size, width: size,
+            child: ClipOval(
+                child: Material(
+                    color: color,
+                    child: InkWell(
+                        canRequestFocus: false,
+                        onTap: onPressed,
+                        child: child
                     )
                 ),
             ),

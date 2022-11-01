@@ -104,6 +104,8 @@ impl Player
     {
         Self::signal_to_stop();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
+        update_playback_state_stream(crate::dart_streams::playback_state_stream::PAUSE);
+        DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
     }
 

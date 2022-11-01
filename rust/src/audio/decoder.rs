@@ -75,6 +75,7 @@ impl Decoder
                 Err(_) => {
                     update_playback_state_stream(crate::dart_streams::playback_state_stream::DONE);
                     update_progress_state_stream(ProgressState { position: 0, duration: 0 });
+                    DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
                     IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
                     break;
                 }
@@ -119,7 +120,6 @@ impl Decoder
             }
         }
 
-        DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
         cpal_output.unwrap().stream.pause().unwrap();
     }
 }
