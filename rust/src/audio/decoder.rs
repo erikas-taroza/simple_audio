@@ -87,13 +87,14 @@ impl Decoder
                 decoder.reset();
                 // Clear the ring buffer which prevents the writer
                 // from blocking.
-                cpal_output.as_ref().unwrap().ring_buffer_reader.skip(usize::MAX).unwrap();
+                if let Some(cpal_output) = cpal_output.as_ref()
+                { let _ = cpal_output.ring_buffer_reader.skip(usize::MAX); }
                 continue;
             }
 
             match decoder.decode(&packet)
             {
-                Err(err) => panic!("ERR: Failed to decode sound. {err}"),
+                Err(err) => println!("WARN: Failed to decode sound. {err}"),
                 Ok(decoded) => {
                     if packet.ts() < seek_ts { continue; }
                     
