@@ -47,8 +47,8 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open"),
                                 onPressed: () async {
-                                    //await player.open("/home/erikas/Music/test2.mp3");
-                                    await player.open("/storage/emulated/0/Music/test.mp3");
+                                    await player.open("/home/erikas/Music/test2.mp3");
+                                    //await player.open("/storage/emulated/0/Music/test.mp3");
                                 },
                             ),
                             StreamBuilder(
