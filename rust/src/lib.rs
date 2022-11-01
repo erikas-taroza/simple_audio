@@ -124,7 +124,13 @@ impl Player
     { *VOLUME.write().unwrap() = volume; }
 
     pub fn seek(&self, seconds:u64)
-    { *SEEK_TS.write().unwrap() = Some(seconds); }
+    {
+        *SEEK_TS.write().unwrap() = Some(seconds);
+        update_progress_state_stream(ProgressState {
+            position: seconds,
+            duration: DURATION.load(std::sync::atomic::Ordering::SeqCst)
+        });
+    }
 }
 
 #[cfg(test)]

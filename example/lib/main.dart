@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp>
     double volume = 1;
     double position = 0;
 
-    final String path = "/home/erikas/Music/test2.mp3";
+    final String path = "/home/erikas/Music/1.mp3";
     //"/storage/emulated/0/Music/test.mp3"
 
     @override

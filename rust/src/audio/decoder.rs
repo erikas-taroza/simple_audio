@@ -36,6 +36,8 @@ impl Decoder
         // Used only for outputting the current position and duration.
         let timebase = track.codec_params.time_base.unwrap();
         let duration = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
+        let duration = timebase.calc_time(duration).seconds;
+        DURATION.store(duration, std::sync::atomic::Ordering::SeqCst);
 
         // Clone a receiver to listen for the stop signal.
         let lock = TXRX.read().unwrap();
@@ -101,7 +103,7 @@ impl Decoder
                     // Update the progress stream with calculated times.
                     update_progress_state_stream(ProgressState {
                         position: timebase.calc_time(packet.ts()).seconds,
-                        duration: timebase.calc_time(duration).seconds
+                        duration
                     });
 
                     // Write the decoded packet to CPAL.
@@ -117,6 +119,7 @@ impl Decoder
             }
         }
 
+        DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
         cpal_output.unwrap().stream.pause().unwrap();
     }
 }
