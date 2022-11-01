@@ -1,31 +1,57 @@
+import 'dart:io';
+
+import 'package:wakelock/wakelock.dart';
+
 import './ffi.dart';
+
+late final Player _player;
 
 class SimpleAudio
 {
-    final Player _player = Player(bridge: api, dummy: 0);
     late Stream<PlaybackState> playbackStateStream = api.playbackStateStreamStaticMethodPlayer()
         .map((event) => PlaybackState.values[event]); // Map the int event to a dart enum.
     late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer();
 
     Future<bool> get isPlaying => _player.isPlaying();
 
+    static bool _wakelock = false;
+
+    /// Initialize [SimpleAudio]. Should be done only once in the `main` method.
+    /// 
+    /// [wakelock] If set to true, this will prevent Android and iOS devices from stopping playback
+    /// due to inactivity. The lock activates when opening or playing something
+    /// but closes when the player is paused or stopped.
+    static void init({bool wakelock = true})
+    {
+        _wakelock = (Platform.isAndroid || Platform.isIOS) && wakelock;
+        _player = Player(bridge: api, dummy: 0);
+    }
+
     Future<void> open(String path, [bool autoplay = true]) async
     {
+        if(_wakelock) { Wakelock.enable(); }
+
         return await api.openMethodPlayer(that: _player, path: path, autoplay: autoplay);
     }
 
     Future<void> play() async
     {
+        if(_wakelock) { Wakelock.enable(); }
+
         return await api.playMethodPlayer(that: _player);
     }
 
     Future<void> pause() async
     {
+        if(_wakelock) { Wakelock.disable(); }
+
         return await api.pauseMethodPlayer(that: _player);
     }
 
     Future<void> stop() async
     {
+        if(_wakelock) { Wakelock.disable(); }
+
         return await api.stopMethodPlayer(that: _player);
     }
 
