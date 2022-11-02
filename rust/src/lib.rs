@@ -1,6 +1,7 @@
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 mod utils;
 mod audio;
+mod metadata;
 
 use std::{fs::File, io::Cursor, thread};
 
@@ -221,12 +222,20 @@ mod tests
     #[test]
     fn mpris()
     {
-        // let _mpris = crate::utils::mpris::Mpris::new(
-        //     "test".to_string(), "Test".to_string(), 
-        //     |event| {
-        //         println!("Event: {event:?}")
-        //     }
-        // );
+        let mpris = crate::metadata::mpris::Mpris::new(
+            "test".to_string(), "Test".to_string(), 
+            |event| {
+                println!("Event: {event:?}")
+            }
+        );
+
+        mpris.set_metadata(crate::metadata::metadata::Metadata {
+            title: Some("My Title".to_string()),
+            album: Some("My Album".to_string()),
+            artist: Some("My Artist".to_string()),
+            duration: Some(12000),
+            art_url: Some("file:///home/erikas/Downloads/pfp.jpg".to_string())
+        });
 
         let player = crate::Player::new();
         player.set_volume(0.5);
