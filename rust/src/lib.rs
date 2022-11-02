@@ -87,7 +87,7 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play()
     {
-        update_playback_state_stream(crate::utils::playback_state_stream::PLAY);
+        update_playback_state_stream(utils::playback_state::PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
     }
     
@@ -96,7 +96,7 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause()
     {
-        update_playback_state_stream(crate::utils::playback_state_stream::PAUSE);
+        update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
@@ -108,7 +108,7 @@ impl Player
     {
         Self::signal_to_stop();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
-        update_playback_state_stream(crate::utils::playback_state_stream::PAUSE);
+        update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
         DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
     }

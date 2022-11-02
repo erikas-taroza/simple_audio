@@ -2,13 +2,9 @@ use std::sync::RwLock;
 
 use flutter_rust_bridge::{StreamSink, support::lazy_static};
 
-lazy_static! { static ref PLAYBACK_STATE_STREAM:RwLock<Option<StreamSink<i32>>> = RwLock::new(None); }
+use super::playback_state::PlaybackState;
 
-pub const PLAY:i32 = 0;
-pub const PAUSE:i32 = 1;
-/// The only time this should be used is
-/// when the decoder is finished playing the audio.
-pub const DONE:i32 = 2;
+lazy_static! { static ref PLAYBACK_STATE_STREAM:RwLock<Option<StreamSink<i32>>> = RwLock::new(None); }
 
 /// Creates a new playback stream.
 pub fn playback_state_stream(stream:StreamSink<i32>)
@@ -18,8 +14,8 @@ pub fn playback_state_stream(stream:StreamSink<i32>)
 }
 
 /// Updates the playback stream with the given value.
-pub fn update_playback_state_stream(value:i32)
+pub fn update_playback_state_stream(value:PlaybackState)
 {
     if let Some(stream) = &*PLAYBACK_STATE_STREAM.read().unwrap()
-    { stream.add(value); }
+    { stream.add(value as i32); }
 }

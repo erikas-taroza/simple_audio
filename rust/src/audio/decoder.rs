@@ -73,7 +73,7 @@ impl Decoder
                 // An error occurs when the stream ends
                 // so we handle sending the DONE update here.
                 Err(_) => {
-                    update_playback_state_stream(crate::utils::playback_state_stream::DONE);
+                    update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
                     update_progress_state_stream(ProgressState { position: 0, duration: 0 });
                     DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
                     IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);

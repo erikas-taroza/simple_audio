@@ -4,6 +4,8 @@ use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
 use dbus_crossroads::{Crossroads, IfaceBuilder};
 
+use crate::utils::playback_state::PlaybackState;
+
 use super::metadata::Metadata;
 
 pub struct Mpris
@@ -131,6 +133,9 @@ impl Mpris
                                 Variant(metadata_to_map(&metadata).box_clone())
                             );
                         },
+                        MprisCommand::SetPlaybackState(state) => {
+                            
+                        }
                     }
 
                     let properties_changed = PropertiesPropertiesChanged
@@ -204,5 +209,6 @@ pub enum MprisEvent
 /// Commands to be sent via the thread's channels.
 enum MprisCommand
 {
-    SetMetadata(Metadata)
+    SetMetadata(Metadata),
+    SetPlaybackState(PlaybackState)
 }
