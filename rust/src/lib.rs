@@ -1,5 +1,5 @@
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod dart_streams;
+mod utils;
 mod audio;
 
 use std::{fs::File, io::Cursor, thread};
@@ -10,7 +10,7 @@ use flutter_rust_bridge::StreamSink;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use crate::dart_streams::{playback_state_stream::*, progress_state_stream::*};
+use crate::utils::{playback_state_stream::*, progress_state_stream::*};
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -20,7 +20,10 @@ pub struct Player
 
 impl Player
 {
-    pub fn new() -> Player { Player { dummy: 0 } }
+    pub fn new() -> Player
+    {
+        Player { dummy: 0 }
+    }
 
     fn signal_to_stop()
     {
@@ -83,7 +86,7 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play()
     {
-        update_playback_state_stream(crate::dart_streams::playback_state_stream::PLAY);
+        update_playback_state_stream(crate::utils::playback_state_stream::PLAY);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
     }
     
@@ -92,7 +95,7 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause()
     {
-        update_playback_state_stream(crate::dart_streams::playback_state_stream::PAUSE);
+        update_playback_state_stream(crate::utils::playback_state_stream::PAUSE);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
@@ -104,7 +107,7 @@ impl Player
     {
         Self::signal_to_stop();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
-        update_playback_state_stream(crate::dart_streams::playback_state_stream::PAUSE);
+        update_playback_state_stream(crate::utils::playback_state_stream::PAUSE);
         DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
     }
@@ -212,6 +215,22 @@ mod tests
         thread::sleep(Duration::from_secs(5));
         println!("Playing now");
         player.open("/home/erikas/Music/test.mp3".to_string(), true);
+        thread::sleep(Duration::from_secs(10));
+    }
+
+    #[test]
+    fn mpris()
+    {
+        // let _mpris = crate::utils::mpris::Mpris::new(
+        //     "test".to_string(), "Test".to_string(), 
+        //     |event| {
+        //         println!("Event: {event:?}")
+        //     }
+        // );
+
+        let player = crate::Player::new();
+        player.set_volume(0.5);
+
         thread::sleep(Duration::from_secs(10));
     }
 }
