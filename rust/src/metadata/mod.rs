@@ -1,2 +1,2 @@
 pub mod mpris;
-pub mod metadata;
+pub mod types;

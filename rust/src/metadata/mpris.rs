@@ -1,4 +1,4 @@
-use std::{thread::{self, JoinHandle}, sync::{Arc, Mutex}, time::Duration, collections::HashMap};
+use std::{thread::{self, JoinHandle}, sync::{Arc, Mutex, RwLock}, time::Duration, collections::HashMap};
 
 use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
@@ -6,23 +6,23 @@ use dbus_crossroads::{Crossroads, IfaceBuilder};
 
 use crate::utils::playback_state::PlaybackState;
 
-use super::metadata::Metadata;
+use super::types::{Metadata, Event, Command};
 
 pub struct Mpris
 {
     dbus_name:String,
     display_name:String,
     thread:JoinHandle<()>,
-    tx:crossbeam::channel::Sender<MprisCommand>
+    tx:crossbeam::channel::Sender<Command>
 }
 
 impl Mpris
 {
     pub fn new<C>(dbus_name:String, display_name:String, callback:C) -> Self
     where
-        C: Fn(MprisEvent) + Send + 'static
+        C: Fn(Event) + Send + 'static
     {
-        let (tx, rx) = unbounded::<MprisCommand>();
+        let (tx, rx) = unbounded::<Command>();
 
         let dbus = dbus_name.clone();
         let display = display_name.clone();
@@ -35,11 +35,14 @@ impl Mpris
     }
 
     pub fn set_metadata(&self, metadata:Metadata)
-    { self.tx.send(MprisCommand::SetMetadata(metadata)).unwrap(); }
+    { self.tx.send(Command::SetMetadata(metadata)).unwrap(); }
 
-    fn run<C>(dbus_name:String, display_name:String, rx:Receiver<MprisCommand>, callback:C) -> Result<(), dbus::Error>
+    pub fn set_playback_state(&self, state:PlaybackState)
+    { self.tx.send(Command::SetPlaybackState(state)).unwrap(); }
+
+    fn run<C>(dbus_name:String, display_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
     where
-        C: Fn(MprisEvent) + Send + 'static
+        C: Fn(Event) + Send + 'static
     {
         let callback = Arc::new(Mutex::new(callback));
 
@@ -55,6 +58,7 @@ impl Mpris
         let mut cr = Crossroads::new();
 
         let metadata = Arc::new(Mutex::new(Metadata::default()));
+        let playback_state = Arc::new(Mutex::new(PlaybackState::Done));
 
         let mp = cr.register("org.mpris.MediaPlayer2", move |e:&mut IfaceBuilder<()>| {
             e.property("Identity")
@@ -73,12 +77,12 @@ impl Mpris
         let mpp = cr.register("org.mpris.MediaPlayer2.Player", |e:&mut IfaceBuilder<()>|{
             let callback = callback.clone();
             
-            register_method(e, &callback, "Next", MprisEvent::Next);
-            register_method(e, &callback, "Previous", MprisEvent::Previous);
-            register_method(e, &callback, "Play", MprisEvent::Play);
-            register_method(e, &callback, "Pause", MprisEvent::Pause);
-            register_method(e, &callback, "PlayPause", MprisEvent::PlayPause);
-            register_method(e, &callback, "Stop", MprisEvent::Stop);
+            register_method(e, &callback, "Next", Event::Next);
+            register_method(e, &callback, "Previous", Event::Previous);
+            register_method(e, &callback, "Play", Event::Play);
+            register_method(e, &callback, "Pause", Event::Pause);
+            register_method(e, &callback, "PlayPause", Event::PlayPause);
+            register_method(e, &callback, "Stop", Event::Stop);
 
             e.property("CanGoNext")
                 .get(|_, _| Ok(true))
@@ -105,6 +109,13 @@ impl Mpris
                     move |_, _| Ok(metadata_to_map(&metadata.lock().unwrap()))
                 })
                 .emits_changed_true();
+
+            e.property("PlaybackStatus")
+                .get({
+                    let playback_state = playback_state.clone();
+                    move |_, _| Ok(playback_state_to_string(&playback_state.lock().unwrap()))
+                })
+                .emits_changed_true();
         });
 
         cr.insert("/org/mpris/MediaPlayer2", &[mp, mpp], ());
@@ -124,7 +135,7 @@ impl Mpris
 
                     match message
                     {
-                        MprisCommand::SetMetadata(data) => {
+                        Command::SetMetadata(data) => {
                             let mut metadata = metadata.lock().unwrap();
                             *metadata = data;
 
@@ -133,8 +144,14 @@ impl Mpris
                                 Variant(metadata_to_map(&metadata).box_clone())
                             );
                         },
-                        MprisCommand::SetPlaybackState(state) => {
-                            
+                        Command::SetPlaybackState(state) => {
+                            let mut playback_state = playback_state.lock().unwrap();
+                            *playback_state = state;
+
+                            changes.insert(
+                                "PlaybackStatus".to_string(),
+                                Variant(Box::new(playback_state_to_string(&playback_state)))
+                            );
                         }
                     }
 
@@ -156,9 +173,9 @@ impl Mpris
 }
 
 /// Helper method to register callbacks to a MPRIS callback.
-fn register_method<C>(e:&mut IfaceBuilder<()>, callback:&Arc<Mutex<C>>, name:&'static str, event:MprisEvent)
+fn register_method<C>(e:&mut IfaceBuilder<()>, callback:&Arc<Mutex<C>>, name:&'static str, event:Event)
 where
-    C: Fn(MprisEvent) + Send + 'static
+    C: Fn(Event) + Send + 'static
 {
     let callback = callback.clone();
     e.method(name, (), (), move |_, _, _:()| {
@@ -194,21 +211,13 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
     map
 }
 
-/// Callback events from the MPRIS player.
-#[derive(Clone, Copy, Debug)]
-pub enum MprisEvent
+/// Converts the playback status to a string that MPRIS can use.
+fn playback_state_to_string(state:&PlaybackState) -> String
 {
-    Next,
-    Previous,
-    Play,
-    Pause,
-    Stop,
-    PlayPause
-}
-
-/// Commands to be sent via the thread's channels.
-enum MprisCommand
-{
-    SetMetadata(Metadata),
-    SetPlaybackState(PlaybackState)
+    match state
+    {
+        PlaybackState::Play => "Playing".to_string(),
+        PlaybackState::Pause => "Paused".to_string(),
+        _ => "Paused".to_string()
+    }
 }

@@ -144,6 +144,8 @@ mod tests
 {
     use std::{thread, time::Duration};
 
+    use crate::utils::playback_state::PlaybackState;
+
     #[test]
     fn open_and_play()
     {
@@ -229,13 +231,15 @@ mod tests
             }
         );
 
-        mpris.set_metadata(crate::metadata::metadata::Metadata {
+        mpris.set_metadata(crate::metadata::types::Metadata {
             title: Some("My Title".to_string()),
             album: Some("My Album".to_string()),
             artist: Some("My Artist".to_string()),
             duration: Some(12000),
             art_url: Some("file:///home/erikas/Downloads/pfp.jpg".to_string())
         });
+
+        mpris.set_playback_state(PlaybackState::Play);
 
         let player = crate::Player::new();
         player.set_volume(0.5);
