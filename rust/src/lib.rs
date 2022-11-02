@@ -8,6 +8,7 @@ use std::{fs::File, io::Cursor, thread};
 use audio::{decoder::Decoder, controls::*};
 use crossbeam::channel::bounded;
 use flutter_rust_bridge::StreamSink;
+use metadata::types::Metadata;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
@@ -21,8 +22,24 @@ pub struct Player
 
 impl Player
 {
-    pub fn new() -> Player
+    pub fn new(name:String) -> Player
     {
+        crate::metadata::init(|e| {
+            match e
+            {
+                metadata::types::Event::Next => todo!(),
+                metadata::types::Event::Previous => todo!(),
+                metadata::types::Event::Play => Self::internal_play(),
+                metadata::types::Event::Pause => Self::internal_pause(),
+                metadata::types::Event::Stop => Self::internal_stop(),
+                metadata::types::Event::PlayPause => {
+                    if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+                    { Self::internal_pause(); }
+                    else { Self::internal_play(); }
+                },
+            }
+        }, name.to_lowercase(), name);
+
         Player { dummy: 0 }
     }
 
@@ -89,6 +106,7 @@ impl Player
     {
         update_playback_state_stream(utils::playback_state::PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
+        crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Play);
     }
     
     /// Allows for access in other places
@@ -98,6 +116,7 @@ impl Player
     {
         update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
     }
 
     /// Allows for access in other places
@@ -111,6 +130,7 @@ impl Player
         update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
         DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
     }
 
     // ---------------------------------
@@ -137,6 +157,9 @@ impl Player
             duration: DURATION.load(std::sync::atomic::Ordering::SeqCst)
         });
     }
+
+    pub fn set_metadata(&self, metadata:Metadata)
+    { crate::metadata::set_metadata(metadata); }
 }
 
 #[cfg(test)]
@@ -144,12 +167,10 @@ mod tests
 {
     use std::{thread, time::Duration};
 
-    use crate::utils::playback_state::PlaybackState;
-
     #[test]
     fn open_and_play()
     {
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
         player.open("/home/erikas/Music/test2.mp3".to_string(), true);
         player.seek(30);
@@ -159,7 +180,7 @@ mod tests
     #[test]
     fn open_network_and_play()
     {
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.open("https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3?raw=true".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
@@ -168,7 +189,7 @@ mod tests
     #[test]
     fn play_pause()
     {
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/test2.mp3".to_string(), true);
@@ -184,7 +205,7 @@ mod tests
     #[test]
     fn volume()
     {
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.open("/home/erikas/Music/test2.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
         println!("Changing volume now");
@@ -195,7 +216,7 @@ mod tests
     #[test]
     fn seeking()
     {
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
         player.open("/home/erikas/Music/test2.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
@@ -207,7 +228,7 @@ mod tests
     #[test]
     fn stop()
     {
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/test2.mp3".to_string(), true);
@@ -224,25 +245,10 @@ mod tests
     #[test]
     fn mpris()
     {
-        let mpris = crate::metadata::mpris::Mpris::new(
-            "test".to_string(), "Test".to_string(), 
-            |event| {
-                println!("Event: {event:?}")
-            }
-        );
-
-        mpris.set_metadata(crate::metadata::types::Metadata {
-            title: Some("My Title".to_string()),
-            album: Some("My Album".to_string()),
-            artist: Some("My Artist".to_string()),
-            duration: Some(12000),
-            art_url: Some("file:///home/erikas/Downloads/pfp.jpg".to_string())
-        });
-
-        mpris.set_playback_state(PlaybackState::Play);
-
-        let player = crate::Player::new();
+        let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
+
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
 
         thread::sleep(Duration::from_secs(10));
     }

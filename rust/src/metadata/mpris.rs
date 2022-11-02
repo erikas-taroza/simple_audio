@@ -1,4 +1,4 @@
-use std::{thread::{self, JoinHandle}, sync::{Arc, Mutex, RwLock}, time::Duration, collections::HashMap};
+use std::{thread, sync::{Arc, Mutex}, time::Duration, collections::HashMap};
 
 use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
@@ -10,9 +10,6 @@ use super::types::{Metadata, Event, Command};
 
 pub struct Mpris
 {
-    dbus_name:String,
-    display_name:String,
-    thread:JoinHandle<()>,
     tx:crossbeam::channel::Sender<Command>
 }
 
@@ -23,15 +20,12 @@ impl Mpris
         C: Fn(Event) + Send + 'static
     {
         let (tx, rx) = unbounded::<Command>();
-
-        let dbus = dbus_name.clone();
-        let display = display_name.clone();
         
-        let thread = thread::spawn(move || {
-            Self::run(dbus, display, rx, callback).unwrap();
+        thread::spawn(move || {
+            Self::run(dbus_name, display_name, rx, callback).unwrap();
         });
 
-        Mpris { dbus_name, display_name, thread, tx }
+        Mpris { tx }
     }
 
     pub fn set_metadata(&self, metadata:Metadata)
@@ -127,6 +121,7 @@ impl Mpris
 
         loop
         {
+            // Check for any new commands.
             match rx.try_recv()
             {
                 Err(_) => (),
