@@ -166,7 +166,7 @@ impl Mpris
                 }
             }
 
-            conn.process(Duration::from_secs(1))?;
+            conn.process(Duration::from_millis(200))?;
         }
     }
 }

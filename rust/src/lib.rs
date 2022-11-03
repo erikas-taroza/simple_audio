@@ -168,6 +168,8 @@ mod tests
 {
     use std::{thread, time::Duration};
 
+    use crate::metadata::types::Metadata;
+
     #[test]
     fn open_and_play()
     {
@@ -250,6 +252,21 @@ mod tests
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
+        player.set_metadata(Metadata {
+            title: Some("My Title".to_string()),
+            artist: Some("My Artist".to_string()),
+            album: Some("My Album".to_string()),
+            ..Default::default()
+        });
+        
+        thread::sleep(Duration::from_secs(2));
+
+        player.set_metadata(Metadata {
+            title: Some("My Title2".to_string()),
+            artist: Some("My Artist2".to_string()),
+            album: Some("My Album2".to_string()),
+            ..Default::default()
+        });
 
         thread::sleep(Duration::from_secs(10));
     }
