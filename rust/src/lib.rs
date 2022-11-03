@@ -12,7 +12,7 @@ use metadata::types::Metadata;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use crate::utils::{playback_state_stream::*, progress_state_stream::*};
+use crate::utils::{playback_state_stream::*, progress_state_stream::*, metadata_callback_stream::*};
 
 // NOTE: Code gen fails with empty structs.
 pub struct Player
@@ -27,8 +27,8 @@ impl Player
         crate::metadata::init(|e| {
             match e
             {
-                metadata::types::Event::Next => todo!(),
-                metadata::types::Event::Previous => todo!(),
+                metadata::types::Event::Previous => update_metadata_callback_stream(false),
+                metadata::types::Event::Next => update_metadata_callback_stream(true),
                 metadata::types::Event::Play => Self::internal_play(),
                 metadata::types::Event::Pause => Self::internal_pause(),
                 metadata::types::Event::Stop => Self::internal_stop(),
@@ -63,6 +63,7 @@ impl Player
 
     pub fn playback_state_stream(stream:StreamSink<i32>) { playback_state_stream(stream); }
     pub fn progress_state_stream(stream:StreamSink<ProgressState>) { progress_state_stream(stream); }
+    pub fn metadata_callback_stream(stream:StreamSink<bool>) { metadata_callback_stream(stream); }
 
     pub fn is_playing(&self) -> bool
     { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }

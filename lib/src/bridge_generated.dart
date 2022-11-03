@@ -23,20 +23,20 @@ class SimpleAudioImpl implements SimpleAudio {
   factory SimpleAudioImpl.wasm(FutureOr<WasmModule> module) =>
       SimpleAudioImpl(module as ExternalLibrary);
   SimpleAudioImpl.raw(this._platform);
-  Future<Player> newStaticMethodPlayer({dynamic hint}) =>
+  Future<Player> newStaticMethodPlayer({required String name, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
-        callFfi: (port_) =>
-            _platform.inner.wire_new__static_method__Player(port_),
+        callFfi: (port_) => _platform.inner.wire_new__static_method__Player(
+            port_, _platform.api2wire_String(name)),
         parseSuccessData: (d) => _wire2api_player(d),
         constMeta: kNewStaticMethodPlayerConstMeta,
-        argValues: [],
+        argValues: [name],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "new__static_method__Player",
-        argNames: [],
+        argNames: ["name"],
       );
 
   Stream<int> playbackStateStreamStaticMethodPlayer({dynamic hint}) =>
@@ -70,6 +70,23 @@ class SimpleAudioImpl implements SimpleAudio {
       get kProgressStateStreamStaticMethodPlayerConstMeta =>
           const FlutterRustBridgeTaskConstMeta(
             debugName: "progress_state_stream__static_method__Player",
+            argNames: [],
+          );
+
+  Stream<bool> metadataCallbackStreamStaticMethodPlayer({dynamic hint}) =>
+      _platform.executeStream(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner
+            .wire_metadata_callback_stream__static_method__Player(port_),
+        parseSuccessData: _wire2api_bool,
+        constMeta: kMetadataCallbackStreamStaticMethodPlayerConstMeta,
+        argValues: [],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta
+      get kMetadataCallbackStreamStaticMethodPlayerConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "metadata_callback_stream__static_method__Player",
             argNames: [],
           );
 
@@ -198,6 +215,25 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that", "seconds"],
       );
 
+  Future<void> setMetadataMethodPlayer(
+          {required Player that, required Metadata metadata, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_set_metadata__method__Player(
+            port_,
+            _platform.api2wire_box_autoadd_player(that),
+            _platform.api2wire_box_autoadd_metadata(metadata)),
+        parseSuccessData: _wire2api_unit,
+        constMeta: kSetMetadataMethodPlayerConstMeta,
+        argValues: [that, metadata],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kSetMetadataMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "set_metadata__method__Player",
+        argNames: ["that", "metadata"],
+      );
+
 // Section: wire2api
 
   bool _wire2api_bool(dynamic raw) {
@@ -269,10 +305,32 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   @protected
+  ffi.Pointer<wire_Metadata> api2wire_box_autoadd_metadata(Metadata raw) {
+    final ptr = inner.new_box_autoadd_metadata_0();
+    _api_fill_to_wire_metadata(raw, ptr.ref);
+    return ptr;
+  }
+
+  @protected
   ffi.Pointer<wire_Player> api2wire_box_autoadd_player(Player raw) {
     final ptr = inner.new_box_autoadd_player_0();
     _api_fill_to_wire_player(raw, ptr.ref);
     return ptr;
+  }
+
+  @protected
+  ffi.Pointer<ffi.Uint64> api2wire_box_autoadd_u64(int raw) {
+    return inner.new_box_autoadd_u64_0(api2wire_u64(raw));
+  }
+
+  @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_opt_String(String? raw) {
+    return raw == null ? ffi.nullptr : api2wire_String(raw);
+  }
+
+  @protected
+  ffi.Pointer<ffi.Uint64> api2wire_opt_box_autoadd_u64(int? raw) {
+    return raw == null ? ffi.nullptr : api2wire_box_autoadd_u64(raw);
   }
 
   @protected
@@ -288,9 +346,22 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 // Section: api_fill_to_wire
 
+  void _api_fill_to_wire_box_autoadd_metadata(
+      Metadata apiObj, ffi.Pointer<wire_Metadata> wireObj) {
+    _api_fill_to_wire_metadata(apiObj, wireObj.ref);
+  }
+
   void _api_fill_to_wire_box_autoadd_player(
       Player apiObj, ffi.Pointer<wire_Player> wireObj) {
     _api_fill_to_wire_player(apiObj, wireObj.ref);
+  }
+
+  void _api_fill_to_wire_metadata(Metadata apiObj, wire_Metadata wireObj) {
+    wireObj.title = api2wire_opt_String(apiObj.title);
+    wireObj.artist = api2wire_opt_String(apiObj.artist);
+    wireObj.album = api2wire_opt_String(apiObj.album);
+    wireObj.duration = api2wire_opt_box_autoadd_u64(apiObj.duration);
+    wireObj.art_url = api2wire_opt_String(apiObj.artUrl);
   }
 
   void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {
@@ -336,17 +407,21 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
 
   void wire_new__static_method__Player(
     int port_,
+    ffi.Pointer<wire_uint_8_list> name,
   ) {
     return _wire_new__static_method__Player(
       port_,
+      name,
     );
   }
 
-  late final _wire_new__static_method__PlayerPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_new__static_method__Player');
+  late final _wire_new__static_method__PlayerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_new__static_method__Player');
   late final _wire_new__static_method__Player =
-      _wire_new__static_method__PlayerPtr.asFunction<void Function(int)>();
+      _wire_new__static_method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_playback_state_stream__static_method__Player(
     int port_,
@@ -376,6 +451,21 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           'wire_progress_state_stream__static_method__Player');
   late final _wire_progress_state_stream__static_method__Player =
       _wire_progress_state_stream__static_method__PlayerPtr
+          .asFunction<void Function(int)>();
+
+  void wire_metadata_callback_stream__static_method__Player(
+    int port_,
+  ) {
+    return _wire_metadata_callback_stream__static_method__Player(
+      port_,
+    );
+  }
+
+  late final _wire_metadata_callback_stream__static_method__PlayerPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_metadata_callback_stream__static_method__Player');
+  late final _wire_metadata_callback_stream__static_method__Player =
+      _wire_metadata_callback_stream__static_method__PlayerPtr
           .asFunction<void Function(int)>();
 
   void wire_is_playing__method__Player(
@@ -512,6 +602,38 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _wire_seek__method__Player = _wire_seek__method__PlayerPtr
       .asFunction<void Function(int, ffi.Pointer<wire_Player>, int)>();
 
+  void wire_set_metadata__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+    ffi.Pointer<wire_Metadata> metadata,
+  ) {
+    return _wire_set_metadata__method__Player(
+      port_,
+      that,
+      metadata,
+    );
+  }
+
+  late final _wire_set_metadata__method__PlayerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
+                  ffi.Pointer<wire_Metadata>)>>(
+      'wire_set_metadata__method__Player');
+  late final _wire_set_metadata__method__Player =
+      _wire_set_metadata__method__PlayerPtr.asFunction<
+          void Function(
+              int, ffi.Pointer<wire_Player>, ffi.Pointer<wire_Metadata>)>();
+
+  ffi.Pointer<wire_Metadata> new_box_autoadd_metadata_0() {
+    return _new_box_autoadd_metadata_0();
+  }
+
+  late final _new_box_autoadd_metadata_0Ptr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<wire_Metadata> Function()>>(
+          'new_box_autoadd_metadata_0');
+  late final _new_box_autoadd_metadata_0 = _new_box_autoadd_metadata_0Ptr
+      .asFunction<ffi.Pointer<wire_Metadata> Function()>();
+
   ffi.Pointer<wire_Player> new_box_autoadd_player_0() {
     return _new_box_autoadd_player_0();
   }
@@ -521,6 +643,20 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           'new_box_autoadd_player_0');
   late final _new_box_autoadd_player_0 = _new_box_autoadd_player_0Ptr
       .asFunction<ffi.Pointer<wire_Player> Function()>();
+
+  ffi.Pointer<ffi.Uint64> new_box_autoadd_u64_0(
+    int value,
+  ) {
+    return _new_box_autoadd_u64_0(
+      value,
+    );
+  }
+
+  late final _new_box_autoadd_u64_0Ptr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Uint64> Function(ffi.Uint64)>>(
+          'new_box_autoadd_u64_0');
+  late final _new_box_autoadd_u64_0 = _new_box_autoadd_u64_0Ptr
+      .asFunction<ffi.Pointer<ffi.Uint64> Function(int)>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,
@@ -552,11 +688,6 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
       .asFunction<void Function(WireSyncReturnStruct)>();
 }
 
-class wire_Player extends ffi.Struct {
-  @ffi.Int32()
-  external int dummy;
-}
-
 class wire_uint_8_list extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> ptr;
 
@@ -564,12 +695,23 @@ class wire_uint_8_list extends ffi.Struct {
   external int len;
 }
 
+class wire_Player extends ffi.Struct {
+  @ffi.Int32()
+  external int dummy;
+}
+
+class wire_Metadata extends ffi.Struct {
+  external ffi.Pointer<wire_uint_8_list> title;
+
+  external ffi.Pointer<wire_uint_8_list> artist;
+
+  external ffi.Pointer<wire_uint_8_list> album;
+
+  external ffi.Pointer<ffi.Uint64> duration;
+
+  external ffi.Pointer<wire_uint_8_list> art_url;
+}
+
 typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<ffi.Bool Function(DartPort, ffi.Pointer<ffi.Void>)>>;
 typedef DartPort = ffi.Int64;
-
-const int PLAY = 0;
-
-const int PAUSE = 1;
-
-const int DONE = 2;

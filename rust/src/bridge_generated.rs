@@ -17,19 +17,26 @@ use flutter_rust_bridge::*;
 
 // Section: imports
 
+use crate::metadata::types::Metadata;
 use crate::utils::progress_state_stream::ProgressState;
 use crate::Player;
 
 // Section: wire functions
 
-fn wire_new__static_method__Player_impl(port_: MessagePort) {
+fn wire_new__static_method__Player_impl(
+    port_: MessagePort,
+    name: impl Wire2Api<String> + UnwindSafe,
+) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "new__static_method__Player",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(Player::new()),
+        move || {
+            let api_name = name.wire2api();
+            move |task_callback| Ok(Player::new(api_name))
+        },
     )
 }
 fn wire_playback_state_stream__static_method__Player_impl(port_: MessagePort) {
@@ -50,6 +57,22 @@ fn wire_progress_state_stream__static_method__Player_impl(port_: MessagePort) {
             mode: FfiCallMode::Stream,
         },
         move || move |task_callback| Ok(Player::progress_state_stream(task_callback.stream_sink())),
+    )
+}
+fn wire_metadata_callback_stream__static_method__Player_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "metadata_callback_stream__static_method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || {
+            move |task_callback| {
+                Ok(Player::metadata_callback_stream(
+                    task_callback.stream_sink(),
+                ))
+            }
+        },
     )
 }
 fn wire_is_playing__method__Player_impl(
@@ -163,6 +186,24 @@ fn wire_seek__method__Player_impl(
         },
     )
 }
+fn wire_set_metadata__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+    metadata: impl Wire2Api<Metadata> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "set_metadata__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            let api_metadata = metadata.wire2api();
+            move |task_callback| Ok(Player::set_metadata(&api_that, api_metadata))
+        },
+    )
+}
 // Section: wrapper structs
 
 // Section: static checks
@@ -190,6 +231,11 @@ impl Wire2Api<bool> for bool {
     }
 }
 
+impl Wire2Api<u64> for *mut u64 {
+    fn wire2api(self) -> u64 {
+        unsafe { *support::box_from_leak_ptr(self) }
+    }
+}
 impl Wire2Api<f32> for f32 {
     fn wire2api(self) -> f32 {
         self

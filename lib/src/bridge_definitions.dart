@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 
 abstract class SimpleAudio {
-  Future<Player> newStaticMethodPlayer({dynamic hint});
+  Future<Player> newStaticMethodPlayer({required String name, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
@@ -20,6 +20,11 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta
       get kProgressStateStreamStaticMethodPlayerConstMeta;
+
+  Stream<bool> metadataCallbackStreamStaticMethodPlayer({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta
+      get kMetadataCallbackStreamStaticMethodPlayerConstMeta;
 
   Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint});
 
@@ -54,6 +59,27 @@ abstract class SimpleAudio {
       {required Player that, required int seconds, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kSeekMethodPlayerConstMeta;
+
+  Future<void> setMetadataMethodPlayer(
+      {required Player that, required Metadata metadata, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kSetMetadataMethodPlayerConstMeta;
+}
+
+class Metadata {
+  final String? title;
+  final String? artist;
+  final String? album;
+  final int? duration;
+  final String? artUrl;
+
+  Metadata({
+    this.title,
+    this.artist,
+    this.album,
+    this.duration,
+    this.artUrl,
+  });
 }
 
 class Player {
@@ -66,8 +92,8 @@ class Player {
   });
 
   static Future<Player> newPlayer(
-          {required SimpleAudio bridge, dynamic hint}) =>
-      bridge.newStaticMethodPlayer(hint: hint);
+          {required SimpleAudio bridge, required String name, dynamic hint}) =>
+      bridge.newStaticMethodPlayer(name: name, hint: hint);
 
   static Stream<int> playbackStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>
@@ -76,6 +102,10 @@ class Player {
   static Stream<ProgressState> progressStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>
       bridge.progressStateStreamStaticMethodPlayer(hint: hint);
+
+  static Stream<bool> metadataCallbackStream(
+          {required SimpleAudio bridge, dynamic hint}) =>
+      bridge.metadataCallbackStreamStaticMethodPlayer(hint: hint);
 
   Future<bool> isPlaying({dynamic hint}) => bridge.isPlayingMethodPlayer(
         that: this,
@@ -111,6 +141,12 @@ class Player {
       bridge.seekMethodPlayer(
         that: this,
         seconds: seconds,
+      );
+
+  Future<void> setMetadata({required Metadata metadata, dynamic hint}) =>
+      bridge.setMetadataMethodPlayer(
+        that: this,
+        metadata: metadata,
       );
 }
 
