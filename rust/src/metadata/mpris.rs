@@ -6,7 +6,7 @@ use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
 use dbus_crossroads::{Crossroads, IfaceBuilder};
 
-use crate::{utils::playback_state::PlaybackState, audio::controls::DURATION};
+use crate::{utils::playback_state::PlaybackState, audio::controls::PROGRESS};
 
 use super::types::{Metadata, Event, Command};
 
@@ -201,7 +201,7 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
     if let Some(album) = metadata.album.clone()
     { map.insert("xesam:album".to_string(), Variant(Box::new(album))); }
 
-    map.insert("mpris:length".to_string(), Variant(Box::new(DURATION.load(std::sync::atomic::Ordering::SeqCst))));
+    map.insert("mpris:length".to_string(), Variant(Box::new(PROGRESS.read().unwrap().as_ref().unwrap().duration)));
 
     if let Some(art_url) = metadata.art_url.clone()
     { map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_url))); }

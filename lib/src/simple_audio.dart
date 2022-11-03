@@ -32,10 +32,10 @@ class SimpleAudio
     /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
     /// 
     /// **[onPreviousRequested]** Callback for when the user wants to skip to the previous media
-    /// (via a notification).
+    /// (via a media notification).
     /// 
     /// **[onNextRequested]** Callback for when the user wants to skip to the next media
-    /// (via a notification).
+    /// (via a media notification).
     static Future<void> init({
         bool wakelock = true,
         String mprisName = "SimpleAudio",

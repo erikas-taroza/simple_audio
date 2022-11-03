@@ -18,6 +18,7 @@ pub fn update_progress_state_stream(value:ProgressState)
     { stream.add(value); }
 }
 
+#[derive(Clone, Copy)]
 pub struct ProgressState
 {
     pub position:u64,
