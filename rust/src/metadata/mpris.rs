@@ -1,3 +1,5 @@
+// Reference: https://github.com/Sinono3/souvlaki
+
 #![cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
 
 use std::{thread, sync::{Arc, Mutex, RwLock}, time::Duration, collections::HashMap};

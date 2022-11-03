@@ -178,7 +178,7 @@ mod tests
     {
         let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
-        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
         player.seek(30);
         thread::sleep(Duration::from_secs(10));
     }
@@ -198,7 +198,7 @@ mod tests
         let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
 
-        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
         println!("Pausing now");
         player.pause();
@@ -212,7 +212,7 @@ mod tests
     fn volume()
     {
         let player = crate::Player::new("Test".to_string());
-        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
         println!("Changing volume now");
         player.set_volume(0.2);
@@ -224,7 +224,7 @@ mod tests
     {
         let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
-        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
         println!("Seeking now");
         player.seek(50);
@@ -237,14 +237,14 @@ mod tests
         let player = crate::Player::new("Test".to_string());
         player.set_volume(0.5);
 
-        player.open("/home/erikas/Music/test2.mp3".to_string(), true);
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
         player.seek(10);
         thread::sleep(Duration::from_secs(5));
         println!("Stopping now");
         player.stop();
         thread::sleep(Duration::from_secs(5));
         println!("Playing now");
-        player.open("/home/erikas/Music/test.mp3".to_string(), true);
+        player.open("/home/erikas/Music/2.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
 
