@@ -17,22 +17,22 @@ where
     }
 }
 
-#[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+
 pub fn set_metadata(metadata:Metadata)
 {
-    let mpris = mpris::HANDLER.read().unwrap();
-    mpris.as_ref().unwrap().set_metadata(metadata);
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+    {
+        let mpris = mpris::HANDLER.read().unwrap();
+        mpris.as_ref().unwrap().set_metadata(metadata);
+    }
 }
 
-#[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+
 pub fn set_playback_state(state:PlaybackState)
 {
-    let mpris = mpris::HANDLER.read().unwrap();
-    mpris.as_ref().unwrap().set_playback_state(state);
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+    {
+        let mpris = mpris::HANDLER.read().unwrap();
+        mpris.as_ref().unwrap().set_playback_state(state);
+    }
 }
-
-#[cfg(any(target_os = "macos", target_os = "android"))]
-pub fn set_metadata(metadata:Metadata) {}
-
-#[cfg(any(target_os = "macos", target_os = "android"))]
-pub fn set_playback_state(state:PlaybackState) {}
