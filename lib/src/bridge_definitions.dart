@@ -7,7 +7,8 @@ import 'dart:async';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 
 abstract class SimpleAudio {
-  Future<Player> newStaticMethodPlayer({required String name, dynamic hint});
+  Future<Player> newStaticMethodPlayer(
+      {required String mprisName, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
@@ -70,14 +71,12 @@ class Metadata {
   final String? title;
   final String? artist;
   final String? album;
-  final int? duration;
   final String? artUrl;
 
   Metadata({
     this.title,
     this.artist,
     this.album,
-    this.duration,
     this.artUrl,
   });
 }
@@ -92,8 +91,10 @@ class Player {
   });
 
   static Future<Player> newPlayer(
-          {required SimpleAudio bridge, required String name, dynamic hint}) =>
-      bridge.newStaticMethodPlayer(name: name, hint: hint);
+          {required SimpleAudio bridge,
+          required String mprisName,
+          dynamic hint}) =>
+      bridge.newStaticMethodPlayer(mprisName: mprisName, hint: hint);
 
   static Stream<int> playbackStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>

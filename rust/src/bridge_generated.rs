@@ -25,7 +25,7 @@ use crate::Player;
 
 fn wire_new__static_method__Player_impl(
     port_: MessagePort,
-    name: impl Wire2Api<String> + UnwindSafe,
+    mpris_name: impl Wire2Api<String> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -34,8 +34,8 @@ fn wire_new__static_method__Player_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_name = name.wire2api();
-            move |task_callback| Ok(Player::new(api_name))
+            let api_mpris_name = mpris_name.wire2api();
+            move |task_callback| Ok(Player::new(api_mpris_name))
         },
     )
 }
@@ -231,11 +231,6 @@ impl Wire2Api<bool> for bool {
     }
 }
 
-impl Wire2Api<u64> for *mut u64 {
-    fn wire2api(self) -> u64 {
-        unsafe { *support::box_from_leak_ptr(self) }
-    }
-}
 impl Wire2Api<f32> for f32 {
     fn wire2api(self) -> f32 {
         self

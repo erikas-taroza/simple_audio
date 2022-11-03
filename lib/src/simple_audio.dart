@@ -1,4 +1,4 @@
-export 'bridge_definitions.dart' show ProgressState;
+export 'bridge_definitions.dart' show ProgressState, Metadata;
 
 import 'dart:io';
 
@@ -20,13 +20,36 @@ class SimpleAudio
 
     /// Initialize [SimpleAudio]. Should be done only once in the `main` method.
     /// 
-    /// [wakelock] If set to true, this will prevent Android and iOS devices from stopping playback
+    /// **[wakelock]** If set to true, this will prevent Android and iOS devices from stopping playback
     /// due to inactivity. The lock activates when opening or playing something
     /// but closes when the player is paused or stopped.
-    static void init({bool wakelock = true})
+    /// 
+    /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
+    /// - Be less than or equal to 255 characters in length.
+    /// - Cannot start with a number.
+    /// - Can only contain these characters: "[A-Z][a-z][0-9]_"
+    /// 
+    /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
+    /// 
+    /// **[onPreviousRequested]** Callback for when the user wants to skip to the previous media
+    /// (via a notification).
+    /// 
+    /// **[onNextRequested]** Callback for when the user wants to skip to the next media
+    /// (via a notification).
+    static Future<void> init({
+        bool wakelock = true,
+        String mprisName = "SimpleAudio",
+        void Function()? onPreviousRequested,
+        void Function()? onNextRequested
+    }) async
     {
         _wakelock = (Platform.isAndroid || Platform.isIOS) && wakelock;
-        _player = Player(bridge: api, dummy: 0);
+        _player = await api.newStaticMethodPlayer(mprisName: mprisName);
+
+        api.metadataCallbackStreamStaticMethodPlayer().listen((event) {
+            if(!event) { onPreviousRequested?.call(); }
+            else { onNextRequested?.call(); }
+        });
     }
 
     Future<void> open(String path, [bool autoplay = true]) async
@@ -65,6 +88,14 @@ class SimpleAudio
     Future<void> seek(int seconds) async
     {
         return api.seekMethodPlayer(that: _player, seconds: seconds);
+    }
+
+    Future<void> setMetadata(Metadata metadata) async
+    {
+        if(Platform.isLinux)
+        {
+            return api.setMetadataMethodPlayer(that: _player, metadata: metadata);
+        }
     }
 }
 

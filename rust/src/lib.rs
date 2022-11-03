@@ -22,7 +22,7 @@ pub struct Player
 
 impl Player
 {
-    pub fn new(name:String) -> Player
+    pub fn new(mpris_name:String) -> Player
     {
         crate::metadata::init(|e| {
             match e
@@ -38,7 +38,7 @@ impl Player
                     else { Self::internal_play(); }
                 },
             }
-        }, name.to_lowercase(), name);
+        }, mpris_name.to_lowercase(), mpris_name);
 
         Player { dummy: 0 }
     }

@@ -19,7 +19,6 @@ typedef struct wire_Metadata {
   struct wire_uint_8_list *title;
   struct wire_uint_8_list *artist;
   struct wire_uint_8_list *album;
-  uint64_t *duration;
   struct wire_uint_8_list *art_url;
 } wire_Metadata;
 
@@ -31,7 +30,7 @@ typedef struct WireSyncReturnStruct {
 
 void store_dart_post_cobject(DartPostCObjectFnType ptr);
 
-void wire_new__static_method__Player(int64_t port_, struct wire_uint_8_list *name);
+void wire_new__static_method__Player(int64_t port_, struct wire_uint_8_list *mpris_name);
 
 void wire_playback_state_stream__static_method__Player(int64_t port_);
 
@@ -64,8 +63,6 @@ struct wire_Metadata *new_box_autoadd_metadata_0(void);
 
 struct wire_Player *new_box_autoadd_player_0(void);
 
-uint64_t *new_box_autoadd_u64_0(uint64_t value);
-
 struct wire_uint_8_list *new_uint_8_list_0(int32_t len);
 
 void free_WireSyncReturnStruct(struct WireSyncReturnStruct val);
@@ -86,7 +83,6 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_set_metadata__method__Player);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_metadata_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_player_0);
-    dummy_var ^= ((int64_t) (void*) new_box_autoadd_u64_0);
     dummy_var ^= ((int64_t) (void*) new_uint_8_list_0);
     dummy_var ^= ((int64_t) (void*) free_WireSyncReturnStruct);
     dummy_var ^= ((int64_t) (void*) store_dart_post_cobject);

@@ -77,6 +77,7 @@ impl Decoder
                     update_progress_state_stream(ProgressState { position: 0, duration: 0 });
                     DURATION.store(0, std::sync::atomic::Ordering::SeqCst);
                     IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+                    crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
                     break;
                 }
             };

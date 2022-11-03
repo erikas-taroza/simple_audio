@@ -1,12 +1,16 @@
-use std::{thread, sync::{Arc, Mutex}, time::Duration, collections::HashMap};
+#![cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+
+use std::{thread, sync::{Arc, Mutex, RwLock}, time::Duration, collections::HashMap};
 
 use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
 use dbus_crossroads::{Crossroads, IfaceBuilder};
 
-use crate::utils::playback_state::PlaybackState;
+use crate::{utils::playback_state::PlaybackState, audio::controls::DURATION};
 
 use super::types::{Metadata, Event, Command};
+
+pub static HANDLER:RwLock<Option<Mpris>> = RwLock::new(None);
 
 pub struct Mpris
 {
@@ -197,8 +201,7 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
     if let Some(album) = metadata.album.clone()
     { map.insert("xesam:album".to_string(), Variant(Box::new(album))); }
 
-    if let Some(duration) = metadata.duration
-    { map.insert("mpris:length".to_string(), Variant(Box::new(duration))); }
+    map.insert("mpris:length".to_string(), Variant(Box::new(DURATION.load(std::sync::atomic::Ordering::SeqCst))));
 
     if let Some(art_url) = metadata.art_url.clone()
     { map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_url))); }

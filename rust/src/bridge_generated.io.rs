@@ -2,8 +2,8 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
-pub extern "C" fn wire_new__static_method__Player(port_: i64, name: *mut wire_uint_8_list) {
-    wire_new__static_method__Player_impl(port_, name)
+pub extern "C" fn wire_new__static_method__Player(port_: i64, mpris_name: *mut wire_uint_8_list) {
+    wire_new__static_method__Player_impl(port_, mpris_name)
 }
 
 #[no_mangle]
@@ -83,11 +83,6 @@ pub extern "C" fn new_box_autoadd_player_0() -> *mut wire_Player {
 }
 
 #[no_mangle]
-pub extern "C" fn new_box_autoadd_u64_0(value: u64) -> *mut u64 {
-    support::new_leak_box_ptr(value)
-}
-
-#[no_mangle]
 pub extern "C" fn new_uint_8_list_0(len: i32) -> *mut wire_uint_8_list {
     let ans = wire_uint_8_list {
         ptr: support::new_leak_vec_ptr(Default::default(), len),
@@ -124,7 +119,6 @@ impl Wire2Api<Metadata> for wire_Metadata {
             title: self.title.wire2api(),
             artist: self.artist.wire2api(),
             album: self.album.wire2api(),
-            duration: self.duration.wire2api(),
             art_url: self.art_url.wire2api(),
         }
     }
@@ -154,7 +148,6 @@ pub struct wire_Metadata {
     title: *mut wire_uint_8_list,
     artist: *mut wire_uint_8_list,
     album: *mut wire_uint_8_list,
-    duration: *mut u64,
     art_url: *mut wire_uint_8_list,
 }
 
@@ -189,7 +182,6 @@ impl NewWithNullPtr for wire_Metadata {
             title: core::ptr::null_mut(),
             artist: core::ptr::null_mut(),
             album: core::ptr::null_mut(),
-            duration: core::ptr::null_mut(),
             art_url: core::ptr::null_mut(),
         }
     }
