@@ -9,7 +9,7 @@ pub struct Metadata
     pub art_url:Option<String>
 }
 
-/// Callback events from the MPRIS player.
+/// Callback events from the media notification.
 #[derive(Clone, Copy, Debug)]
 pub enum Event
 {

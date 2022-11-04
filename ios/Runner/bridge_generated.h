@@ -30,7 +30,9 @@ typedef struct WireSyncReturnStruct {
 
 void store_dart_post_cobject(DartPostCObjectFnType ptr);
 
-void wire_new__static_method__Player(int64_t port_, struct wire_uint_8_list *mpris_name);
+void wire_new__static_method__Player(int64_t port_,
+                                     struct wire_uint_8_list *mpris_name,
+                                     int64_t *hwnd);
 
 void wire_playback_state_stream__static_method__Player(int64_t port_);
 
@@ -39,6 +41,8 @@ void wire_progress_state_stream__static_method__Player(int64_t port_);
 void wire_metadata_callback_stream__static_method__Player(int64_t port_);
 
 void wire_is_playing__method__Player(int64_t port_, struct wire_Player *that);
+
+void wire_get_progress__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_open__method__Player(int64_t port_,
                                struct wire_Player *that,
@@ -59,6 +63,8 @@ void wire_set_metadata__method__Player(int64_t port_,
                                        struct wire_Player *that,
                                        struct wire_Metadata *metadata);
 
+int64_t *new_box_autoadd_i64_0(int64_t value);
+
 struct wire_Metadata *new_box_autoadd_metadata_0(void);
 
 struct wire_Player *new_box_autoadd_player_0(void);
@@ -74,6 +80,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_progress_state_stream__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_metadata_callback_stream__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_is_playing__method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_get_progress__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_open__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_play__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_pause__method__Player);
@@ -81,6 +88,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_set_volume__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_seek__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_set_metadata__method__Player);
+    dummy_var ^= ((int64_t) (void*) new_box_autoadd_i64_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_metadata_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_player_0);
     dummy_var ^= ((int64_t) (void*) new_uint_8_list_0);

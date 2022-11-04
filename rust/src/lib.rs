@@ -22,7 +22,7 @@ pub struct Player
 
 impl Player
 {
-    pub fn new(mpris_name:String) -> Player
+    pub fn new(mpris_name:String, hwnd:Option<i64>) -> Player
     {
         crate::metadata::init(|e| {
             match e
@@ -38,7 +38,7 @@ impl Player
                     else { Self::internal_play(); }
                 },
             }
-        }, mpris_name.to_lowercase(), mpris_name);
+        }, mpris_name.to_lowercase(), mpris_name, hwnd);
 
         Player { dummy: 0 }
     }
@@ -176,7 +176,7 @@ mod tests
     #[test]
     fn open_and_play()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.set_volume(0.5);
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
         player.seek(30);
@@ -186,7 +186,7 @@ mod tests
     #[test]
     fn open_network_and_play()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.open("https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3?raw=true".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
@@ -195,7 +195,7 @@ mod tests
     #[test]
     fn play_pause()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
@@ -211,7 +211,7 @@ mod tests
     #[test]
     fn volume()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
         println!("Changing volume now");
@@ -222,7 +222,7 @@ mod tests
     #[test]
     fn seeking()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.set_volume(0.5);
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
@@ -234,7 +234,7 @@ mod tests
     #[test]
     fn stop()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
@@ -251,7 +251,7 @@ mod tests
     #[test]
     fn mpris()
     {
-        let player = crate::Player::new("Test".to_string());
+        let player = crate::Player::new("Test".to_string(), None);
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);

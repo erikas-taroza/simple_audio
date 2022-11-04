@@ -26,6 +26,7 @@ use crate::Player;
 fn wire_new__static_method__Player_impl(
     port_: MessagePort,
     mpris_name: impl Wire2Api<String> + UnwindSafe,
+    hwnd: impl Wire2Api<Option<i64>> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -35,7 +36,8 @@ fn wire_new__static_method__Player_impl(
         },
         move || {
             let api_mpris_name = mpris_name.wire2api();
-            move |task_callback| Ok(Player::new(api_mpris_name))
+            let api_hwnd = hwnd.wire2api();
+            move |task_callback| Ok(Player::new(api_mpris_name, api_hwnd))
         },
     )
 }
@@ -88,6 +90,22 @@ fn wire_is_playing__method__Player_impl(
         move || {
             let api_that = that.wire2api();
             move |task_callback| Ok(Player::is_playing(&api_that))
+        },
+    )
+}
+fn wire_get_progress__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "get_progress__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Ok(Player::get_progress(&api_that))
         },
     )
 }
@@ -230,6 +248,11 @@ impl Wire2Api<bool> for bool {
         self
     }
 }
+impl Wire2Api<i64> for *mut i64 {
+    fn wire2api(self) -> i64 {
+        unsafe { *support::box_from_leak_ptr(self) }
+    }
+}
 
 impl Wire2Api<f32> for f32 {
     fn wire2api(self) -> f32 {
@@ -238,6 +261,11 @@ impl Wire2Api<f32> for f32 {
 }
 impl Wire2Api<i32> for i32 {
     fn wire2api(self) -> i32 {
+        self
+    }
+}
+impl Wire2Api<i64> for i64 {
+    fn wire2api(self) -> i64 {
         self
     }
 }

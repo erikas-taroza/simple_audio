@@ -2,8 +2,12 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
-pub extern "C" fn wire_new__static_method__Player(port_: i64, mpris_name: *mut wire_uint_8_list) {
-    wire_new__static_method__Player_impl(port_, mpris_name)
+pub extern "C" fn wire_new__static_method__Player(
+    port_: i64,
+    mpris_name: *mut wire_uint_8_list,
+    hwnd: *mut i64,
+) {
+    wire_new__static_method__Player_impl(port_, mpris_name, hwnd)
 }
 
 #[no_mangle]
@@ -24,6 +28,11 @@ pub extern "C" fn wire_metadata_callback_stream__static_method__Player(port_: i6
 #[no_mangle]
 pub extern "C" fn wire_is_playing__method__Player(port_: i64, that: *mut wire_Player) {
     wire_is_playing__method__Player_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_get_progress__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_get_progress__method__Player_impl(port_, that)
 }
 
 #[no_mangle]
@@ -71,6 +80,11 @@ pub extern "C" fn wire_set_metadata__method__Player(
 }
 
 // Section: allocate functions
+
+#[no_mangle]
+pub extern "C" fn new_box_autoadd_i64_0(value: i64) -> *mut i64 {
+    support::new_leak_box_ptr(value)
+}
 
 #[no_mangle]
 pub extern "C" fn new_box_autoadd_metadata_0() -> *mut wire_Metadata {

@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 
 abstract class SimpleAudio {
   Future<Player> newStaticMethodPlayer(
-      {required String mprisName, dynamic hint});
+      {required String mprisName, int? hwnd, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
@@ -30,6 +30,11 @@ abstract class SimpleAudio {
   Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta;
+
+  Future<ProgressState> getProgressMethodPlayer(
+      {required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kGetProgressMethodPlayerConstMeta;
 
   Future<void> openMethodPlayer(
       {required Player that,
@@ -93,8 +98,10 @@ class Player {
   static Future<Player> newPlayer(
           {required SimpleAudio bridge,
           required String mprisName,
+          int? hwnd,
           dynamic hint}) =>
-      bridge.newStaticMethodPlayer(mprisName: mprisName, hint: hint);
+      bridge.newStaticMethodPlayer(
+          mprisName: mprisName, hwnd: hwnd, hint: hint);
 
   static Stream<int> playbackStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>
@@ -109,6 +116,11 @@ class Player {
       bridge.metadataCallbackStreamStaticMethodPlayer(hint: hint);
 
   Future<bool> isPlaying({dynamic hint}) => bridge.isPlayingMethodPlayer(
+        that: this,
+      );
+
+  Future<ProgressState> getProgress({dynamic hint}) =>
+      bridge.getProgressMethodPlayer(
         that: this,
       );
 
