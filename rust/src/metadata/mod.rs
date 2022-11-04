@@ -32,6 +32,12 @@ pub fn set_metadata(metadata:Metadata)
         let mpris = mpris::HANDLER.read().unwrap();
         mpris.as_ref().unwrap().set_metadata(metadata);
     }
+
+    #[cfg(target_os = "windows")]
+    {
+        let smtc = smtc::HANDLER.read().unwrap();
+        smtc.as_ref().unwrap().set_metadata(metadata);
+    }
 }
 
 

@@ -44,7 +44,10 @@ class SimpleAudio
     }) async
     {
         _wakelock = (Platform.isAndroid || Platform.isIOS) && wakelock;
-        _player = await api.newStaticMethodPlayer(mprisName: mprisName);
+        _player = await api.newStaticMethodPlayer(
+            mprisName: mprisName,
+            hwnd: Platform.isWindows ? getHWND() : null
+        );
 
         api.metadataCallbackStreamStaticMethodPlayer().listen((event) {
             if(!event) { onPreviousRequested?.call(); }

@@ -1,10 +1,12 @@
 #![cfg(target_os = "windows")]
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::{sync::{Arc, Mutex, RwLock}, time::Duration};
 
-use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton}, Foundation::TypedEventHandler};
+use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::RandomAccessStreamReference};
 
-use super::types::Event;
+use crate::audio::controls::PROGRESS;
+
+use super::types::{Event, Metadata};
 
 pub static HANDLER:RwLock<Option<Smtc>> = RwLock::new(None);
 
@@ -70,5 +72,36 @@ impl Smtc
         controls.ButtonPressed(&button_callback).unwrap();
 
         Smtc { controls, display, timeline }
+    }
+
+    pub fn set_metadata(&self, metadata:Metadata)
+    {
+        let properties = self.display.MusicProperties().unwrap();
+
+        if let Some(title) = metadata.title
+        { properties.SetTitle(&HSTRING::from(title)).unwrap(); }
+
+        if let Some(artist) = metadata.artist
+        { properties.SetArtist(&HSTRING::from(artist)).unwrap(); }
+
+        if let Some(album) = metadata.album
+        { properties.SetAlbumTitle(&HSTRING::from(album)).unwrap(); }
+
+        if let Some(art_url) = metadata.art_url
+        {
+            let uri = Uri::CreateUri(&HSTRING::from(art_url)).unwrap();
+            let stream = RandomAccessStreamReference::CreateFromUri(&uri).unwrap();
+            self.display.SetThumbnail(&stream).unwrap();
+        }
+
+        let duration = PROGRESS.read().unwrap().as_ref().unwrap().duration;
+
+        self.timeline.SetStartTime(Duration::default().into()).unwrap();
+        self.timeline.SetMinSeekTime(Duration::default().into()).unwrap();
+        self.timeline.SetEndTime(Duration::from_secs(duration).into()).unwrap();
+        self.timeline.SetMaxSeekTime(Duration::from_secs(duration).into()).unwrap();
+
+        self.controls.UpdateTimelineProperties(&self.timeline).unwrap();
+        self.display.Update().unwrap(); 
     }
 }
