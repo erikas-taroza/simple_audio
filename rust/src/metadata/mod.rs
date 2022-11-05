@@ -48,4 +48,10 @@ pub fn set_playback_state(state:PlaybackState)
         let mpris = mpris::HANDLER.read().unwrap();
         mpris.as_ref().unwrap().set_playback_state(state);
     }
+
+    #[cfg(target_os = "windows")]
+    {
+        let smtc = smtc::HANDLER.read().unwrap();
+        smtc.as_ref().unwrap().set_playback_state(state);
+    }
 }

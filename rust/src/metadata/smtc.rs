@@ -2,9 +2,9 @@
 
 use std::{sync::{Arc, Mutex, RwLock}, time::Duration};
 
-use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::RandomAccessStreamReference};
+use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::RandomAccessStreamReference};
 
-use crate::audio::controls::PROGRESS;
+use crate::{audio::controls::PROGRESS, utils::playback_state::PlaybackState};
 
 use super::types::{Event, Metadata};
 
@@ -102,6 +102,20 @@ impl Smtc
         self.timeline.SetMaxSeekTime(Duration::from_secs(duration).into()).unwrap();
 
         self.controls.UpdateTimelineProperties(&self.timeline).unwrap();
-        self.display.Update().unwrap(); 
+        self.display.Update().unwrap();
+    }
+
+    pub fn set_playback_state(&self, state:PlaybackState)
+    {
+        let status:MediaPlaybackStatus = match state
+        {
+            PlaybackState::Play => MediaPlaybackStatus::Playing,
+            PlaybackState::Pause => MediaPlaybackStatus::Paused,
+            _ => MediaPlaybackStatus::Paused,
+        };
+
+        self.controls.SetPlaybackStatus(status).unwrap();
+
+        self.controls.UpdateTimelineProperties(&self.timeline).unwrap();
     }
 }

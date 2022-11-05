@@ -6,7 +6,11 @@ import 'package:simple_audio/simple_audio.dart';
 
 void main() async
 {
-    SimpleAudio.init();
+    SimpleAudio.init(
+        onNextRequested: () => debugPrint("Next"),
+        onPreviousRequested: () => debugPrint("Prev")
+    );
+    
     runApp(const MyApp());
 }
 
@@ -82,7 +86,7 @@ class _MyAppState extends State<MyApp>
                                 child: const Text("Open File"),
                                 onPressed: () async {
                                     //TODO: File picker.
-                                    await player.open(r"C:\Users\erikas\Music\1.mp3");
+                                    await player.open(r"C:\Users\Erikas Taroza\Music\1.mp3");
                                     await player.setMetadata(Metadata(
                                         title: "Test Media",
                                         artist: "Test Artist",
