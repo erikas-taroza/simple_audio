@@ -37,6 +37,18 @@ impl Player
                     { Self::internal_pause(); }
                     else { Self::internal_play(); }
                 },
+                metadata::types::Event::Seek(position, is_absolute) => {
+                    if is_absolute
+                    { Self::internal_seek(position as u64); }
+                    else
+                    {
+                        let progress = PROGRESS.read().unwrap();
+                        if position.is_negative()
+                        { Self::internal_seek(progress.position - position.abs() as u64); }
+                        else
+                        { Self::internal_seek(progress.position + position as u64); }
+                    }
+                }
             }
         }, mpris_name.to_lowercase(), mpris_name, hwnd);
 
@@ -137,6 +149,15 @@ impl Player
         crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
     }
 
+    fn internal_seek(seconds:u64)
+    {
+        *SEEK_TS.write().unwrap() = Some(seconds);
+        update_progress_state_stream(ProgressState {
+            position: seconds,
+            duration: PROGRESS.read().unwrap().duration
+        });
+    }
+
     // ---------------------------------
     //             CONTROLS
     // ---------------------------------
@@ -154,13 +175,7 @@ impl Player
     { *VOLUME.write().unwrap() = volume; }
 
     pub fn seek(&self, seconds:u64)
-    {
-        *SEEK_TS.write().unwrap() = Some(seconds);
-        update_progress_state_stream(ProgressState {
-            position: seconds,
-            duration: PROGRESS.read().unwrap().duration
-        });
-    }
+    { Self::internal_seek(seconds); }
 
     pub fn set_metadata(&self, metadata:Metadata)
     { crate::metadata::set_metadata(metadata); }

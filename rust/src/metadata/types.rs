@@ -18,7 +18,13 @@ pub enum Event
     Play,
     Pause,
     Stop,
-    PlayPause
+    PlayPause,
+    /// `u64`: Position.
+    /// 
+    /// `bool`: Is absolute.
+    /// If `true`, the position is between `0-duration`.
+    /// If false, the position can be negative to indicate going backwards.
+    Seek(i64, bool)
 }
 
 /// Commands to be sent via the thread's channels.

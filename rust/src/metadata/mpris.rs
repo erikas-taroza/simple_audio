@@ -116,6 +116,35 @@ impl Mpris
                     move |_, _| Ok(playback_state_to_string(&playback_state.lock().unwrap()))
                 })
                 .emits_changed_true();
+
+            e.property("Position")
+                .get(move |_, _|{
+                    let position:i64 = PROGRESS.read().unwrap().position as i64;
+                    Ok(position)
+                });
+
+            e.method("Seek", ("Offset",), (), {
+                let callback = callback.clone();
+                move |ctx, _, (offset,):(i64,)| {
+                    callback.lock().unwrap()(Event::Seek(offset * 1_000_000, false));
+                    ctx.push_msg(ctx.make_signal("Seeked", ()));
+                    Ok(())
+                }
+            });
+
+            e.method("SetPosition", ("TrackId", "Position"), (), {
+                let callback = callback.clone();
+                move |_, _, (_track_id, position):(Path, i64)| {
+                    if position > PROGRESS.read().unwrap().duration as i64 { return Ok(()); }
+                    
+                    if let Ok(position) = u64::try_from(position)
+                    {
+                        callback.lock().unwrap()(Event::Seek((position * 1_000_000) as i64, true));
+                    }
+
+                    Ok(())
+                }
+            });
         });
 
         cr.insert("/org/mpris/MediaPlayer2", &[mp, mpp], ());
