@@ -39,7 +39,7 @@ impl Decoder
         let duration = timebase.calc_time(duration).seconds;
 
         let mut lock = PROGRESS.write().unwrap();
-        lock.replace(ProgressState { position: 0, duration: duration });
+        *lock = ProgressState { position: 0, duration };
         drop(lock);
 
         // Clone a receiver to listen for the stop signal.
@@ -78,7 +78,7 @@ impl Decoder
                 Err(_) => {
                     update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
                     update_progress_state_stream(ProgressState { position: 0, duration: 0 });
-                    PROGRESS.write().unwrap().replace(ProgressState { position: 0, duration: 0 });
+                    *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
                     IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
                     crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
                     break;

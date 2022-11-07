@@ -203,8 +203,16 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
     if let Some(album) = metadata.album.clone()
     { map.insert("xesam:album".to_string(), Variant(Box::new(album))); }
 
-    if let Some(progress) = *PROGRESS.read().unwrap()
-    { map.insert("mpris:length".to_string(), Variant(Box::new(progress.duration))); }
+    // Wait for a valid value (duration != 0).
+    loop
+    {
+        let progress = PROGRESS.read().unwrap();
+        if progress.duration == 0 { continue; }
+
+        map.insert("mpris:length".to_string(), Variant(Box::new(progress.duration)));
+        println!("Duration: {}", progress.duration);
+        break;
+    }
 
     if let Some(art_url) = metadata.art_url.clone()
     { map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_url))); }

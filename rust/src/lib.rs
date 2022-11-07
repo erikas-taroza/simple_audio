@@ -69,7 +69,7 @@ impl Player
     { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }
 
     pub fn get_progress(&self) -> ProgressState
-    { PROGRESS.read().unwrap().as_ref().unwrap().clone() }
+    { PROGRESS.read().unwrap().clone() }
 
     // ---------------------------------
     //            PLAYBACK
@@ -132,7 +132,7 @@ impl Player
         Self::signal_to_stop();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
         update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
-        PROGRESS.write().unwrap().replace(ProgressState { position: 0, duration: 0 });
+        *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
     }
@@ -158,7 +158,7 @@ impl Player
         *SEEK_TS.write().unwrap() = Some(seconds);
         update_progress_state_stream(ProgressState {
             position: seconds,
-            duration: PROGRESS.read().unwrap().as_ref().unwrap().duration
+            duration: PROGRESS.read().unwrap().duration
         });
     }
 
@@ -249,7 +249,7 @@ mod tests
     }
 
     #[test]
-    fn mpris()
+    fn media_notification()
     {
         let player = crate::Player::new("Test".to_string(), None);
         player.set_volume(0.5);
