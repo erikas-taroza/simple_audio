@@ -90,11 +90,11 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String, autoplay:bool)
     {
-        Self::internal_stop();
-
         let source:Box<dyn MediaSource> = if path.contains("http") {
             Box::new(Self::get_bytes_from_network(path))
         } else { Box::new(File::open(path).unwrap()) };
+
+        Self::internal_stop();
 
         if autoplay { Self::internal_play(); }
         else { Self::internal_pause(); }
