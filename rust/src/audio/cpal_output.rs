@@ -1,5 +1,5 @@
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
-use rb::*;
+use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
 use super::controls::*;
@@ -27,17 +27,26 @@ impl CpalOutput
     {
         let host = cpal::default_host();
         let device = host.default_output_device().expect("ERR: Failed to get default output device.");
-        // let mut supported_configs = device.supported_output_configs()
-        //     .expect("ERR: Failed to get supported outputs.");
-        // let config = supported_configs.next()
-        //     .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
 
-        let channels = spec.channels.count();
-        let config = cpal::StreamConfig {
-            channels: channels as cpal::ChannelCount,
-            sample_rate: cpal::SampleRate(spec.rate),
-            buffer_size: cpal::BufferSize::Default,
-        };
+        let config;
+
+        #[cfg(target_os = "windows")]
+        {
+            let mut supported_configs = device.supported_output_configs()
+                .expect("ERR: Failed to get supported outputs.");
+            config = supported_configs.next()
+                .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let channels = spec.channels.count();
+            config = cpal::StreamConfig {
+                channels: channels as cpal::ChannelCount,
+                sample_rate: cpal::SampleRate(spec.rate),
+                buffer_size: cpal::BufferSize::Default,
+            };
+        }
 
         (device, config)
     }

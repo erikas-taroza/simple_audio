@@ -95,7 +95,7 @@ class SimpleAudio
 
     Future<void> setMetadata(Metadata metadata) async
     {
-        if(Platform.isLinux)
+        if(Platform.isLinux || Platform.isWindows)
         {
             return api.setMetadataMethodPlayer(that: _player, metadata: metadata);
         }
