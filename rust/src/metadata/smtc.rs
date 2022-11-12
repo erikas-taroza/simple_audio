@@ -94,7 +94,7 @@ impl Smtc
             self.display.SetThumbnail(&stream).unwrap();
         }
 
-        let duration = PROGRESS.read().unwrap().as_ref().unwrap().duration;
+        let duration = PROGRESS.read().unwrap().duration;
 
         self.timeline.SetStartTime(Duration::default().into()).unwrap();
         self.timeline.SetMinSeekTime(Duration::default().into()).unwrap();
