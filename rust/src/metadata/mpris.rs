@@ -239,7 +239,6 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
         if progress.duration == 0 { continue; }
 
         map.insert("mpris:length".to_string(), Variant(Box::new(progress.duration)));
-        println!("Duration: {}", progress.duration);
         break;
     }
 

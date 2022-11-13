@@ -2,7 +2,7 @@
 
 use std::{sync::{Arc, Mutex, RwLock}, time::Duration};
 
-use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::RandomAccessStreamReference};
+use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus, PlaybackPositionChangeRequestedEventArgs}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::RandomAccessStreamReference};
 
 use crate::{audio::controls::PROGRESS, utils::playback_state::PlaybackState};
 
@@ -59,8 +59,8 @@ impl Smtc
                     SystemMediaTransportControlsButton::Stop => Event::Stop,
                     SystemMediaTransportControlsButton::Previous => Event::Previous,
                     SystemMediaTransportControlsButton::Next => Event::Next,
-                    // SystemMediaTransportControlsButton::Rewind
-                    // SystemMediaTransportControlsButton::FastForward
+                    SystemMediaTransportControlsButton::Rewind => Event::Seek(-10, false),
+                    SystemMediaTransportControlsButton::FastForward => Event::Seek(10, false),
                     _ => return Ok(())
                 };
 
@@ -69,7 +69,20 @@ impl Smtc
             }
         });
 
+        let position_callback = TypedEventHandler::new({
+            let callback = callback.clone();
+
+            move |_, args:&Option<_>| {
+                let args:&PlaybackPositionChangeRequestedEventArgs = args.as_ref().unwrap();
+                let position = Duration::from(args.RequestedPlaybackPosition().unwrap());
+                callback.lock().unwrap()(Event::Seek(position.as_secs() as i64, true));
+
+                Ok(())
+            }
+        });
+        
         controls.ButtonPressed(&button_callback).unwrap();
+        controls.PlaybackPositionChangeRequested(&position_callback).unwrap();
 
         Smtc { controls, display, timeline }
     }
@@ -93,13 +106,19 @@ impl Smtc
             let stream = RandomAccessStreamReference::CreateFromUri(&uri).unwrap();
             self.display.SetThumbnail(&stream).unwrap();
         }
-
-        let duration = PROGRESS.read().unwrap().duration;
-
+        
         self.timeline.SetStartTime(Duration::default().into()).unwrap();
         self.timeline.SetMinSeekTime(Duration::default().into()).unwrap();
-        self.timeline.SetEndTime(Duration::from_secs(duration).into()).unwrap();
-        self.timeline.SetMaxSeekTime(Duration::from_secs(duration).into()).unwrap();
+
+        loop
+        {
+            let progress = PROGRESS.read().unwrap();
+            if progress.duration == 0 { continue; }
+
+            self.timeline.SetEndTime(Duration::from_secs(progress.duration).into()).unwrap();
+            self.timeline.SetMaxSeekTime(Duration::from_secs(progress.duration).into()).unwrap();
+            break;
+        }
 
         self.controls.UpdateTimelineProperties(&self.timeline).unwrap();
         self.display.Update().unwrap();
