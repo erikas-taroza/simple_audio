@@ -44,7 +44,7 @@ impl Player
                     {
                         let progress = PROGRESS.read().unwrap();
                         if position.is_negative()
-                        { Self::internal_seek(progress.position - position.abs() as u64); }
+                        { Self::internal_seek(progress.position.saturating_sub(position.abs() as u64)); }
                         else
                         { Self::internal_seek(progress.position + position as u64); }
                     }
