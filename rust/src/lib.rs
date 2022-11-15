@@ -91,7 +91,9 @@ impl Player
     pub fn open(&self, path:String, autoplay:bool)
     {
         let source:Box<dyn MediaSource> = if path.contains("http") {
-            Box::new(Self::get_bytes_from_network(path))
+            if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
+            // Everything but m3u/m3u8
+            else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
         } else { Box::new(File::open(path).unwrap()) };
 
         Self::internal_stop();
@@ -104,15 +106,40 @@ impl Player
         });
     }
 
-    fn get_bytes_from_network(url:String) -> Cursor<Vec<u8>>
+    fn get_bytes_from_network(url:String) -> Vec<u8>
     {
         let response = Client::new().get(url.clone())
             .header("Range", "bytes=0-")
             .send()
             .expect(format!("ERR: Could not open {url}").as_str());
             
-        let bytes = response.bytes().unwrap().to_vec();
-        Cursor::new(bytes)
+        response.bytes().unwrap().to_vec()
+    }
+
+    /// This doesn't support all m3u files. It only supports files that have parts
+    /// of a whole song in mp3 format. For example:
+    /// - https://some-domain.com/part1.mp3
+    /// - https://some-domain.com/part2.mp3
+    /// - https://some-domain.com/part3.mp3
+    /// 
+    /// Which then gets combined into a single byte array.
+    fn open_m3u(url:String) -> Cursor<Vec<u8>>
+    {
+        let mut total_data = Vec::new();
+
+        let m3u_content = Client::new().get(url.clone())
+            .header("Range", "bytes=0-")
+            .send()
+            .expect(format!("ERR: Could not open {url}").as_str())
+            .text().expect("ERR: Could not read content of M3U file.");
+
+        for line in m3u_content.split("\n").collect::<Vec<&str>>()
+        {
+            if !line.contains("http") { continue; }
+            total_data.append(&mut Self::get_bytes_from_network(line.to_string()));
+        }
+
+        Cursor::new(total_data)
     }
 
     /// Allows for access in other places
