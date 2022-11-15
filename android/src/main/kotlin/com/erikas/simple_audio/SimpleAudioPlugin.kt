@@ -1,5 +1,6 @@
 package com.erikas.simple_audio
 
+import android.content.Intent
 import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -16,9 +17,14 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler {
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
 
+  private lateinit var mediaService:MediaService
+
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
     channel.setMethodCallHandler(this)
+
+    mediaService = MediaService()
+    mediaService.startService(Intent())
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {

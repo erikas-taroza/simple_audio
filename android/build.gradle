@@ -44,4 +44,8 @@ android {
     defaultConfig {
         minSdkVersion 16
     }
+
+    dependencies {
+        implementation 'androidx.media:media:1.6.0'
+    }
 }
