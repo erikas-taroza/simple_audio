@@ -18,11 +18,11 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 
+private const val CHANNEL_ID:String = "SimpleAudio::Notification"
+private const val NOTIFICATION_ID:Int = 777
+
 class MediaService : MediaBrowserServiceCompat()
 {
-    private val channelId:String = "SimpleAudio::Notification"
-    private val notificationId:Int = 777
-
     private var mediaSession:MediaSessionCompat? = null
     private lateinit var playbackState:PlaybackStateCompat.Builder
 
@@ -71,7 +71,7 @@ class MediaService : MediaBrowserServiceCompat()
 
     private fun buildNotification():Notification
     {
-        return NotificationCompat.Builder(baseContext, channelId).apply {
+        return NotificationCompat.Builder(baseContext, CHANNEL_ID).apply {
             val metadata = mediaSession!!.controller.metadata
             setContentTitle(metadata.getText(METADATA_KEY_TITLE))
             setContentText(metadata.getText(METADATA_KEY_ARTIST))
@@ -112,10 +112,10 @@ class MediaService : MediaBrowserServiceCompat()
             setSessionToken(sessionToken)
         }
 
-        val channel = NotificationChannel(channelId, "SimpleAudio", NotificationManager.IMPORTANCE_HIGH)
+        val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_HIGH)
         getNotificationManager().createNotificationChannel(channel)
 
-        startForeground(notificationId, buildNotification())
+        startForeground(NOTIFICATION_ID, buildNotification())
     }
 
     fun updateMediaSession()
@@ -134,6 +134,6 @@ class MediaService : MediaBrowserServiceCompat()
             setMetadata(metadataBuilder.build())
         }
 
-        getNotificationManager().notify(notificationId, buildNotification())
+        getNotificationManager().notify(NOTIFICATION_ID, buildNotification())
     }
 }
