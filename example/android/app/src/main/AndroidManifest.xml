@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.erikas.simple_audio_example">
 
+   <!-- This is required. -->
+   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
    <application
@@ -33,5 +35,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- This is required if you want to be able to see the notification. -->
+        <service
+            android:name="com.erikas.simple_audio.MediaService"
+            android:exported="true">
+        </service>
     </application>
 </manifest>
