@@ -48,11 +48,28 @@ class SimpleAudio
             if(!event) { onPreviousRequested?.call(); }
             else { onNextRequested?.call(); }
         });
+
+        methodChannel.setMethodCallHandler((call) async {
+            switch(call.method)
+            {
+                case "seek":
+                    _player.seek(seconds: call.arguments);
+                    break;
+            }
+        });
     }
 
     Future<void> open(String path, [bool autoplay = true]) async
     {
-        return await api.openMethodPlayer(that: _player, path: path, autoplay: autoplay);
+        await api.openMethodPlayer(that: _player, path: path, autoplay: autoplay);
+
+        if(Platform.isAndroid && autoplay)
+        {
+            methodChannel.invokeMethod("setPlaybackState", {
+                "state": PlaybackState.play.index,
+                "position": 0
+            });
+        }
     }
 
     Future<void> play() async
@@ -104,7 +121,7 @@ class SimpleAudio
         if(Platform.isAndroid)
         {
             methodChannel.invokeMethod("setPlaybackState", {
-                "state": PlaybackState.play.index,
+                "state": (await isPlaying ? PlaybackState.play : PlaybackState.pause).index,
                 "position": seconds
             });
         }

@@ -46,7 +46,7 @@ class MediaService : MediaBrowserServiceCompat()
         }
 
         override fun onSeekTo(pos:Long) {
-            println("Seek: ${pos / 1000}")
+            channel.invokeMethod("seek", pos / 1000)
             super.onSeekTo(pos)
         }
     }

@@ -12,15 +12,15 @@ import io.flutter.plugin.common.MethodChannel.Result
 // Initialized in the user's MainActivity.kt file.
 lateinit var mediaService:MediaService
 
+/// The MethodChannel that will the communication between Flutter and native Android
+///
+/// This local reference serves to register the plugin with the Flutter Engine and unregister it
+/// when the Flutter Engine is detached from the Activity
+lateinit var channel:MethodChannel
+
 /** SimpleAudioPlugin */
 class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 {
-    /// The MethodChannel that will the communication between Flutter and native Android
-    ///
-    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-    /// when the Flutter Engine is detached from the Activity
-    private lateinit var channel : MethodChannel
-
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding)
     {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
