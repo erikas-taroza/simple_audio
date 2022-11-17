@@ -19,6 +19,17 @@ class SimpleAudio
     Future<bool> get isPlaying => _player.isPlaying();
     Future<ProgressState> get _progress => _player.getProgress();
 
+    SimpleAudio()
+    {
+        methodChannel.setMethodCallHandler((call) async {
+            switch(call.method)
+            {
+                case "seek":
+                    seek(call.arguments);
+            }
+        });
+    }
+
     /// Initialize [SimpleAudio]. Should be done only once in the `main` method.
     /// 
     /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
@@ -48,15 +59,6 @@ class SimpleAudio
         Player.metadataCallbackStream(bridge: api).listen((event) {
             if(!event) { onPreviousRequested?.call(); }
             else { onNextRequested?.call(); }
-        });
-
-        methodChannel.setMethodCallHandler((call) async {
-            switch(call.method)
-            {
-                case "seek":
-                    _player.seek(seconds: call.arguments);
-                    break;
-            }
         });
     }
 
