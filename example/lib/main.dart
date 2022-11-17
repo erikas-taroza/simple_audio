@@ -96,12 +96,12 @@ class _MyAppState extends State<MyApp>
                                 child: const Text("Open File"),
                                 onPressed: () async {
                                     //TODO: File picker.
-                                    await player.open(r"/storage/emulated/0/Music/test.mp3");
                                     await player.setMetadata(Metadata(
                                         title: "Test Media",
                                         artist: "Test Artist",
                                         album: "Test Album"
                                     ));
+                                    await player.open(r"/storage/emulated/0/Music/test.mp3");
                                 },
                             ),
                             const SizedBox(height: 20),

@@ -140,16 +140,22 @@ class SimpleAudio
         }
         else if(Platform.isAndroid)
         {
-            // Wait for a valid duration.
-            while((await _progress).duration == 0) { continue; }
+            // Prevent users from awaiting this method
+            // and blocking their program infintely
+            Future<void> _() async
+            {
+                // Wait for a valid duration.
+                while((await _progress).duration == 0) { continue; }
 
-            return await methodChannel.invokeMethod("setMetadata", {
-                "title": metadata.title,
-                "artist": metadata.artist,
-                "album": metadata.album,
-                "artUrl": metadata.artUrl,
-                "duration": (await _progress).duration
-            });
+                await methodChannel.invokeMethod("setMetadata", {
+                    "title": metadata.title,
+                    "artist": metadata.artist,
+                    "album": metadata.album,
+                    "artUrl": metadata.artUrl,
+                    "duration": (await _progress).duration
+                });
+            }
+            _();
         }
     }
 }
