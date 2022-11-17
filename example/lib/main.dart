@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_audio/simple_audio.dart';
 
@@ -103,10 +102,6 @@ class _MyAppState extends State<MyApp>
                                         artist: "Test Artist",
                                         album: "Test Album"
                                     ));
-
-                                    //TODO: Remove this later.
-                                    const methodChannel = MethodChannel("simple_audio");
-                                    await methodChannel.invokeMethod("updateMediaSession");
                                 },
                             ),
                             const SizedBox(height: 20),

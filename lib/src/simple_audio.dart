@@ -2,6 +2,7 @@ export 'bridge_definitions.dart' show ProgressState, Metadata;
 
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:wakelock/wakelock.dart';
 
 import './ffi.dart';
@@ -10,6 +11,8 @@ late final Player _player;
 
 class SimpleAudio
 {
+    static MethodChannel methodChannel = const MethodChannel("simple_audio");
+
     late Stream<PlaybackState> playbackStateStream = api.playbackStateStreamStaticMethodPlayer()
         .map((event) => PlaybackState.values[event]).asBroadcastStream(); // Map the int event to a dart enum.
     late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer().asBroadcastStream();
@@ -98,6 +101,15 @@ class SimpleAudio
         if(Platform.isLinux || Platform.isWindows)
         {
             return api.setMetadataMethodPlayer(that: _player, metadata: metadata);
+        }
+        else if(Platform.isAndroid)
+        {
+            return await methodChannel.invokeMethod("updateMediaSession", {
+                "title": metadata.title,
+                "artist": metadata.artist,
+                "album": metadata.album,
+                "artUrl": metadata.artUrl
+            });
         }
     }
 }

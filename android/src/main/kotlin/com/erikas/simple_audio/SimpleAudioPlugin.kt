@@ -1,5 +1,6 @@
 package com.erikas.simple_audio
 
+import android.os.StrictMode
 import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -24,6 +25,11 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
         channel.setMethodCallHandler(this)
+
+        // Allows for HTTP requests to be made to get images
+        // for the media notification.
+        val policy: StrictMode.ThreadPolicy = StrictMode.ThreadPolicy.Builder().permitNetwork().build()
+        StrictMode.setThreadPolicy(policy)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
@@ -35,7 +41,12 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     {
         if(call.method == "updateMediaSession")
         {
-            mediaService.updateMediaSession()
+            mediaService.updateMediaSession(
+                call.argument("title"),
+                call.argument("artist"),
+                call.argument("album"),
+                call.argument("artUrl")
+            )
         }
         else { result.notImplemented() }
     }

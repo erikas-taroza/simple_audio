@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +19,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
+import java.net.URL
 
 private const val CHANNEL_ID:String = "SimpleAudio::Notification"
 private const val NOTIFICATION_ID:Int = 777
@@ -77,6 +80,19 @@ class MediaService : MediaBrowserServiceCompat()
             setContentText(metadata.getText(METADATA_KEY_ARTIST))
             setSubText(metadata.getText(METADATA_KEY_ALBUM))
 
+            val artUrl = metadata.getString(METADATA_KEY_ART_URI)
+            if(artUrl != null && artUrl.isNotEmpty()) {
+                val uri = Uri.parse(artUrl)
+
+                val bitmap = if(uri.scheme == "http" || uri.scheme == "https")
+                {
+                    val imageBytes = URL(artUrl).readBytes()
+                    BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.count())
+                }
+                else { BitmapFactory.decodeFile(artUrl) }
+                setLargeIcon(bitmap)
+            }
+
             // Required for showing the media style notification.
             setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -118,15 +134,21 @@ class MediaService : MediaBrowserServiceCompat()
         startForeground(NOTIFICATION_ID, buildNotification())
     }
 
-    fun updateMediaSession()
+    fun updateMediaSession(
+        title:String?,
+        artist:String?,
+        album:String?,
+        artUrl:String?
+    )
     {
         playbackState.setState(PlaybackStateCompat.STATE_PLAYING, 50, 1.0f)
 
         val metadataBuilder = MediaMetadataCompat.Builder().apply {
-            putText(METADATA_KEY_TITLE, "Title")
-            putText(METADATA_KEY_ARTIST, "Artist")
-            putText(METADATA_KEY_ALBUM, "Album")
+            putText(METADATA_KEY_TITLE, title ?: "Unknown Title")
+            putText(METADATA_KEY_ARTIST, artist ?: "Unknown Artist")
+            putText(METADATA_KEY_ALBUM, album ?: "Unknown Album")
             putLong(METADATA_KEY_DURATION, 100)
+            putString(METADATA_KEY_ART_URI, artUrl ?: "")
         }
 
         mediaSession!!.apply {
