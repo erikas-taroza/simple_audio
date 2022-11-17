@@ -12,9 +12,9 @@ class SimpleAudio
 {
     static MethodChannel methodChannel = const MethodChannel("simple_audio");
 
-    late Stream<PlaybackState> playbackStateStream = api.playbackStateStreamStaticMethodPlayer()
+    late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
         .map((event) => PlaybackState.values[event]).asBroadcastStream(); // Map the int event to a dart enum.
-    late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer().asBroadcastStream();
+    late Stream<ProgressState> progressStateStream = Player.progressStateStream(bridge: api).asBroadcastStream();
 
     Future<bool> get isPlaying => _player.isPlaying();
     Future<ProgressState> get _progress => _player.getProgress();
@@ -39,12 +39,13 @@ class SimpleAudio
         void Function()? onNextRequested
     }) async
     {
-        _player = await api.newStaticMethodPlayer(
+        _player = await Player.newPlayer(
+            bridge: api,
             mprisName: mprisName,
             hwnd: Platform.isWindows ? getHWND() : null
         );
 
-        api.metadataCallbackStreamStaticMethodPlayer().listen((event) {
+        Player.metadataCallbackStream(bridge: api).listen((event) {
             if(!event) { onPreviousRequested?.call(); }
             else { onNextRequested?.call(); }
         });
@@ -61,7 +62,7 @@ class SimpleAudio
 
     Future<void> open(String path, [bool autoplay = true]) async
     {
-        await api.openMethodPlayer(that: _player, path: path, autoplay: autoplay);
+        await _player.open(path: path, autoplay: autoplay);
 
         if(Platform.isAndroid && autoplay)
         {
@@ -82,7 +83,7 @@ class SimpleAudio
             });
         }
 
-        return await api.playMethodPlayer(that: _player);
+        return await _player.play();
     }
 
     Future<void> pause() async
@@ -95,7 +96,7 @@ class SimpleAudio
             });
         }
 
-        return await api.pauseMethodPlayer(that: _player);
+        return await _player.pause();
     }
 
     Future<void> stop() async
@@ -108,12 +109,12 @@ class SimpleAudio
             });
         }
 
-        return await api.stopMethodPlayer(that: _player);
+        return await _player.stop();
     }
 
     Future<void> setVolume(double volume) async
     {
-        return api.setVolumeMethodPlayer(that: _player, volume: volume);
+        return await _player.setVolume(volume: volume);
     }
 
     Future<void> seek(int seconds) async
@@ -126,14 +127,14 @@ class SimpleAudio
             });
         }
 
-        return api.seekMethodPlayer(that: _player, seconds: seconds);
+        return await _player.seek(seconds: seconds);
     }
 
     Future<void> setMetadata(Metadata metadata) async
     {
         if(Platform.isLinux || Platform.isWindows)
         {
-            return api.setMetadataMethodPlayer(that: _player, metadata: metadata);
+            return await _player.setMetadata(metadata: metadata);
         }
         else if(Platform.isAndroid)
         {
