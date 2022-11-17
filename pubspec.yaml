@@ -13,7 +13,6 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   ffi: ^2.0.1
   flutter_rust_bridge: ^1.49.0
-  wakelock: ^0.6.2
 
 dev_dependencies:
   flutter_test:

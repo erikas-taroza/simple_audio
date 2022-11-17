@@ -3,7 +3,6 @@ export 'bridge_definitions.dart' show ProgressState, Metadata;
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:wakelock/wakelock.dart';
 
 import './ffi.dart';
 
@@ -19,13 +18,7 @@ class SimpleAudio
 
     Future<bool> get isPlaying => _player.isPlaying();
 
-    static bool _wakelock = false;
-
     /// Initialize [SimpleAudio]. Should be done only once in the `main` method.
-    /// 
-    /// **[wakelock]** If set to true, this will prevent Android and iOS devices from stopping playback
-    /// due to inactivity. The lock activates when opening or playing something
-    /// but closes when the player is paused or stopped.
     /// 
     /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
     /// - Be less than or equal to 255 characters in length.
@@ -40,13 +33,11 @@ class SimpleAudio
     /// **[onNextRequested]** Callback for when the user wants to skip to the next media
     /// (via a media notification).
     static Future<void> init({
-        bool wakelock = true,
         String mprisName = "SimpleAudio",
         void Function()? onPreviousRequested,
         void Function()? onNextRequested
     }) async
     {
-        _wakelock = (Platform.isAndroid || Platform.isIOS) && wakelock;
         _player = await api.newStaticMethodPlayer(
             mprisName: mprisName,
             hwnd: Platform.isWindows ? getHWND() : null
@@ -60,29 +51,21 @@ class SimpleAudio
 
     Future<void> open(String path, [bool autoplay = true]) async
     {
-        if(_wakelock) { Wakelock.enable(); }
-
         return await api.openMethodPlayer(that: _player, path: path, autoplay: autoplay);
     }
 
     Future<void> play() async
     {
-        if(_wakelock) { Wakelock.enable(); }
-
         return await api.playMethodPlayer(that: _player);
     }
 
     Future<void> pause() async
     {
-        if(_wakelock) { Wakelock.disable(); }
-
         return await api.pauseMethodPlayer(that: _player);
     }
 
     Future<void> stop() async
     {
-        if(_wakelock) { Wakelock.disable(); }
-
         return await api.stopMethodPlayer(that: _player);
     }
 
