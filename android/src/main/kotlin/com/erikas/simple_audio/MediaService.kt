@@ -44,6 +44,11 @@ class MediaService : MediaBrowserServiceCompat()
             stopSelf()
             super.onStop()
         }
+
+        override fun onSeekTo(pos:Long) {
+            println("Seek: ${pos / 1000}")
+            super.onSeekTo(pos)
+        }
     }
 
     // This binder allows us to call instance methods to this service.
@@ -101,11 +106,14 @@ class MediaService : MediaBrowserServiceCompat()
         }.build()
     }
 
+    // This is called when the service is created in the user's MainActivity.kt
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate()
     {
         super.onCreate()
 
+        // Create the media session which defines the
+        // controls and registers the callbacks.
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
             playbackState = PlaybackStateCompat.Builder()
                 .setActions(
@@ -128,34 +136,48 @@ class MediaService : MediaBrowserServiceCompat()
             setSessionToken(sessionToken)
         }
 
+        // A channel needs to be registered. Otherwise, the notification will not display
+        // and an error will be thrown.
         val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_HIGH)
         getNotificationManager().createNotificationChannel(channel)
 
+        // Start this service as a foreground service by using the notification.
         startForeground(NOTIFICATION_ID, buildNotification())
     }
 
-    fun updateMediaSession(
+    fun setMetadata(
         title:String?,
         artist:String?,
         album:String?,
-        artUrl:String?
+        artUrl:String?,
+        duration:Int?
     )
     {
-        playbackState.setState(PlaybackStateCompat.STATE_PLAYING, 50, 1.0f)
-
         val metadataBuilder = MediaMetadataCompat.Builder().apply {
             putText(METADATA_KEY_TITLE, title ?: "Unknown Title")
             putText(METADATA_KEY_ARTIST, artist ?: "Unknown Artist")
             putText(METADATA_KEY_ALBUM, album ?: "Unknown Album")
-            putLong(METADATA_KEY_DURATION, 100)
             putString(METADATA_KEY_ART_URI, artUrl ?: "")
+            if(duration != null) putLong(METADATA_KEY_DURATION, duration.toLong() * 1000)
         }
 
-        mediaSession!!.apply {
-            setPlaybackState(playbackState.build())
-            setMetadata(metadataBuilder.build())
+        mediaSession!!.setMetadata(metadataBuilder.build())
+        getNotificationManager().notify(NOTIFICATION_ID, buildNotification())
+    }
+
+    // See enum type PlaybackState in simple_audio.dart for integer values.
+    fun setPlaybackState(state:Int?, position:Int?)
+    {
+        val translatedState = when(state)
+        {
+            0 -> PlaybackStateCompat.STATE_PLAYING
+            1 -> PlaybackStateCompat.STATE_PAUSED
+            2 -> PlaybackStateCompat.STATE_STOPPED
+            else -> PlaybackStateCompat.STATE_NONE
         }
 
+        playbackState.setState(translatedState, (position?.toLong() ?: 0) * 1000, 1.0f)
+        mediaSession!!.setPlaybackState(playbackState.build())
         getNotificationManager().notify(NOTIFICATION_ID, buildNotification())
     }
 }

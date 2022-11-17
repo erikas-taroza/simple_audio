@@ -17,6 +17,7 @@ class SimpleAudio
     late Stream<ProgressState> progressStateStream = api.progressStateStreamStaticMethodPlayer().asBroadcastStream();
 
     Future<bool> get isPlaying => _player.isPlaying();
+    Future<ProgressState> get _progress => _player.getProgress();
 
     /// Initialize [SimpleAudio]. Should be done only once in the `main` method.
     /// 
@@ -56,16 +57,40 @@ class SimpleAudio
 
     Future<void> play() async
     {
+        if(Platform.isAndroid)
+        {
+            methodChannel.invokeMethod("setPlaybackState", {
+                "state": PlaybackState.play.index,
+                "position": (await _progress).position
+            });
+        }
+
         return await api.playMethodPlayer(that: _player);
     }
 
     Future<void> pause() async
     {
+        if(Platform.isAndroid)
+        {
+            methodChannel.invokeMethod("setPlaybackState", {
+                "state": PlaybackState.pause.index,
+                "position": (await _progress).position
+            });
+        }
+
         return await api.pauseMethodPlayer(that: _player);
     }
 
     Future<void> stop() async
     {
+        if(Platform.isAndroid)
+        {
+            methodChannel.invokeMethod("setPlaybackState", {
+                "state": -1,
+                "position": 0
+            });
+        }
+
         return await api.stopMethodPlayer(that: _player);
     }
 
@@ -76,6 +101,14 @@ class SimpleAudio
 
     Future<void> seek(int seconds) async
     {
+        if(Platform.isAndroid)
+        {
+            methodChannel.invokeMethod("setPlaybackState", {
+                "state": PlaybackState.play.index,
+                "position": seconds
+            });
+        }
+
         return api.seekMethodPlayer(that: _player, seconds: seconds);
     }
 
@@ -87,11 +120,15 @@ class SimpleAudio
         }
         else if(Platform.isAndroid)
         {
-            return await methodChannel.invokeMethod("updateMediaSession", {
+            // Wait for a valid duration.
+            while((await _progress).duration == 0) { continue; }
+
+            return await methodChannel.invokeMethod("setMetadata", {
                 "title": metadata.title,
                 "artist": metadata.artist,
                 "album": metadata.album,
-                "artUrl": metadata.artUrl
+                "artUrl": metadata.artUrl,
+                "duration": (await _progress).duration
             });
         }
     }

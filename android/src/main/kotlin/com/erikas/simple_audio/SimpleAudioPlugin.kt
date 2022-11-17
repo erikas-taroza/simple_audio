@@ -39,15 +39,24 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result)
     {
-        if(call.method == "updateMediaSession")
+        when (call.method)
         {
-            mediaService.updateMediaSession(
-                call.argument("title"),
-                call.argument("artist"),
-                call.argument("album"),
-                call.argument("artUrl")
-            )
+            "setMetadata" -> {
+                mediaService.setMetadata(
+                    call.argument("title"),
+                    call.argument("artist"),
+                    call.argument("album"),
+                    call.argument("artUrl"),
+                    call.argument("duration")
+                )
+            }
+            "setPlaybackState" -> {
+                mediaService.setPlaybackState(
+                    call.argument("state"),
+                    call.argument("position")
+                )
+            }
+            else -> { result.notImplemented() }
         }
-        else { result.notImplemented() }
     }
 }

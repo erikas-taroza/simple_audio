@@ -106,10 +106,13 @@ impl Decoder
                     if packet.ts() < seek_ts { continue; }
                     
                     // Update the progress stream with calculated times.
-                    update_progress_state_stream(ProgressState {
+                    let progress = ProgressState {
                         position: timebase.calc_time(packet.ts()).seconds,
                         duration
-                    });
+                    };
+
+                    update_progress_state_stream(progress);
+                    *PROGRESS.write().unwrap() = progress;
 
                     // Write the decoded packet to CPAL.
                     if cpal_output.is_none()
