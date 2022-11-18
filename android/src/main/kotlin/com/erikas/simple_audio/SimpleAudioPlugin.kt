@@ -34,13 +34,14 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
     {
+        channel.invokeMethod("stop", null)
+        mediaService.kill()
+
         channel.setMethodCallHandler(null)
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result)
-    {
-        when (call.method)
-        {
+    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        when (call.method) {
             "setMetadata" -> {
                 mediaService.setMetadata(
                     call.argument("title"),

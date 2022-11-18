@@ -26,6 +26,10 @@ class SimpleAudio
             {
                 case "seek":
                     seek(call.arguments);
+                    break;
+                case "stop":
+                    stop();
+                    break;
             }
         });
     }

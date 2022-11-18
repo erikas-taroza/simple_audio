@@ -4,13 +4,10 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Binder
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
@@ -50,14 +47,6 @@ class MediaService : MediaBrowserServiceCompat()
             super.onSeekTo(pos)
         }
     }
-
-    // This binder allows us to call instance methods to this service.
-    // Without this, calling MediaService().updateMediaSession will not work
-    // because the mediaSession won't be initialized.
-    inner class MediaServiceBinder:Binder()
-    { fun getService():MediaService = this@MediaService }
-
-    override fun onBind(intent: Intent?): IBinder? = MediaServiceBinder()
 
     override fun onGetRoot(
         clientPackageName: String,
@@ -111,6 +100,7 @@ class MediaService : MediaBrowserServiceCompat()
     override fun onCreate()
     {
         super.onCreate()
+        mediaService = this
 
         // Create the media session which defines the
         // controls and registers the callbacks.
@@ -143,6 +133,14 @@ class MediaService : MediaBrowserServiceCompat()
 
         // Start this service as a foreground service by using the notification.
         startForeground(NOTIFICATION_ID, buildNotification())
+    }
+
+    fun kill()
+    {
+        mediaSession!!.isActive = false
+        mediaSession!!.release()
+        stopForeground(true)
+        stopSelf()
     }
 
     fun setMetadata(
