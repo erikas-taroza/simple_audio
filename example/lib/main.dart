@@ -6,11 +6,7 @@ import 'package:simple_audio/simple_audio.dart';
 
 void main() async
 {
-    SimpleAudio.init(
-        onNextRequested: () => debugPrint("Next"),
-        onPreviousRequested: () => debugPrint("Prev")
-    );
-    
+    SimpleAudio.init();
     runApp(const MyApp());
 }
 
@@ -24,7 +20,10 @@ class MyApp extends StatefulWidget
 
 class _MyAppState extends State<MyApp>
 {
-    final SimpleAudio player = SimpleAudio();
+    final SimpleAudio player = SimpleAudio(
+        onNextCallback: () => debugPrint("Next"),
+        onPreviousCallback: () => debugPrint("Prev")
+    );
 
     PlaybackState playbackState = PlaybackState.done;
     bool get isPlaying => playbackState == PlaybackState.play;

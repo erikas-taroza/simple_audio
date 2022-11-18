@@ -26,28 +26,6 @@ class MediaService : MediaBrowserServiceCompat()
     private var mediaSession:MediaSessionCompat? = null
     private lateinit var playbackState:PlaybackStateCompat.Builder
 
-    private val callback = object:MediaSessionCompat.Callback() {
-        override fun onPlay() {
-            println("Play")
-            super.onPlay()
-        }
-
-        override fun onPause() {
-            println("Pause")
-            super.onPause()
-        }
-
-        override fun onStop() {
-            stopSelf()
-            super.onStop()
-        }
-
-        override fun onSeekTo(pos:Long) {
-            channel.invokeMethod("seek", pos / 1000)
-            super.onSeekTo(pos)
-        }
-    }
-
     override fun onGetRoot(
         clientPackageName: String,
         clientUid: Int,
@@ -122,7 +100,7 @@ class MediaService : MediaBrowserServiceCompat()
 
             setPlaybackState(playbackState.build())
             setMetadata(metadataBuilder.build())
-            setCallback(callback)
+            setCallback(MediaServiceCallback())
             setSessionToken(sessionToken)
         }
 

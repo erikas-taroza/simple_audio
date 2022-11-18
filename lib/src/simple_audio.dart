@@ -19,16 +19,52 @@ class SimpleAudio
     Future<bool> get isPlaying => _player.isPlaying();
     Future<ProgressState> get _progress => _player.getProgress();
 
-    SimpleAudio()
+    void Function()? onPreviousCallback;
+    void Function()? onNextCallback;
+
+    /// **[onPreviousCallback]** Callback for when the user wants to skip to the previous media
+    /// (via a media notification).
+    /// 
+    /// **[onNextCallback]** Callback for when the user wants to skip to the next media
+    /// (via a media notification).
+    SimpleAudio({
+        this.onPreviousCallback,
+        this.onNextCallback
+    })
     {
+        Player.metadataCallbackStream(bridge: api).listen((event) {
+            if(!event) { onPreviousCallback?.call(); }
+            else { onPreviousCallback?.call(); }
+        });
+        
         methodChannel.setMethodCallHandler((call) async {
             switch(call.method)
             {
-                case "seek":
-                    seek(call.arguments);
+                case "play":
+                    play();
+                    break;
+                case "pause":
+                    pause();
                     break;
                 case "stop":
                     stop();
+                    break;
+                case "next":
+                    onNextCallback?.call();
+                    break;
+                case "previous":
+                    onPreviousCallback?.call();
+                    break;
+                case "seekRelative":
+                    int position = (await _progress).position;
+                    int seekTo = (call.arguments as int).isNegative ? 
+                        (position - 10).clamp(0, double.maxFinite).toInt()
+                        : position + 10;
+
+                    seek(seekTo);
+                    break;
+                case "seek":
+                    seek(call.arguments);
                     break;
             }
         });
@@ -42,16 +78,8 @@ class SimpleAudio
     /// - Can only contain these characters: "[A-Z][a-z][0-9]_"
     /// 
     /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
-    /// 
-    /// **[onPreviousRequested]** Callback for when the user wants to skip to the previous media
-    /// (via a media notification).
-    /// 
-    /// **[onNextRequested]** Callback for when the user wants to skip to the next media
-    /// (via a media notification).
     static Future<void> init({
-        String mprisName = "SimpleAudio",
-        void Function()? onPreviousRequested,
-        void Function()? onNextRequested
+        String mprisName = "SimpleAudio"
     }) async
     {
         _player = await Player.newPlayer(
@@ -59,11 +87,6 @@ class SimpleAudio
             mprisName: mprisName,
             hwnd: Platform.isWindows ? getHWND() : null
         );
-
-        Player.metadataCallbackStream(bridge: api).listen((event) {
-            if(!event) { onPreviousRequested?.call(); }
-            else { onNextRequested?.call(); }
-        });
     }
 
     Future<void> open(String path, [bool autoplay = true]) async
