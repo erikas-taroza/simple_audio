@@ -9,11 +9,23 @@ import android.support.v4.media.session.MediaSessionCompat
 class MediaServiceCallback: MediaSessionCompat.Callback()
 {
     override fun onPlay() {
+        if(mediaService.isPlaying)
+        {
+            onPause()
+            return
+        }
+
         channel.invokeMethod("play", null)
         super.onPlay()
     }
 
     override fun onPause() {
+        if(!mediaService.isPlaying)
+        {
+            onPlay()
+            return
+        }
+
         channel.invokeMethod("pause", null)
         super.onPause()
     }

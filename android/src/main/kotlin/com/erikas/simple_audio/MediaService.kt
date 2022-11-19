@@ -26,6 +26,8 @@ class MediaService : MediaBrowserServiceCompat()
     private var mediaSession:MediaSessionCompat? = null
     private lateinit var playbackState:PlaybackStateCompat.Builder
 
+    var isPlaying:Boolean = false
+
     override fun onGetRoot(
         clientPackageName: String,
         clientUid: Int,
@@ -144,12 +146,23 @@ class MediaService : MediaBrowserServiceCompat()
     // See enum type PlaybackState in simple_audio.dart for integer values.
     fun setPlaybackState(state:Int?, position:Int?)
     {
-        val translatedState = when(state)
-        {
-            0 -> PlaybackStateCompat.STATE_PLAYING
-            1 -> PlaybackStateCompat.STATE_PAUSED
-            2 -> PlaybackStateCompat.STATE_STOPPED
-            else -> PlaybackStateCompat.STATE_NONE
+        val translatedState = when(state) {
+            0 -> {
+                isPlaying = true
+                PlaybackStateCompat.STATE_PLAYING
+            }
+            1 -> {
+                isPlaying = false
+                PlaybackStateCompat.STATE_PAUSED
+            }
+            2 -> {
+                isPlaying = false
+                PlaybackStateCompat.STATE_STOPPED
+            }
+            else -> {
+                isPlaying = false
+                PlaybackStateCompat.STATE_NONE
+            }
         }
 
         playbackState.setState(translatedState, (position?.toLong() ?: 0) * 1000, 1.0f)
