@@ -10,7 +10,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
 // Initialized in the user's MainActivity.kt file.
-lateinit var mediaService:MediaService
+lateinit var simpleAudioService:SimpleAudioService
 
 /// The MethodChannel that will the communication between Flutter and native Android
 ///
@@ -35,7 +35,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
     {
         channel.invokeMethod("stop", null)
-        mediaService.kill()
+        simpleAudioService.kill()
 
         channel.setMethodCallHandler(null)
     }
@@ -43,7 +43,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "setMetadata" -> {
-                mediaService.setMetadata(
+                simpleAudioService.setMetadata(
                     call.argument("title"),
                     call.argument("artist"),
                     call.argument("album"),
@@ -52,7 +52,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
                 )
             }
             "setPlaybackState" -> {
-                mediaService.setPlaybackState(
+                simpleAudioService.setPlaybackState(
                     call.argument("state"),
                     call.argument("position")
                 )

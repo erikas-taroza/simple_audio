@@ -23,7 +23,7 @@ import java.net.URL
 private const val CHANNEL_ID:String = "SimpleAudio::Notification"
 private const val NOTIFICATION_ID:Int = 777
 
-class MediaService : MediaBrowserServiceCompat()
+class SimpleAudioService : MediaBrowserServiceCompat()
 {
     private var mediaSession:MediaSessionCompat? = null
     private lateinit var playbackState:PlaybackStateCompat.Builder
@@ -57,7 +57,7 @@ class MediaService : MediaBrowserServiceCompat()
             "Rewind",
             PendingIntent.getBroadcast(this,
                 0,
-                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_REWIND },
+                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_REWIND },
                 PendingIntent.FLAG_IMMUTABLE
             )
         ))
@@ -67,7 +67,7 @@ class MediaService : MediaBrowserServiceCompat()
             "Skip to Previous",
             PendingIntent.getBroadcast(this,
                 0,
-                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_PREV },
+                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_PREV },
                 PendingIntent.FLAG_IMMUTABLE
             )
         ))
@@ -79,7 +79,7 @@ class MediaService : MediaBrowserServiceCompat()
                 "Play",
                 PendingIntent.getBroadcast(this,
                     0,
-                    Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_PLAY },
+                    Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_PLAY },
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ))
@@ -91,7 +91,7 @@ class MediaService : MediaBrowserServiceCompat()
                 "Pause",
                 PendingIntent.getBroadcast(this,
                     0,
-                    Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_PAUSE },
+                    Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_PAUSE },
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ))
@@ -102,7 +102,7 @@ class MediaService : MediaBrowserServiceCompat()
             "Skip to Next",
             PendingIntent.getBroadcast(this,
                 0,
-                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_NEXT },
+                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_NEXT },
                 PendingIntent.FLAG_IMMUTABLE
             )
         ))
@@ -112,7 +112,7 @@ class MediaService : MediaBrowserServiceCompat()
             "Fast Forward",
             PendingIntent.getBroadcast(this,
                 0,
-                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_FAST_FORWARD },
+                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_FAST_FORWARD },
                 PendingIntent.FLAG_IMMUTABLE
             )
         ))
@@ -152,7 +152,7 @@ class MediaService : MediaBrowserServiceCompat()
     override fun onCreate()
     {
         super.onCreate()
-        mediaService = this
+        simpleAudioService = this
 
         // Create the media session which defines the
         // controls and registers the callbacks.
@@ -174,7 +174,7 @@ class MediaService : MediaBrowserServiceCompat()
 
             setPlaybackState(playbackState.build())
             setMetadata(metadataBuilder.build())
-            setCallback(MediaServiceCallback())
+            setCallback(SimpleAudioServiceCallback())
             setSessionToken(sessionToken)
         }
 

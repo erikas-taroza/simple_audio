@@ -14,20 +14,20 @@ const val ACTION_REWIND = ACTION_HEADER + "rewind"
 
 /**
  * Handles broadcast messages from notification button presses.
- * The buttons are configured in MediaService.kt
+ * The buttons are configured in SimpleAudioService.kt
  */
-class MediaServiceReceiver:BroadcastReceiver()
+class SimpleAudioReceiver:BroadcastReceiver()
 {
     override fun onReceive(context: Context?, intent: Intent?)
     {
         when(intent?.action)
         {
-            ACTION_PLAY -> MediaServiceCallback().onPlay()
-            ACTION_PAUSE -> MediaServiceCallback().onPause()
-            ACTION_NEXT -> MediaServiceCallback().onSkipToNext()
-            ACTION_PREV -> MediaServiceCallback().onSkipToPrevious()
-            ACTION_FAST_FORWARD -> MediaServiceCallback().onFastForward()
-            ACTION_REWIND -> MediaServiceCallback().onRewind()
+            ACTION_PLAY -> SimpleAudioServiceCallback().onPlay()
+            ACTION_PAUSE -> SimpleAudioServiceCallback().onPause()
+            ACTION_NEXT -> SimpleAudioServiceCallback().onSkipToNext()
+            ACTION_PREV -> SimpleAudioServiceCallback().onSkipToPrevious()
+            ACTION_FAST_FORWARD -> SimpleAudioServiceCallback().onFastForward()
+            ACTION_REWIND -> SimpleAudioServiceCallback().onRewind()
         }
     }
 }

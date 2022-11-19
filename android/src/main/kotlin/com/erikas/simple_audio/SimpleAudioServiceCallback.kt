@@ -6,10 +6,10 @@ import android.support.v4.media.session.MediaSessionCompat
  * Handles the common callbacks from the media
  * notification.
  */
-class MediaServiceCallback: MediaSessionCompat.Callback()
+class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
 {
     override fun onPlay() {
-        if(mediaService.isPlaying)
+        if(simpleAudioService.isPlaying)
         {
             onPause()
             return
@@ -20,7 +20,7 @@ class MediaServiceCallback: MediaSessionCompat.Callback()
     }
 
     override fun onPause() {
-        if(!mediaService.isPlaying)
+        if(!simpleAudioService.isPlaying)
         {
             onPlay()
             return
@@ -31,7 +31,7 @@ class MediaServiceCallback: MediaSessionCompat.Callback()
     }
 
     override fun onStop() {
-        mediaService.kill()
+        simpleAudioService.kill()
         super.onStop()
     }
 
