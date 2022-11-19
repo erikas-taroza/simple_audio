@@ -57,9 +57,9 @@ class SimpleAudio
                     break;
                 case "seekRelative":
                     int position = (await _progress).position;
-                    int seekTo = (call.arguments as int).isNegative ? 
-                        (position - 10).clamp(0, double.maxFinite).toInt()
-                        : position + 10;
+                    int seekTo = call.arguments as bool ?
+                        position + 10
+                        : (position - 10).clamp(0, double.maxFinite).toInt();
 
                     seek(seekTo);
                     break;

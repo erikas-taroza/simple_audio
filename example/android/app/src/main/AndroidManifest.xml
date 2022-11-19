@@ -38,8 +38,11 @@
 
         <!-- This is required if you want to be able to see the notification. -->
         <service
-            android:name="com.erikas.simple_audio.MediaService"
-            android:exported="true">
+            android:name="com.erikas.simple_audio.MediaService">
         </service>
+
+        <receiver
+            android:name="com.erikas.simple_audio.MediaServiceReceiver">
+        </receiver>
     </application>
 </manifest>

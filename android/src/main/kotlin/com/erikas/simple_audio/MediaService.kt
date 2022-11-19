@@ -52,18 +52,69 @@ class MediaService : MediaBrowserServiceCompat()
     {
         val actions:ArrayList<NotificationCompat.Action> = arrayListOf()
 
-//        PlaybackStateCompat.ACTION_PLAY
-//        or PlaybackStateCompat.ACTION_PAUSE
-//                or PlaybackStateCompat.ACTION_PLAY_PAUSE
-//                or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-//                or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-//                or PlaybackStateCompat.ACTION_FAST_FORWARD
-//                or PlaybackStateCompat.ACTION_REWIND
+        actions.add(NotificationCompat.Action(
+            R.drawable.rewind,
+            "Rewind",
+            PendingIntent.getBroadcast(this,
+                0,
+                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_REWIND },
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        ))
 
         actions.add(NotificationCompat.Action(
-            R.drawable.play,
-            "Play",
-            PendingIntent.getBroadcast(baseContext, 0, Intent("play"), PendingIntent.FLAG_IMMUTABLE)
+            R.drawable.skip_prev,
+            "Skip to Previous",
+            PendingIntent.getBroadcast(this,
+                0,
+                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_PREV },
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        ))
+
+        if(!isPlaying)
+        {
+            actions.add(NotificationCompat.Action(
+                R.drawable.play,
+                "Play",
+                PendingIntent.getBroadcast(this,
+                    0,
+                    Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_PLAY },
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            ))
+        }
+        else
+        {
+            actions.add(NotificationCompat.Action(
+                R.drawable.pause,
+                "Pause",
+                PendingIntent.getBroadcast(this,
+                    0,
+                    Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_PAUSE },
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            ))
+        }
+
+        actions.add(NotificationCompat.Action(
+            R.drawable.skip_next,
+            "Skip to Next",
+            PendingIntent.getBroadcast(this,
+                0,
+                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_NEXT },
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        ))
+
+        actions.add(NotificationCompat.Action(
+            R.drawable.fast_forward,
+            "Fast Forward",
+            PendingIntent.getBroadcast(this,
+                0,
+                Intent(this, MediaServiceReceiver::class.java).apply { action = ACTION_FAST_FORWARD },
+                PendingIntent.FLAG_IMMUTABLE
+            )
         ))
 
         return NotificationCompat.Builder(baseContext, CHANNEL_ID).apply {
@@ -86,9 +137,7 @@ class MediaService : MediaBrowserServiceCompat()
             }
 
             for(action in actions)
-            {
-                addAction(action)
-            }
+            { addAction(action) }
 
             // Required for showing the media style notification.
             setSmallIcon(R.mipmap.ic_launcher)
@@ -119,7 +168,7 @@ class MediaService : MediaBrowserServiceCompat()
                     or PlaybackStateCompat.ACTION_REWIND
                     or PlaybackStateCompat.ACTION_SEEK_TO
                 )
-                .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f)
+                .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
 
             val metadataBuilder = MediaMetadataCompat.Builder()
 

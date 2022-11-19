@@ -46,12 +46,12 @@ class MediaServiceCallback: MediaSessionCompat.Callback()
     }
 
     override fun onFastForward() {
-        channel.invokeMethod("seekRelative", 10)
+        channel.invokeMethod("seekRelative", true)
         super.onFastForward()
     }
 
     override fun onRewind() {
-        channel.invokeMethod("seekRelative", -10)
+        channel.invokeMethod("seekRelative", false)
         super.onRewind()
     }
 
