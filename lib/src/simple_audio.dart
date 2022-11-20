@@ -71,6 +71,7 @@ class SimpleAudio
     }
 
     /// Initialize [SimpleAudio]. This should only be done once in the `main` method.
+    /// This method should also be awaited.
     /// 
     /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
     /// - Be less than or equal to 255 characters in length.
@@ -92,11 +93,22 @@ class SimpleAudio
     /// want to have fast forward and rewind, you can exclude them here in a list.
     /// 
     /// NOTE: The order of the list does matter. If you want to have the rewind button before the play/pause button,
-    /// you would do [PlaybackActions.rewind, PlaybackActions.play, PlaybackActions.pause, ...]
+    /// you would do [Rewind, PlayPause, ...]
+    /// 
+    /// **[androidCompactPlaybackActions]** A list of numbers that represent the buttons
+    /// to show in the compact media notification. The indicies match with the ones
+    /// in [androidPlaybackActions].
+    /// 
+    /// For example, to use the middle 3:
+    /// 
+    /// androidPlaybackActions = [Rewind, SkipPrev, PlayPause, SkipNext, FastForward]
+    /// 
+    /// androidCompactPlaybackActions = [1, 2, 3]
     static Future<void> init({
         String mprisName = "SimpleAudio",
         String androidNotificationIconPath = "mipmap/ic_launcher",
-        List<PlaybackActions> androidPlaybackActions = PlaybackActions.values
+        List<PlaybackActions> androidPlaybackActions = PlaybackActions.values,
+        List<int> androidCompactPlaybackActions = const [2]
     }) async
     {
         _player = await Player.newPlayer(
@@ -107,13 +119,13 @@ class SimpleAudio
 
         if(Platform.isAndroid)
         {
-            // You must include these actions.
-            assert(androidPlaybackActions.contains(PlaybackActions.play) 
-                && androidPlaybackActions.contains(PlaybackActions.pause));
+            // You must include this action.
+            assert(androidPlaybackActions.contains(PlaybackActions.playPause));
             
-            await methodChannel.invokeMethod("init", {
+            methodChannel.invokeMethod("init", {
                 "icon": androidNotificationIconPath,
-                "actions": androidPlaybackActions.map((e) => e.index).toList()
+                "actions": androidPlaybackActions.map((e) => e.index).toList(),
+                "compactActions": androidCompactPlaybackActions
             });
         }
     }
@@ -227,8 +239,7 @@ enum PlaybackActions
 {
     rewind,
     skipPrev,
-    play,
-    pause,
+    playPause,
     skipNext,
     fastForward
 }

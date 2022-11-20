@@ -31,6 +31,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     // Set in the init callback in SimpleAudioPlugin.kt
     var iconPath:String = "mipmap/ic_launcher"
     var playbackActions:List<PlaybackActions> = PlaybackActions.values().toList()
+    var compactPlaybackActions:List<Int> = listOf()
 
     var isPlaying:Boolean = false
 
@@ -49,6 +50,13 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         result.sendResult(null)
     }
 
+    // This is called when the service is created in the user's MainActivity.kt
+    override fun onCreate()
+    {
+        super.onCreate()
+        simpleAudioService = this
+    }
+
     private fun getNotificationManager():NotificationManager
     { return getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
 
@@ -58,7 +66,22 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
         for(action in playbackActions)
         {
-            if((isPlaying && action == PlaybackActions.Play) || (!isPlaying && action == PlaybackActions.Pause)) continue
+            if(action == PlaybackActions.PlayPause)
+            {
+                actions.add(NotificationCompat.Action(
+                    if(!isPlaying) R.drawable.play else R.drawable.pause,
+                    if(!isPlaying) "Play" else "Pause",
+                    PendingIntent.getBroadcast(this,
+                        0,
+                        Intent(this, SimpleAudioReceiver::class.java).apply {
+                            this.action = if(!isPlaying) ACTION_PLAY else ACTION_PAUSE
+                        },
+                        PendingIntent.FLAG_IMMUTABLE
+                    )
+                ))
+
+                continue
+            }
 
             actions.add(NotificationCompat.Action(
                 action.data.icon,
@@ -102,26 +125,27 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession!!.sessionToken)
-                .setShowActionsInCompactView(1, 2, 3))
+                .setShowActionsInCompactView(*compactPlaybackActions.toIntArray()))
         }.build()
     }
 
-    // This is called when the service is created in the user's MainActivity.kt
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCreate()
+    fun init()
     {
-        super.onCreate()
-        simpleAudioService = this
-
         // Create the media session which defines the
         // controls and registers the callbacks.
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
-            var actions:Long = PlaybackStateCompat.ACTION_SEEK_TO or PlaybackStateCompat.ACTION_PLAY_PAUSE
+            var actions:Long = 0
             for(action in playbackActions)
             { actions = actions.or(action.data.sessionAction) }
 
             playbackState = PlaybackStateCompat.Builder()
-                .setActions(actions)
+                .setActions(actions
+                        // Defaults (ACTION_PLAY_PAUSE is added above via playbackActions)
+                        or PlaybackStateCompat.ACTION_SEEK_TO
+                        or PlaybackStateCompat.ACTION_PLAY
+                        or PlaybackStateCompat.ACTION_PAUSE
+                )
                 .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
 
             val metadataBuilder = MediaMetadataCompat.Builder()

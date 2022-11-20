@@ -1,8 +1,10 @@
 package com.erikas.simple_audio
 
+import android.os.Build
 import android.os.StrictMode
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -41,6 +43,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
         channel.setMethodCallHandler(null)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "init" -> {
@@ -49,7 +52,11 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
                 val actions = ArrayList<PlaybackActions>()
                 for(action in call.argument<List<Int>>("actions")!!)
                 { actions.add(PlaybackActions.values()[action]) }
+
                 simpleAudioService.playbackActions = actions
+                simpleAudioService.compactPlaybackActions = call.argument<List<Int>>("compactActions")!!
+
+                simpleAudioService.init()
             }
             "setMetadata" -> {
                 simpleAudioService.setMetadata(
@@ -75,8 +82,7 @@ enum class PlaybackActions(val data:PlaybackActionsMapping)
 {
     Rewind(PlaybackActionsMapping(R.drawable.rewind, "Rewind", PlaybackStateCompat.ACTION_REWIND, ACTION_REWIND)),
     SkipPrev(PlaybackActionsMapping(R.drawable.skip_prev, "Skip Prev", PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, ACTION_PREV)),
-    Play(PlaybackActionsMapping(R.drawable.play, "Play", PlaybackStateCompat.ACTION_PLAY, ACTION_PLAY)),
-    Pause(PlaybackActionsMapping(R.drawable.pause, "Pause", PlaybackStateCompat.ACTION_PAUSE, ACTION_PAUSE)),
+    PlayPause(PlaybackActionsMapping(0, "PlayPause", PlaybackStateCompat.ACTION_PLAY_PAUSE, "")),
     SkipNext(PlaybackActionsMapping(R.drawable.skip_next, "Skip Next", PlaybackStateCompat.ACTION_SKIP_TO_NEXT, ACTION_NEXT)),
     FastForward(PlaybackActionsMapping(R.drawable.fast_forward, "Fast Forward", PlaybackStateCompat.ACTION_FAST_FORWARD, ACTION_FAST_FORWARD))
 }
