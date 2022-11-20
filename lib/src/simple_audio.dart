@@ -86,9 +86,17 @@ class SimpleAudio
     /// icon is bundled properly, see https://developer.android.com/studio/build/shrink-code#keep-resources
     /// 
     /// To create an icon, see: https://developer.android.com/studio/write/image-asset-studio#create-adaptive
+    /// 
+    /// **[androidPlaybackActions]** A list of [PlaybackActions] to determine the capabilities
+    /// that the Android media session and notification will have. For example, if you didn't
+    /// want to have fast forward and rewind, you can exclude them here in a list.
+    /// 
+    /// NOTE: The order of the list does matter. If you want to have the rewind button before the play/pause button,
+    /// you would do [PlaybackActions.rewind, PlaybackActions.play, PlaybackActions.pause, ...]
     static Future<void> init({
         String mprisName = "SimpleAudio",
-        String androidNotificationIconPath = "mipmap/ic_launcher"
+        String androidNotificationIconPath = "mipmap/ic_launcher",
+        List<PlaybackActions> androidPlaybackActions = PlaybackActions.values
     }) async
     {
         _player = await Player.newPlayer(
@@ -99,8 +107,13 @@ class SimpleAudio
 
         if(Platform.isAndroid)
         {
-            methodChannel.invokeMethod("init", {
-                "icon": androidNotificationIconPath
+            // You must include these actions.
+            assert(androidPlaybackActions.contains(PlaybackActions.play) 
+                && androidPlaybackActions.contains(PlaybackActions.pause));
+            
+            await methodChannel.invokeMethod("init", {
+                "icon": androidNotificationIconPath,
+                "actions": androidPlaybackActions.map((e) => e.index).toList()
             });
         }
     }
@@ -208,4 +221,14 @@ enum PlaybackState
     play,
     pause,
     done
+}
+
+enum PlaybackActions
+{
+    rewind,
+    skipPrev,
+    play,
+    pause,
+    skipNext,
+    fastForward
 }

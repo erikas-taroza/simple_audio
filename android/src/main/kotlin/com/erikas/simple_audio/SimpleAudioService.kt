@@ -30,6 +30,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     // Set in the init callback in SimpleAudioPlugin.kt
     var iconPath:String = "mipmap/ic_launcher"
+    var playbackActions:List<PlaybackActions> = PlaybackActions.values().toList()
 
     var isPlaying:Boolean = false
 
@@ -55,70 +56,20 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     {
         val actions:ArrayList<NotificationCompat.Action> = arrayListOf()
 
-        actions.add(NotificationCompat.Action(
-            R.drawable.rewind,
-            "Rewind",
-            PendingIntent.getBroadcast(this,
-                0,
-                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_REWIND },
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        ))
-
-        actions.add(NotificationCompat.Action(
-            R.drawable.skip_prev,
-            "Skip to Previous",
-            PendingIntent.getBroadcast(this,
-                0,
-                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_PREV },
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        ))
-
-        if(!isPlaying)
+        for(action in playbackActions)
         {
+            if((isPlaying && action == PlaybackActions.Play) || (!isPlaying && action == PlaybackActions.Pause)) continue
+
             actions.add(NotificationCompat.Action(
-                R.drawable.play,
-                "Play",
+                action.data.icon,
+                action.data.name,
                 PendingIntent.getBroadcast(this,
                     0,
-                    Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_PLAY },
+                    Intent(this, SimpleAudioReceiver::class.java).apply { this.action = action.data.notificationAction },
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ))
         }
-        else
-        {
-            actions.add(NotificationCompat.Action(
-                R.drawable.pause,
-                "Pause",
-                PendingIntent.getBroadcast(this,
-                    0,
-                    Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_PAUSE },
-                    PendingIntent.FLAG_IMMUTABLE
-                )
-            ))
-        }
-
-        actions.add(NotificationCompat.Action(
-            R.drawable.skip_next,
-            "Skip to Next",
-            PendingIntent.getBroadcast(this,
-                0,
-                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_NEXT },
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        ))
-
-        actions.add(NotificationCompat.Action(
-            R.drawable.fast_forward,
-            "Fast Forward",
-            PendingIntent.getBroadcast(this,
-                0,
-                Intent(this, SimpleAudioReceiver::class.java).apply { action = ACTION_FAST_FORWARD },
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        ))
 
         return NotificationCompat.Builder(baseContext, CHANNEL_ID).apply {
             val metadata = mediaSession!!.controller.metadata
@@ -150,7 +101,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setStyle(androidx.media.app.NotificationCompat.MediaStyle()
-                .setMediaSession(mediaSession!!.sessionToken))
+                .setMediaSession(mediaSession!!.sessionToken)
+                .setShowActionsInCompactView(1, 2, 3))
         }.build()
     }
 
@@ -164,17 +116,12 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         // Create the media session which defines the
         // controls and registers the callbacks.
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
+            var actions:Long = PlaybackStateCompat.ACTION_SEEK_TO or PlaybackStateCompat.ACTION_PLAY_PAUSE
+            for(action in playbackActions)
+            { actions = actions.or(action.data.sessionAction) }
+
             playbackState = PlaybackStateCompat.Builder()
-                .setActions(
-                    PlaybackStateCompat.ACTION_PLAY
-                    or PlaybackStateCompat.ACTION_PAUSE
-                    or PlaybackStateCompat.ACTION_PLAY_PAUSE
-                    or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-                    or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                    or PlaybackStateCompat.ACTION_FAST_FORWARD
-                    or PlaybackStateCompat.ACTION_REWIND
-                    or PlaybackStateCompat.ACTION_SEEK_TO
-                )
+                .setActions(actions)
                 .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
 
             val metadataBuilder = MediaMetadataCompat.Builder()
