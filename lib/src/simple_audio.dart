@@ -70,7 +70,7 @@ class SimpleAudio
         });
     }
 
-    /// Initialize [SimpleAudio]. Should be done only once in the `main` method.
+    /// Initialize [SimpleAudio]. This should only be done once in the `main` method.
     /// 
     /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
     /// - Be less than or equal to 255 characters in length.
@@ -78,8 +78,17 @@ class SimpleAudio
     /// - Can only contain these characters: "[A-Z][a-z][0-9]_"
     /// 
     /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
+    /// 
+    /// **[androidNotificationIconPath]** A path that points to the icon the Android media
+    /// notification will use. This icon should be stored in `./android/app/src/main/res/mipmap-xxx`.
+    /// You will want to create images that are sized accordingly to the pixel density.
+    /// The icon should also be monochrome so that it renders properly. To ensure that this
+    /// icon is bundled properly, see https://developer.android.com/studio/build/shrink-code#keep-resources
+    /// 
+    /// To create an icon, see: https://developer.android.com/studio/write/image-asset-studio#create-adaptive
     static Future<void> init({
-        String mprisName = "SimpleAudio"
+        String mprisName = "SimpleAudio",
+        String androidNotificationIconPath = "mipmap/ic_launcher"
     }) async
     {
         _player = await Player.newPlayer(
@@ -87,6 +96,13 @@ class SimpleAudio
             mprisName: mprisName,
             hwnd: Platform.isWindows ? getHWND() : null
         );
+
+        if(Platform.isAndroid)
+        {
+            methodChannel.invokeMethod("init", {
+                "icon": androidNotificationIconPath
+            });
+        }
     }
 
     Future<void> open(String path, [bool autoplay = true]) async

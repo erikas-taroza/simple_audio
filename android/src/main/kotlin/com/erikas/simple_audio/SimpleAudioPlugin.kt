@@ -42,6 +42,9 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
+            "init" -> {
+                simpleAudioService.iconPath = call.argument("icon")!!
+            }
             "setMetadata" -> {
                 simpleAudioService.setMetadata(
                     call.argument("title"),

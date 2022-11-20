@@ -28,6 +28,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     private var mediaSession:MediaSessionCompat? = null
     private lateinit var playbackState:PlaybackStateCompat.Builder
 
+    // Set in the init callback in SimpleAudioPlugin.kt
+    lateinit var iconPath:String
+
     var isPlaying:Boolean = false
 
     override fun onGetRoot(
@@ -140,7 +143,11 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             { addAction(action) }
 
             // Required for showing the media style notification.
-            setSmallIcon(0)
+            val split = iconPath.split("/")
+            val type = split[0] // Ex: mipmap
+            val name = split[1] // Ex: ic_launcher
+            setSmallIcon(resources.getIdentifier(name, type, applicationContext.packageName))
+
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession!!.sessionToken))
