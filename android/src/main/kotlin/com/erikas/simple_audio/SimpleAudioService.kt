@@ -29,7 +29,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     private lateinit var playbackState:PlaybackStateCompat.Builder
 
     // Set in the init callback in SimpleAudioPlugin.kt
-    lateinit var iconPath:String
+    var iconPath:String = "mipmap/ic_launcher"
 
     var isPlaying:Boolean = false
 
