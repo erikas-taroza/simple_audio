@@ -140,7 +140,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             { addAction(action) }
 
             // Required for showing the media style notification.
-            setSmallIcon(R.mipmap.ic_launcher)
+            setSmallIcon(0)
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession!!.sessionToken))
