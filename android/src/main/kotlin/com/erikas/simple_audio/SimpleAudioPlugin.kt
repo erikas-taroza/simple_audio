@@ -1,10 +1,8 @@
 package com.erikas.simple_audio
 
-import android.os.Build
 import android.os.StrictMode
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.NonNull
-import androidx.annotation.RequiresApi
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -44,7 +42,6 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
         channel.setMethodCallHandler(null)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "init" -> {

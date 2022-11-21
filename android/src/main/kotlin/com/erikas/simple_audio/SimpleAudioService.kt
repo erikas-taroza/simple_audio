@@ -15,7 +15,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 import java.net.URL
@@ -39,7 +38,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         clientPackageName: String,
         clientUid: Int,
         rootHints: Bundle?
-    ): BrowserRoot? {
+    ): BrowserRoot {
         return BrowserRoot("root", null)
     }
 
@@ -62,35 +61,38 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     private fun buildNotification():Notification
     {
+        fun buildAction(icon:Int, name:String, action:String):NotificationCompat.Action
+        {
+            return NotificationCompat.Action(
+                icon,
+                name,
+                PendingIntent.getBroadcast(this,
+                    0,
+                    Intent(this, SimpleAudioReceiver::class.java).apply { this.action = action },
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+                )
+            )
+        }
+
         val actions:ArrayList<NotificationCompat.Action> = arrayListOf()
 
         for(action in playbackActions)
         {
             if(action == PlaybackActions.PlayPause)
             {
-                actions.add(NotificationCompat.Action(
+                actions.add(buildAction(
                     if(!isPlaying) R.drawable.play else R.drawable.pause,
                     if(!isPlaying) "Play" else "Pause",
-                    PendingIntent.getBroadcast(this,
-                        0,
-                        Intent(this, SimpleAudioReceiver::class.java).apply {
-                            this.action = if(!isPlaying) ACTION_PLAY else ACTION_PAUSE
-                        },
-                        PendingIntent.FLAG_IMMUTABLE
-                    )
+                    if(!isPlaying) ACTION_PLAY else ACTION_PAUSE
                 ))
 
                 continue
             }
 
-            actions.add(NotificationCompat.Action(
+            actions.add(buildAction(
                 action.data.icon,
                 action.data.name,
-                PendingIntent.getBroadcast(this,
-                    0,
-                    Intent(this, SimpleAudioReceiver::class.java).apply { this.action = action.data.notificationAction },
-                    PendingIntent.FLAG_IMMUTABLE
-                )
+                action.data.notificationAction
             ))
         }
 
@@ -130,7 +132,6 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         }.build()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun init()
     {
         // Create the media session which defines the
@@ -159,8 +160,11 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
         // A channel needs to be registered. Otherwise, the notification will not display
         // and an error will be thrown.
-        val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_LOW)
-        getNotificationManager().createNotificationChannel(channel)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_LOW)
+            getNotificationManager().createNotificationChannel(channel)
+        }
 
         // Start this service as a foreground service by using the notification.
         startForeground(NOTIFICATION_ID, buildNotification())
