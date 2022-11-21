@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
@@ -113,7 +114,12 @@ class SimpleAudioService : MediaBrowserServiceCompat()
                     BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.count())
                 }
                 else { BitmapFactory.decodeFile(artUrl) }
-                setLargeIcon(bitmap)
+
+                // Handle rectangular images and scale them in
+                // so that they are in a square format.
+                if(bitmap.width > bitmap.height)
+                { setLargeIcon(Bitmap.createScaledBitmap(bitmap, bitmap.height, bitmap.height, false)) }
+                else { setLargeIcon(bitmap) }
             }
 
             for(action in actions)
