@@ -71,7 +71,6 @@ class SimpleAudio
     }
 
     /// Initialize [SimpleAudio]. This should only be done once in the `main` method.
-    /// This method should also be awaited.
     /// 
     /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
     /// - Be less than or equal to 255 characters in length.
