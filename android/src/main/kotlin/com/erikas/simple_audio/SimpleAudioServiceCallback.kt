@@ -9,7 +9,7 @@ import android.support.v4.media.session.MediaSessionCompat
 class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
 {
     override fun onPlay() {
-        if(simpleAudioService.isPlaying)
+        if(simpleAudioService!!.isPlaying)
         {
             onPause()
             return
@@ -20,7 +20,7 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
     }
 
     override fun onPause() {
-        if(!simpleAudioService.isPlaying)
+        if(!simpleAudioService!!.isPlaying)
         {
             onPlay()
             return
@@ -31,7 +31,7 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
     }
 
     override fun onStop() {
-        simpleAudioService.kill()
+        simpleAudioService!!.kill()
         super.onStop()
     }
 

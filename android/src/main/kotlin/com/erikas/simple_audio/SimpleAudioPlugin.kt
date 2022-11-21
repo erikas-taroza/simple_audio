@@ -13,7 +13,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
 // Initialized in the user's MainActivity.kt file.
-lateinit var simpleAudioService:SimpleAudioService
+var simpleAudioService:SimpleAudioService? = null
 
 /// The MethodChannel that will the communication between Flutter and native Android
 ///
@@ -38,7 +38,8 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
     {
         channel.invokeMethod("stop", null)
-        simpleAudioService.kill()
+        simpleAudioService?.kill()
+        simpleAudioService = null
 
         channel.setMethodCallHandler(null)
     }
@@ -47,19 +48,19 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "init" -> {
-                simpleAudioService.iconPath = call.argument("icon")!!
+                simpleAudioService?.iconPath = call.argument("icon")!!
 
                 val actions = ArrayList<PlaybackActions>()
                 for(action in call.argument<List<Int>>("actions")!!)
                 { actions.add(PlaybackActions.values()[action]) }
 
-                simpleAudioService.playbackActions = actions
-                simpleAudioService.compactPlaybackActions = call.argument<List<Int>>("compactActions")!!
+                simpleAudioService?.playbackActions = actions
+                simpleAudioService?.compactPlaybackActions = call.argument<List<Int>>("compactActions")!!
 
-                simpleAudioService.init()
+                simpleAudioService?.init()
             }
             "setMetadata" -> {
-                simpleAudioService.setMetadata(
+                simpleAudioService?.setMetadata(
                     call.argument("title"),
                     call.argument("artist"),
                     call.argument("album"),
@@ -68,7 +69,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
                 )
             }
             "setPlaybackState" -> {
-                simpleAudioService.setPlaybackState(
+                simpleAudioService?.setPlaybackState(
                     call.argument("state"),
                     call.argument("position")
                 )

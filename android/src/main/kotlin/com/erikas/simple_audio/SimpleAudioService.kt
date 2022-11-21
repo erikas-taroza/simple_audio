@@ -99,6 +99,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setContentTitle(metadata.getText(METADATA_KEY_TITLE))
             setContentText(metadata.getText(METADATA_KEY_ARTIST))
             setSubText(metadata.getText(METADATA_KEY_ALBUM))
+            setOngoing(true)
 
             val artUrl = metadata.getString(METADATA_KEY_ART_URI)
             if(artUrl != null && artUrl.isNotEmpty()) {
@@ -158,7 +159,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
         // A channel needs to be registered. Otherwise, the notification will not display
         // and an error will be thrown.
-        val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_HIGH)
+        val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_LOW)
         getNotificationManager().createNotificationChannel(channel)
 
         // Start this service as a foreground service by using the notification.
