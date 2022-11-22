@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp>
 
             if(event == PlaybackState.done)
             {
-                player.open(r"/storage/emulated/0/Music/test.mp3");
+                player.open(r"/Users/typicalegg/Downloads/test.mp3");
                 player.setMetadata(Metadata(
                     title: "Test Media",
                     artist: "Test Artist",
@@ -100,7 +100,7 @@ class _MyAppState extends State<MyApp>
                                         artist: "Test Artist",
                                         album: "Test Album"
                                     ));
-                                    await player.open(r"/storage/emulated/0/Music/test.mp3");
+                                    await player.open(r"/Users/typicalegg/Downloads/test.mp3");
                                 },
                             ),
                             const SizedBox(height: 20),
