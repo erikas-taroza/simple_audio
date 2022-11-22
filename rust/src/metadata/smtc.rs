@@ -100,9 +100,9 @@ impl Smtc
         if let Some(album) = metadata.album
         { properties.SetAlbumTitle(&HSTRING::from(album)).unwrap(); }
 
-        if let Some(art_url) = metadata.art_url
+        if let Some(art_uri) = metadata.art_uri
         {
-            let uri = Uri::CreateUri(&HSTRING::from(art_url)).unwrap();
+            let uri = Uri::CreateUri(&HSTRING::from(art_uri)).unwrap();
             let stream = RandomAccessStreamReference::CreateFromUri(&uri).unwrap();
             self.display.SetThumbnail(&stream).unwrap();
         }

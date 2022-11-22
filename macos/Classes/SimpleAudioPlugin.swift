@@ -29,7 +29,7 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
                     title: args["title"] as? String,
                     artist: args["artist"] as? String,
                     album: args["album"] as? String,
-                    artUrl: args["artUrl"] as? String,
+                    artUri: args["artUri"] as? String,
                     duration: args["duration"] as? Int
                 )
             case "setPlaybackState":
@@ -101,7 +101,7 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
         title:String?,
         artist:String?,
         album:String?,
-        artUrl:String?,
+        artUri:String?,
         duration:Int?
     )
     {
@@ -112,10 +112,10 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
             MPMediaItemPropertyPlaybackDuration: String(duration ?? 0)
         ]
         
-        if #available(macOS 10.13.2, *), artUrl != nil {
+        if #available(macOS 10.13.2, *), artUri != nil {
             let size = CGSize(width: 200, height: 200)
             let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
-                return NSImage(contentsOf: URL(string: artUrl!)!)!
+                return NSImage(contentsOf: URL(string: artUri!)!)!
             })
             currentMetadata[MPMediaItemPropertyArtwork] = artwork
         }

@@ -6,7 +6,7 @@ pub struct Metadata
     pub title:Option<String>,
     pub artist:Option<String>,
     pub album:Option<String>,
-    pub art_url:Option<String>
+    pub art_uri:Option<String>
 }
 
 /// Callback events from the media notification.

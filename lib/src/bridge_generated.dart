@@ -385,7 +385,7 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
     wireObj.title = api2wire_opt_String(apiObj.title);
     wireObj.artist = api2wire_opt_String(apiObj.artist);
     wireObj.album = api2wire_opt_String(apiObj.album);
-    wireObj.art_url = api2wire_opt_String(apiObj.artUrl);
+    wireObj.art_uri = api2wire_opt_String(apiObj.artUri);
   }
 
   void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {
@@ -752,7 +752,7 @@ class wire_Metadata extends ffi.Struct {
 
   external ffi.Pointer<wire_uint_8_list> album;
 
-  external ffi.Pointer<wire_uint_8_list> art_url;
+  external ffi.Pointer<wire_uint_8_list> art_uri;
 }
 
 typedef DartPostCObjectFnType = ffi.Pointer<

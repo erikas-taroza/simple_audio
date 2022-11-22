@@ -19,7 +19,7 @@ typedef struct wire_Metadata {
   struct wire_uint_8_list *title;
   struct wire_uint_8_list *artist;
   struct wire_uint_8_list *album;
-  struct wire_uint_8_list *art_url;
+  struct wire_uint_8_list *art_uri;
 } wire_Metadata;
 
 typedef struct WireSyncReturnStruct {

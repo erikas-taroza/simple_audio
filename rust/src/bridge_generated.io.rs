@@ -133,7 +133,7 @@ impl Wire2Api<Metadata> for wire_Metadata {
             title: self.title.wire2api(),
             artist: self.artist.wire2api(),
             album: self.album.wire2api(),
-            art_url: self.art_url.wire2api(),
+            art_uri: self.art_uri.wire2api(),
         }
     }
 }
@@ -162,7 +162,7 @@ pub struct wire_Metadata {
     title: *mut wire_uint_8_list,
     artist: *mut wire_uint_8_list,
     album: *mut wire_uint_8_list,
-    art_url: *mut wire_uint_8_list,
+    art_uri: *mut wire_uint_8_list,
 }
 
 #[repr(C)]
@@ -196,7 +196,7 @@ impl NewWithNullPtr for wire_Metadata {
             title: core::ptr::null_mut(),
             artist: core::ptr::null_mut(),
             album: core::ptr::null_mut(),
-            art_url: core::ptr::null_mut(),
+            art_uri: core::ptr::null_mut(),
         }
     }
 }

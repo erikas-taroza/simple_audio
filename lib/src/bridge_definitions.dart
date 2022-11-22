@@ -76,13 +76,13 @@ class Metadata {
   final String? title;
   final String? artist;
   final String? album;
-  final String? artUrl;
+  final String? artUri;
 
   Metadata({
     this.title,
     this.artist,
     this.album,
-    this.artUrl,
+    this.artUri,
   });
 }
 

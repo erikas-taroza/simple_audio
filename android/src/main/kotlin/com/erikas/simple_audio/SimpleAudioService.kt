@@ -104,16 +104,16 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setSubText(metadata.getText(METADATA_KEY_ALBUM))
             setOngoing(true)
 
-            val artUrl = metadata.getString(METADATA_KEY_ART_URI)
-            if(artUrl != null && artUrl.isNotEmpty()) {
-                val uri = Uri.parse(artUrl)
+            val artUri = metadata.getString(METADATA_KEY_ART_URI)
+            if(artUri != null && artUri.isNotEmpty()) {
+                val uri = Uri.parse(artUri)
 
                 val bitmap = if(uri.scheme == "http" || uri.scheme == "https")
                 {
-                    val imageBytes = URL(artUrl).readBytes()
+                    val imageBytes = URL(artUri).readBytes()
                     BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.count())
                 }
-                else { BitmapFactory.decodeFile(artUrl) }
+                else { BitmapFactory.decodeFile(artUri) }
 
                 // Handle rectangular images and scale them in
                 // so that they are in a square format.
@@ -188,7 +188,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         title:String?,
         artist:String?,
         album:String?,
-        artUrl:String?,
+        artUri:String?,
         duration:Int?
     )
     {
@@ -196,7 +196,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             putText(METADATA_KEY_TITLE, title ?: "Unknown Title")
             putText(METADATA_KEY_ARTIST, artist ?: "Unknown Artist")
             putText(METADATA_KEY_ALBUM, album ?: "Unknown Album")
-            putString(METADATA_KEY_ART_URI, artUrl ?: "")
+            putString(METADATA_KEY_ART_URI, artUri ?: "")
             if(duration != null) putLong(METADATA_KEY_DURATION, duration.toLong() * 1000)
         }
 

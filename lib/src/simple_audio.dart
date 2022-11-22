@@ -224,7 +224,7 @@ class SimpleAudio
                     "title": metadata.title,
                     "artist": metadata.artist,
                     "album": metadata.album,
-                    "artUrl": metadata.artUrl,
+                    "artUri": metadata.artUri,
                     "duration": (await _progress).duration
                 });
             }

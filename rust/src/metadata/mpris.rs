@@ -242,8 +242,8 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
         break;
     }
 
-    if let Some(art_url) = metadata.art_url.clone()
-    { map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_url))); }
+    if let Some(art_uri) = metadata.art_uri.clone()
+    { map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_uri))); }
 
     map
 }
