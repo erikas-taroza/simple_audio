@@ -112,8 +112,12 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
             MPMediaItemPropertyPlaybackDuration: String(duration ?? 0)
         ]
         
-        if #available(macOS 10.13.2, *) {
-            //metadata[MPMediaItemPropertyArtwork] =
+        if #available(macOS 10.13.2, *), artUrl != nil {
+            let size = CGSize(width: 200, height: 200)
+            let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
+                return NSImage(contentsOf: URL(string: artUrl!)!)!
+            })
+            currentMetadata[MPMediaItemPropertyArtwork] = artwork
         }
         
         let state = MPNowPlayingInfoCenter.default()
