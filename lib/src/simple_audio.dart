@@ -19,6 +19,8 @@ class SimpleAudio
     Future<bool> get isPlaying => _player.isPlaying();
     Future<ProgressState> get _progress => _player.getProgress();
 
+    bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+
     void Function()? onPreviousCallback;
     void Function()? onNextCallback;
 
@@ -137,7 +139,7 @@ class SimpleAudio
     {
         await _player.open(path: path, autoplay: autoplay);
 
-        if(Platform.isAndroid && autoplay)
+        if(_usingNative && autoplay)
         {
             methodChannel.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.play.index,
@@ -148,7 +150,7 @@ class SimpleAudio
 
     Future<void> play() async
     {
-        if(Platform.isAndroid)
+        if(_usingNative)
         {
             methodChannel.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.play.index,
@@ -161,7 +163,7 @@ class SimpleAudio
 
     Future<void> pause() async
     {
-        if(Platform.isAndroid)
+        if(_usingNative)
         {
             methodChannel.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.pause.index,
@@ -174,7 +176,7 @@ class SimpleAudio
 
     Future<void> stop() async
     {
-        if(Platform.isAndroid)
+        if(_usingNative)
         {
             methodChannel.invokeMethod("setPlaybackState", {
                 "state": -1,
@@ -192,7 +194,7 @@ class SimpleAudio
 
     Future<void> seek(int seconds) async
     {
-        if(Platform.isAndroid)
+        if(_usingNative)
         {
             methodChannel.invokeMethod("setPlaybackState", {
                 "state": (await isPlaying ? PlaybackState.play : PlaybackState.pause).index,
@@ -209,21 +211,21 @@ class SimpleAudio
         {
             return await _player.setMetadata(metadata: metadata);
         }
-        else if(Platform.isAndroid || Platform.isIOS || Platform.isMacOS)
+        else if(_usingNative)
         {
             // Prevent users from awaiting this method
             // and blocking their program infintely
             Future<void> _() async
             {
                 // Wait for a valid duration.
-                //while((await _progress).duration == 0) { continue; }
+                while((await _progress).duration == 0) { continue; }
 
                 await methodChannel.invokeMethod("setMetadata", {
                     "title": metadata.title,
                     "artist": metadata.artist,
                     "album": metadata.album,
                     "artUrl": metadata.artUrl,
-                    "duration": 60//(await _progress).duration
+                    "duration": (await _progress).duration
                 });
             }
             _();

@@ -7,6 +7,8 @@ var channel:FlutterMethodChannel? = nil
 @available(macOS 10.12.2, *)
 public class SimpleAudioPlugin: NSObject, FlutterPlugin
 {
+    var currentMetadata:[String: Any] = [:]
+    
     public static func register(with registrar: FlutterPluginRegistrar)
     {
         channel = FlutterMethodChannel(name: "simple_audio", binaryMessenger: registrar.messenger)
@@ -31,7 +33,12 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
                     duration: args["duration"] as? Int
                 )
             case "setPlaybackState":
-                print("")
+                let args:[String: Any] = call.arguments as! [String: Any]
+            
+                setPlaybackState(
+                    state: args["state"] as? Int,
+                    position: args["position"] as? Int
+                )
             default:
                 result(FlutterMethodNotImplemented)
         }
@@ -87,7 +94,7 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
         }
         
         let nowPlaying = MPNowPlayingInfoCenter.default()
-        nowPlaying.playbackState = MPNowPlayingPlaybackState.playing
+        nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
     }
     
     func setMetadata(
@@ -98,7 +105,7 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
         duration:Int?
     )
     {
-        var metadata = [
+        currentMetadata = [
             MPMediaItemPropertyTitle: title ?? "Unknown Title",
             MPMediaItemPropertyArtist: artist ?? "Unknown Artist",
             MPMediaItemPropertyAlbumTitle: album ?? "Unknown Album",
@@ -109,7 +116,27 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
             //metadata[MPMediaItemPropertyArtwork] =
         }
         
-        let nowPlaying = MPNowPlayingInfoCenter.default()
-        nowPlaying.nowPlayingInfo = metadata
+        let state = MPNowPlayingInfoCenter.default()
+        state.nowPlayingInfo = currentMetadata
+    }
+    
+    // See enum type PlaybackState in simple_audio.dart for integer values.
+    func setPlaybackState(state:Int?, position:Int?)
+    {
+        var translatedState:MPNowPlayingPlaybackState
+        
+        switch(state)
+        {
+            case 0: translatedState = MPNowPlayingPlaybackState.playing
+            case 1: translatedState = MPNowPlayingPlaybackState.paused
+            case 2: translatedState = MPNowPlayingPlaybackState.stopped
+            default: translatedState = MPNowPlayingPlaybackState.unknown
+        }
+        
+        let state = MPNowPlayingInfoCenter.default()
+        state.playbackState = translatedState
+        
+        currentMetadata[MPNowPlayingInfoPropertyElapsedPlaybackTime] = String(position ?? 0)
+        state.nowPlayingInfo = currentMetadata
     }
 }
