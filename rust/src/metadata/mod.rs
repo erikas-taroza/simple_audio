@@ -11,7 +11,7 @@ pub fn init<C>(callback:C, dbus_name:String, display_name:String, hwnd:Option<i6
 where
     C: Fn(Event) + Send + 'static
 {   
-    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
         let mut mpris = mpris::HANDLER.write().unwrap();
         *mpris = Some(mpris::Mpris::new(dbus_name, display_name, callback));
@@ -27,7 +27,7 @@ where
 
 pub fn set_metadata(metadata:Metadata)
 {
-    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
         let mpris = mpris::HANDLER.read().unwrap();
         mpris.as_ref().unwrap().set_metadata(metadata);
@@ -43,7 +43,7 @@ pub fn set_metadata(metadata:Metadata)
 
 pub fn set_playback_state(state:PlaybackState)
 {
-    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
         let mpris = mpris::HANDLER.read().unwrap();
         mpris.as_ref().unwrap().set_playback_state(state);
