@@ -127,6 +127,10 @@ class SimpleAudio
                 "compactActions": androidCompactPlaybackActions
             });
         }
+        else if(Platform.isIOS || Platform.isMacOS)
+        {
+            methodChannel.invokeMethod("init", null);
+        }
     }
 
     Future<void> open(String path, [bool autoplay = true]) async
@@ -205,21 +209,21 @@ class SimpleAudio
         {
             return await _player.setMetadata(metadata: metadata);
         }
-        else if(Platform.isAndroid)
+        else if(Platform.isAndroid || Platform.isIOS || Platform.isMacOS)
         {
             // Prevent users from awaiting this method
             // and blocking their program infintely
             Future<void> _() async
             {
                 // Wait for a valid duration.
-                while((await _progress).duration == 0) { continue; }
+                //while((await _progress).duration == 0) { continue; }
 
                 await methodChannel.invokeMethod("setMetadata", {
                     "title": metadata.title,
                     "artist": metadata.artist,
                     "album": metadata.album,
                     "artUrl": metadata.artUrl,
-                    "duration": (await _progress).duration
+                    "duration": 60//(await _progress).duration
                 });
             }
             _();
