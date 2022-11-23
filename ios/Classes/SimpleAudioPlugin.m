@@ -1,3 +1,4 @@
+#import "../Runner/bridge_generated.h"
 #import "SimpleAudioPlugin.h"
 #if __has_include(<simple_audio/simple_audio-Swift.h>)
 #import <simple_audio/simple_audio-Swift.h>
@@ -10,6 +11,7 @@
 
 @implementation SimpleAudioPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+  dummy_method_to_enforce_bundling();
   [SwiftSimpleAudioPlugin registerWithRegistrar:registrar];
 }
 @end
