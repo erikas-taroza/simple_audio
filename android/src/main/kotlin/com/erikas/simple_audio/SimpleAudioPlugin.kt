@@ -1,5 +1,6 @@
 package com.erikas.simple_audio
 
+import android.content.Intent
 import android.os.StrictMode
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.NonNull
@@ -12,6 +13,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 
 // Initialized in the user's MainActivity.kt file.
 var simpleAudioService:SimpleAudioService? = null
+var notificationClickedIntent:Intent = Intent()
 
 /// The MethodChannel that will the communication between Flutter and native Android
 ///

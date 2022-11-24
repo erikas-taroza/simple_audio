@@ -103,6 +103,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setContentText(metadata.getText(METADATA_KEY_ARTIST))
             setSubText(metadata.getText(METADATA_KEY_ALBUM))
             setOngoing(true)
+            setContentIntent(mediaSession!!.controller.sessionActivity)
 
             val artUri = metadata.getString(METADATA_KEY_ART_URI)
             if(artUri != null && artUri.isNotEmpty()) {
@@ -162,6 +163,19 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setMetadata(metadataBuilder.build())
             setCallback(SimpleAudioServiceCallback())
             setSessionToken(sessionToken)
+
+            // This makes it so that when the notification is clicked,
+            // the app will be opened. This is used when building the
+            // notification.
+            var flags = PendingIntent.FLAG_UPDATE_CURRENT
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags = flags.or(PendingIntent.FLAG_IMMUTABLE)
+
+            setSessionActivity(PendingIntent.getActivity(
+                applicationContext,
+                0,
+                notificationClickedIntent,
+                flags
+            ))
         }
 
         // A channel needs to be registered. Otherwise, the notification will not display
