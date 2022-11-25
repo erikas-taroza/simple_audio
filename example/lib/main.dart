@@ -83,16 +83,18 @@ class _MyAppState extends State<MyApp>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                             if(Platform.isAndroid || Platform.isIOS) ...{
-                                ElevatedButton(
-                                    child: const Text("Get Storage Perms"),
-                                    onPressed: () async {
-                                        PermissionStatus status = await Permission.storage.request();
+                                Builder(
+                                    builder: (context) => ElevatedButton(
+                                        child: const Text("Get Storage Perms"),
+                                        onPressed: () async {
+                                            PermissionStatus status = await Permission.storage.request();
 
-                                        if(!mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                            content: Text("Storage Permissions: ${status.name}"),
-                                        ));
-                                    },
+                                            if(!mounted) return;
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                content: Text("Storage Permissions: ${status.name}"),
+                                            ));
+                                        },
+                                    ),
                                 ),
                             },
                             const SizedBox(height: 5),

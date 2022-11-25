@@ -141,6 +141,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     fun init()
     {
+        if(mediaSession != null) return
+
         // Create the media session which defines the
         // controls and registers the callbacks.
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
@@ -194,6 +196,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     {
         mediaSession!!.isActive = false
         mediaSession!!.release()
+        mediaSession = null
         stopForeground(true)
         stopSelf()
     }
