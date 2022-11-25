@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:simple_audio/simple_audio.dart';
 
 void main() async
@@ -86,7 +87,11 @@ class _MyAppState extends State<MyApp>
                                     child: const Text("Get Storage Perms"),
                                     onPressed: () async {
                                         PermissionStatus status = await Permission.storage.request();
-                                        print(status);
+
+                                        if(!mounted) return;
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                            content: Text("Storage Permissions: ${status.name}"),
+                                        ));
                                     },
                                 ),
                             },
@@ -94,13 +99,21 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open File"),
                                 onPressed: () async {
-                                    //TODO: File picker.
+                                    FilePickerResult? file = await FilePicker.platform.pickFiles(
+                                        dialogTitle: "Pick file to play.",
+                                        type: FileType.audio
+                                    );
+
+                                    if(file == null) return;
+
+                                    final PlatformFile pickedFile = file.files.single;
+
                                     await player.setMetadata(Metadata(
-                                        title: "Test Media",
-                                        artist: "Test Artist",
-                                        album: "Test Album"
+                                        title: pickedFile.name,
+                                        artist: "Artist",
+                                        album: "Album"
                                     ));
-                                    await player.open(r"/Users/typicalegg/Downloads/test.mp3");
+                                    await player.open(pickedFile.path!);
                                 },
                             ),
                             const SizedBox(height: 20),
@@ -179,24 +192,29 @@ class _MyAppState extends State<MyApp>
                             ),
                             
                             // Progress bar with time.
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                    Text(convertSecondsToReadableString(position.floor())),
-
-                                    SizedBox(
-                                        width: 450,
-                                        child: Slider(
-                                            value: position,
-                                            max: duration,
-                                            onChanged: (value) {
-                                                player.seek(value.floor());
-                                            },
+                            Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                        Text(convertSecondsToReadableString(position.floor())),
+                            
+                                        Flexible(
+                                            child: ConstrainedBox(
+                                                constraints: const BoxConstraints(maxWidth: 450),
+                                                child: Slider(
+                                                    value: position,
+                                                    max: duration,
+                                                    onChanged: (value) {
+                                                        player.seek(value.floor());
+                                                    },
+                                                ),
+                                            ),
                                         ),
-                                    ),
-
-                                    Text(convertSecondsToReadableString(duration.floor())),
-                                ],
+                            
+                                        Text(convertSecondsToReadableString(duration.floor())),
+                                    ],
+                                ),
                             )
                         ],
                     )
