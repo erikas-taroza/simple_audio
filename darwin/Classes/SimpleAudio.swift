@@ -1,5 +1,7 @@
 #if os(macOS)
 import FlutterMacOS
+#else
+import Flutter
 #endif
 
 import MediaPlayer
@@ -114,13 +116,25 @@ public class SimpleAudio
             MPMediaItemPropertyPlaybackDuration: String(duration ?? 0)
         ]
         
-//        if #available(macOS 10.13.2, *), artUri != nil {
-//            let size = CGSize(width: 200, height: 200)
-//            let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
-//                return NSImage(contentsOf: URL(string: artUri!)!)!
-//            })
-//            currentMetadata[MPMediaItemPropertyArtwork] = artwork
-//        }
+        if(artUri != nil)
+        {
+            #if os(macOS)
+            if #available(macOS 10.13.2, *) {
+                let size = CGSize(width: 200, height: 200)
+                let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
+                    return NSImage(contentsOf: URL(string: artUri!)!)!
+                })
+                currentMetadata[MPMediaItemPropertyArtwork] = artwork
+            }
+            #else
+            let size = CGSize(width: 200, height: 200)
+            let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
+                let data = try! Data(contentsOf: URL(string: artUri!)!)
+                return UIImage(data: data)!
+            })
+            currentMetadata[MPMediaItemPropertyArtwork] = artwork
+            #endif
+        }
         
         let state = MPNowPlayingInfoCenter.default()
         state.nowPlayingInfo = currentMetadata
