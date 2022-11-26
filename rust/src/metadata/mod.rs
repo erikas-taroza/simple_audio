@@ -13,17 +13,18 @@ where
 {   
     #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
+        if actions.is_empty() { return; }
+
         let mut mpris = mpris::HANDLER.write().unwrap();
         *mpris = Some(mpris::Mpris::new(actions, use_progress_bar, mpris_name, callback));
     }
 
     #[cfg(target_os = "windows")]
     {
-        let mut smtc = smtc::HANDLER.write().unwrap();
-        let new = smtc::Smtc::new(actions, hwnd.unwrap() as isize, callback);
-        if new.is_none() { return; }
+        if actions.is_empty() { return; }
 
-        *smtc = Some(new.unwrap());
+        let mut smtc = smtc::HANDLER.write().unwrap();
+        *smtc = Some(smtc::Smtc::new(actions, hwnd.unwrap() as isize, callback));
     }
 }
 

@@ -7,7 +7,9 @@ import 'package:simple_audio/simple_audio.dart';
 
 void main() async
 {
-    SimpleAudio.init();
+    SimpleAudio.init(
+        actions: [NotificationActions.playPause]
+    );
     runApp(const MyApp());
 }
 
@@ -51,16 +53,6 @@ class _MyAppState extends State<MyApp>
 
         player.playbackStateStream.listen((event) {
             setState(() => playbackState = event);
-
-            if(event == PlaybackState.done)
-            {
-                player.open(r"/Users/typicalegg/Downloads/test.mp3");
-                player.setMetadata(Metadata(
-                    title: "Test Media",
-                    artist: "Test Artist",
-                    album: "Test Album"
-                ));
-            }
         });
 
         player.progressStateStream.listen((event) {
@@ -115,7 +107,7 @@ class _MyAppState extends State<MyApp>
                                         artist: "Artist",
                                         album: "Album"
                                     ));
-                                    await player.open(r"https://file-examples.com/storage/fe4b6a81a0637fef794ccfe/2017/11/file_example_MP3_2MG.mp3");
+                                    await player.open(r"https://file-examples.com/storage/fe33d9e78163827659923f7/2017/11/file_example_MP3_2MG.mp3");
                                 },
                             ),
                             const SizedBox(height: 20),

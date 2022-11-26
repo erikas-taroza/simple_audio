@@ -19,12 +19,10 @@ pub struct Smtc
 
 impl Smtc
 {
-    pub fn new<C>(actions:Vec<Actions>, use_progress_bar:bool, hwnd:isize, callback:C) -> Option<Self>
+    pub fn new<C>(actions:Vec<Actions>, use_progress_bar:bool, hwnd:isize, callback:C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
-        if actions.is_empty() { return None; }
-
         let interop:ISystemMediaTransportControlsInterop = windows::core::factory::<
             SystemMediaTransportControls,
             ISystemMediaTransportControlsInterop
@@ -97,7 +95,7 @@ impl Smtc
         if use_progress_bar
         { controls.PlaybackPositionChangeRequested(&position_callback).unwrap(); }
 
-        Some(Smtc { controls, display, timeline })
+        Smtc { controls, display, timeline }
     }
 
     pub fn set_metadata(&self, metadata:Metadata)

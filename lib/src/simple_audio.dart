@@ -88,7 +88,7 @@ class SimpleAudio
     /// 
     /// **[actions]** A list of actions that the media notification will use.
     /// If [showMediaNotification] is false, this value does not matter. Otherwise, you will
-    /// need to include [Actions.playPause] in the list.
+    /// need to include [NotificationActions.playPause] in the list.
     /// 
     /// **[useProgressBar]** Whether or not to show a progress bar in the media notification.
     /// This value does not matter if [showMediaNotification] is false.
@@ -113,14 +113,14 @@ class SimpleAudio
     static Future<void> init({
         String mprisName = "SimpleAudio",
         bool showMediaNotification = true,
-        List<Actions> actions = Actions.values,
+        List<NotificationActions> actions = NotificationActions.values,
         bool useProgressBar = true,
         String androidNotificationIconPath = "mipmap/ic_launcher",
         List<int> androidCompactPlaybackActions = const [1, 2, 3],
     }) async
     {
         // You must include this action.
-        assert(showMediaNotification && actions.contains(Actions.playPause));
+        assert(showMediaNotification && actions.contains(NotificationActions.playPause));
 
         _player = await Player.newPlayer(
             bridge: api,
@@ -253,7 +253,7 @@ enum PlaybackState
 
 // NOTE: When updating the enum values, they need to be updated
 // in Kotlin and in Rust.
-enum Actions
+enum NotificationActions
 {
     rewind,
     skipPrev,

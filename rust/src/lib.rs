@@ -318,7 +318,12 @@ mod tests
     #[test]
     fn mpris()
     {
-        let player = crate::Player::default();
+        let player = crate::Player::new(
+            vec![2],
+            false,
+            "SimpleAudio".to_string(),
+            None
+        );
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);

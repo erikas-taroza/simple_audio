@@ -27,12 +27,9 @@ impl Mpris
     {
         let (tx, rx) = unbounded::<Command>();
         
-        if !actions.is_empty()
-        {
-            thread::spawn(move || {
-                Self::run(actions, use_progress_bar, mpris_name, rx, callback).unwrap();
-            });
-        }
+        thread::spawn(move || {
+            Self::run(actions, use_progress_bar, mpris_name, rx, callback).unwrap();
+        });
 
         Mpris { tx }
     }
