@@ -101,21 +101,21 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open File"),
                                 onPressed: () async {
-                                    FilePickerResult? file = await FilePicker.platform.pickFiles(
-                                        dialogTitle: "Pick file to play.",
-                                        type: FileType.audio
-                                    );
+                                    // FilePickerResult? file = await FilePicker.platform.pickFiles(
+                                    //     dialogTitle: "Pick file to play.",
+                                    //     //type: FileType.audio
+                                    // );
 
-                                    if(file == null) return;
+                                    // if(file == null) return;
 
-                                    final PlatformFile pickedFile = file.files.single;
+                                    // final PlatformFile pickedFile = file.files.single;
 
                                     await player.setMetadata(Metadata(
-                                        title: pickedFile.name,
+                                        title: "Title",
                                         artist: "Artist",
                                         album: "Album"
                                     ));
-                                    await player.open(pickedFile.path!);
+                                    await player.open(r"https://file-examples.com/storage/fe4b6a81a0637fef794ccfe/2017/11/file_example_MP3_2MG.mp3");
                                 },
                             ),
                             const SizedBox(height: 20),
