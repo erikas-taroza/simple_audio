@@ -4,10 +4,12 @@ use super::*;
 #[no_mangle]
 pub extern "C" fn wire_new__static_method__Player(
     port_: i64,
+    actions: *mut wire_int_32_list,
+    use_progress_bar: bool,
     mpris_name: *mut wire_uint_8_list,
     hwnd: *mut i64,
 ) {
-    wire_new__static_method__Player_impl(port_, mpris_name, hwnd)
+    wire_new__static_method__Player_impl(port_, actions, use_progress_bar, mpris_name, hwnd)
 }
 
 #[no_mangle]
@@ -97,6 +99,15 @@ pub extern "C" fn new_box_autoadd_player_0() -> *mut wire_Player {
 }
 
 #[no_mangle]
+pub extern "C" fn new_int_32_list_0(len: i32) -> *mut wire_int_32_list {
+    let ans = wire_int_32_list {
+        ptr: support::new_leak_vec_ptr(Default::default(), len),
+        len,
+    };
+    support::new_leak_box_ptr(ans)
+}
+
+#[no_mangle]
 pub extern "C" fn new_uint_8_list_0(len: i32) -> *mut wire_uint_8_list {
     let ans = wire_uint_8_list {
         ptr: support::new_leak_vec_ptr(Default::default(), len),
@@ -127,6 +138,14 @@ impl Wire2Api<Player> for *mut wire_Player {
     }
 }
 
+impl Wire2Api<Vec<i32>> for *mut wire_int_32_list {
+    fn wire2api(self) -> Vec<i32> {
+        unsafe {
+            let wrap = support::box_from_leak_ptr(self);
+            support::vec_from_leak_ptr(wrap.ptr, wrap.len)
+        }
+    }
+}
 impl Wire2Api<Metadata> for wire_Metadata {
     fn wire2api(self) -> Metadata {
         Metadata {
@@ -155,6 +174,13 @@ impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
     }
 }
 // Section: wire structs
+
+#[repr(C)]
+#[derive(Clone)]
+pub struct wire_int_32_list {
+    ptr: *mut i32,
+    len: i32,
+}
 
 #[repr(C)]
 #[derive(Clone)]

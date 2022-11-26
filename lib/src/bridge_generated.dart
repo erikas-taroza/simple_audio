@@ -24,22 +24,28 @@ class SimpleAudioImpl implements SimpleAudio {
       SimpleAudioImpl(module as ExternalLibrary);
   SimpleAudioImpl.raw(this._platform);
   Future<Player> newStaticMethodPlayer(
-          {required String mprisName, int? hwnd, dynamic hint}) =>
+          {required Int32List actions,
+          required bool useProgressBar,
+          required String mprisName,
+          int? hwnd,
+          dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_new__static_method__Player(
             port_,
+            _platform.api2wire_int_32_list(actions),
+            useProgressBar,
             _platform.api2wire_String(mprisName),
             _platform.api2wire_opt_box_autoadd_i64(hwnd)),
         parseSuccessData: (d) => _wire2api_player(d),
         constMeta: kNewStaticMethodPlayerConstMeta,
-        argValues: [mprisName, hwnd],
+        argValues: [actions, useProgressBar, mprisName, hwnd],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "new__static_method__Player",
-        argNames: ["mprisName", "hwnd"],
+        argNames: ["actions", "useProgressBar", "mprisName", "hwnd"],
       );
 
   Stream<int> playbackStateStreamStaticMethodPlayer({dynamic hint}) =>
@@ -349,6 +355,13 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   @protected
+  ffi.Pointer<wire_int_32_list> api2wire_int_32_list(Int32List raw) {
+    final ans = inner.new_int_32_list_0(raw.length);
+    ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
+    return ans;
+  }
+
+  @protected
   ffi.Pointer<wire_uint_8_list> api2wire_opt_String(String? raw) {
     return raw == null ? ffi.nullptr : api2wire_String(raw);
   }
@@ -431,11 +444,15 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
 
   void wire_new__static_method__Player(
     int port_,
+    ffi.Pointer<wire_int_32_list> actions,
+    bool use_progress_bar,
     ffi.Pointer<wire_uint_8_list> mpris_name,
     ffi.Pointer<ffi.Int64> hwnd,
   ) {
     return _wire_new__static_method__Player(
       port_,
+      actions,
+      use_progress_bar,
       mpris_name,
       hwnd,
     );
@@ -443,12 +460,16 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
 
   late final _wire_new__static_method__PlayerPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>,
+          ffi.Void Function(
+              ffi.Int64,
+              ffi.Pointer<wire_int_32_list>,
+              ffi.Bool,
+              ffi.Pointer<wire_uint_8_list>,
               ffi.Pointer<ffi.Int64>)>>('wire_new__static_method__Player');
   late final _wire_new__static_method__Player =
       _wire_new__static_method__PlayerPtr.asFunction<
-          void Function(
-              int, ffi.Pointer<wire_uint_8_list>, ffi.Pointer<ffi.Int64>)>();
+          void Function(int, ffi.Pointer<wire_int_32_list>, bool,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<ffi.Int64>)>();
 
   void wire_playback_state_stream__static_method__Player(
     int port_,
@@ -703,6 +724,21 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _new_box_autoadd_player_0 = _new_box_autoadd_player_0Ptr
       .asFunction<ffi.Pointer<wire_Player> Function()>();
 
+  ffi.Pointer<wire_int_32_list> new_int_32_list_0(
+    int len,
+  ) {
+    return _new_int_32_list_0(
+      len,
+    );
+  }
+
+  late final _new_int_32_list_0Ptr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<wire_int_32_list> Function(
+              ffi.Int32)>>('new_int_32_list_0');
+  late final _new_int_32_list_0 = _new_int_32_list_0Ptr
+      .asFunction<ffi.Pointer<wire_int_32_list> Function(int)>();
+
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,
   ) {
@@ -731,6 +767,13 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           'free_WireSyncReturnStruct');
   late final _free_WireSyncReturnStruct = _free_WireSyncReturnStructPtr
       .asFunction<void Function(WireSyncReturnStruct)>();
+}
+
+class wire_int_32_list extends ffi.Struct {
+  external ffi.Pointer<ffi.Int32> ptr;
+
+  @ffi.Int32()
+  external int len;
 }
 
 class wire_uint_8_list extends ffi.Struct {

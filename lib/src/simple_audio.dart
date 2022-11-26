@@ -2,6 +2,7 @@ export 'bridge_definitions.dart' show ProgressState, Metadata;
 
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import './ffi.dart';
@@ -12,6 +13,7 @@ class SimpleAudio
 {
     static MethodChannel methodChannel = const MethodChannel("simple_audio");
 
+    // Maybe subscribe to this stream for native media notifications.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
         .map((event) => PlaybackState.values[event]).asBroadcastStream(); // Map the int event to a dart enum.
     late Stream<ProgressState> progressStateStream = Player.progressStateStream(bridge: api).asBroadcastStream();
@@ -81,6 +83,16 @@ class SimpleAudio
     /// 
     /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
     /// 
+    /// **[showMediaNotification]** Whether or not to show the media notification when playing
+    /// audio.
+    /// 
+    /// **[actions]** A list of actions that the media notification will use.
+    /// If [showMediaNotification] is false, this value does not matter. Otherwise, you will
+    /// need to include [Actions.playPause] in the list.
+    /// 
+    /// **[useProgressBar]** Whether or not to show a progress bar in the media notification.
+    /// This value does not matter if [showMediaNotification] is false.
+    /// 
     /// **[androidNotificationIconPath]** A path that points to the icon the Android media
     /// notification will use. This icon should be stored in `./android/app/src/main/res/mipmap-xxx`.
     /// You will want to create images that are sized accordingly to the pixel density.
@@ -89,16 +101,9 @@ class SimpleAudio
     /// 
     /// To create an icon, see: https://developer.android.com/studio/write/image-asset-studio#create-adaptive
     /// 
-    /// **[androidPlaybackActions]** A list of [PlaybackActions] to determine the capabilities
-    /// that the Android media session and notification will have. For example, if you didn't
-    /// want to have fast forward and rewind, you can exclude them here in a list.
-    /// 
-    /// NOTE: The order of the list does matter. If you want to have the rewind button before the play/pause button,
-    /// you would do [Rewind, PlayPause, ...]
-    /// 
     /// **[androidCompactPlaybackActions]** A list of numbers that represent the buttons
     /// to show in the compact media notification. The indicies match with the ones
-    /// in [androidPlaybackActions].
+    /// in [actions].
     /// 
     /// For example, to use the middle 3:
     /// 
@@ -107,25 +112,31 @@ class SimpleAudio
     /// androidCompactPlaybackActions = [1, 2, 3]
     static Future<void> init({
         String mprisName = "SimpleAudio",
+        bool showMediaNotification = true,
+        List<Actions> actions = Actions.values,
+        bool useProgressBar = true,
         String androidNotificationIconPath = "mipmap/ic_launcher",
-        List<PlaybackActions> androidPlaybackActions = PlaybackActions.values,
-        List<int> androidCompactPlaybackActions = const [2]
+        List<int> androidCompactPlaybackActions = const [1, 2, 3],
     }) async
     {
+        // You must include this action.
+        assert(showMediaNotification && actions.contains(Actions.playPause));
+
         _player = await Player.newPlayer(
             bridge: api,
+            useProgressBar: useProgressBar,
+            actions: showMediaNotification ?
+                Int32List.fromList(actions.map((e) => e.index).toList())
+                : Int32List(0),
             mprisName: mprisName,
             hwnd: Platform.isWindows ? getHWND() : null
         );
 
         if(Platform.isAndroid)
         {
-            // You must include this action.
-            assert(androidPlaybackActions.contains(PlaybackActions.playPause));
-            
             methodChannel.invokeMethod("init", {
                 "icon": androidNotificationIconPath,
-                "actions": androidPlaybackActions.map((e) => e.index).toList(),
+                "actions": actions.map((e) => e.index).toList(),
                 "compactActions": androidCompactPlaybackActions
             });
         }
@@ -240,7 +251,9 @@ enum PlaybackState
     done
 }
 
-enum PlaybackActions
+// NOTE: When updating the enum values, they need to be updated
+// in Kotlin and in Rust.
+enum Actions
 {
     rewind,
     skipPrev,

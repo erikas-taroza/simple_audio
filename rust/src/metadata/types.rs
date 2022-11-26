@@ -33,3 +33,29 @@ pub enum Command
     SetMetadata(Metadata),
     SetPlaybackState(PlaybackState)
 }
+
+#[derive(PartialEq, Clone, Copy)]
+pub enum Actions
+{
+    Rewind,
+    SkipPrev,
+    PlayPause,
+    SkipNext,
+    FastForward
+}
+
+impl From<i32> for Actions
+{
+    fn from(i:i32) -> Self
+    {
+        match i
+        {
+            0 => Self::Rewind,
+            1 => Self::SkipPrev,
+            2 => Self::PlayPause,
+            3 => Self::SkipNext,
+            4 => Self::FastForward,
+            _ => panic!("ERR: This action is not supported.")
+        } 
+    }
+}

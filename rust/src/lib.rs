@@ -8,7 +8,7 @@ use std::{fs::File, io::Cursor, thread};
 use audio::{decoder::Decoder, controls::*};
 use crossbeam::channel::bounded;
 use flutter_rust_bridge::StreamSink;
-use metadata::types::Metadata;
+use metadata::types::{Metadata, Actions};
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
@@ -22,35 +22,48 @@ pub struct Player
 
 impl Player
 {
-    pub fn new(mpris_name:String, hwnd:Option<i64>) -> Player
+    pub fn new(
+        actions:Vec<i32>,
+        use_progress_bar:bool,
+        mpris_name:String,
+        hwnd:Option<i64>
+    ) -> Player
     {
-        crate::metadata::init(|e| {
-            match e
-            {
-                metadata::types::Event::Previous => update_metadata_callback_stream(false),
-                metadata::types::Event::Next => update_metadata_callback_stream(true),
-                metadata::types::Event::Play => Self::internal_play(),
-                metadata::types::Event::Pause => Self::internal_pause(),
-                metadata::types::Event::Stop => Self::internal_stop(),
-                metadata::types::Event::PlayPause => {
-                    if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
-                    { Self::internal_pause(); }
-                    else { Self::internal_play(); }
-                },
-                metadata::types::Event::Seek(position, is_absolute) => {
-                    if is_absolute
-                    { Self::internal_seek(position as u64); }
-                    else
-                    {
-                        let progress = PROGRESS.read().unwrap();
-                        if position.is_negative()
-                        { Self::internal_seek(progress.position.saturating_sub(position.abs() as u64)); }
+        crate::metadata::init(
+            actions.iter().map(|i| {
+                Actions::from(*i)
+            }).collect::<Vec<Actions>>(),
+            use_progress_bar,
+            mpris_name,
+            hwnd,
+            |e| {
+                match e
+                {
+                    metadata::types::Event::Previous => update_metadata_callback_stream(false),
+                    metadata::types::Event::Next => update_metadata_callback_stream(true),
+                    metadata::types::Event::Play => Self::internal_play(),
+                    metadata::types::Event::Pause => Self::internal_pause(),
+                    metadata::types::Event::Stop => Self::internal_stop(),
+                    metadata::types::Event::PlayPause => {
+                        if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+                        { Self::internal_pause(); }
+                        else { Self::internal_play(); }
+                    },
+                    metadata::types::Event::Seek(position, is_absolute) => {
+                        if is_absolute
+                        { Self::internal_seek(position as u64); }
                         else
-                        { Self::internal_seek(progress.position + position as u64); }
+                        {
+                            let progress = PROGRESS.read().unwrap();
+                            if position.is_negative()
+                            { Self::internal_seek(progress.position.saturating_sub(position.abs() as u64)); }
+                            else
+                            { Self::internal_seek(progress.position + position as u64); }
+                        }
                     }
                 }
             }
-        }, mpris_name.to_lowercase(), mpris_name, hwnd);
+        );
 
         Player { dummy: 0 }
     }
@@ -208,6 +221,18 @@ impl Player
     { crate::metadata::set_metadata(metadata); }
 }
 
+impl Default for Player
+{
+    fn default() -> Self {
+        crate::Player::new(
+            vec![0, 1, 2, 3, 4],
+            true,
+            "SimpleAudio".to_string(),
+            None
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests
 {
@@ -218,7 +243,7 @@ mod tests
     #[test]
     fn open_and_play()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.set_volume(0.5);
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
         player.seek(30);
@@ -228,7 +253,7 @@ mod tests
     #[test]
     fn open_network_and_play()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.open("https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3?raw=true".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
@@ -237,7 +262,7 @@ mod tests
     #[test]
     fn play_pause()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
@@ -253,7 +278,7 @@ mod tests
     #[test]
     fn volume()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
         println!("Changing volume now");
@@ -264,7 +289,7 @@ mod tests
     #[test]
     fn seeking()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.set_volume(0.5);
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(1));
@@ -276,7 +301,7 @@ mod tests
     #[test]
     fn stop()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);
@@ -291,9 +316,9 @@ mod tests
     }
 
     #[test]
-    fn media_notification()
+    fn mpris()
     {
-        let player = crate::Player::new("Test".to_string(), None);
+        let player = crate::Player::default();
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true);

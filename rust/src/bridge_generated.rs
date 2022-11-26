@@ -25,6 +25,8 @@ use crate::Player;
 
 fn wire_new__static_method__Player_impl(
     port_: MessagePort,
+    actions: impl Wire2Api<Vec<i32>> + UnwindSafe,
+    use_progress_bar: impl Wire2Api<bool> + UnwindSafe,
     mpris_name: impl Wire2Api<String> + UnwindSafe,
     hwnd: impl Wire2Api<Option<i64>> + UnwindSafe,
 ) {
@@ -35,9 +37,18 @@ fn wire_new__static_method__Player_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
+            let api_actions = actions.wire2api();
+            let api_use_progress_bar = use_progress_bar.wire2api();
             let api_mpris_name = mpris_name.wire2api();
             let api_hwnd = hwnd.wire2api();
-            move |task_callback| Ok(Player::new(api_mpris_name, api_hwnd))
+            move |task_callback| {
+                Ok(Player::new(
+                    api_actions,
+                    api_use_progress_bar,
+                    api_mpris_name,
+                    api_hwnd,
+                ))
+            }
         },
     )
 }

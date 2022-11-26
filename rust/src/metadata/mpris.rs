@@ -10,7 +10,7 @@ use dbus_crossroads::{Crossroads, IfaceBuilder};
 
 use crate::{utils::playback_state::PlaybackState, audio::controls::PROGRESS};
 
-use super::types::{Metadata, Event, Command};
+use super::types::{Metadata, Event, Command, Actions};
 
 pub static HANDLER:RwLock<Option<Mpris>> = RwLock::new(None);
 
@@ -21,15 +21,18 @@ pub struct Mpris
 
 impl Mpris
 {
-    pub fn new<C>(dbus_name:String, display_name:String, callback:C) -> Self
+    pub fn new<C>(actions:Vec<Actions>, use_progress_bar:bool, mpris_name:String, callback:C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
         let (tx, rx) = unbounded::<Command>();
         
-        thread::spawn(move || {
-            Self::run(dbus_name, display_name, rx, callback).unwrap();
-        });
+        if !actions.is_empty()
+        {
+            thread::spawn(move || {
+                Self::run(actions, use_progress_bar, mpris_name, rx, callback).unwrap();
+            });
+        }
 
         Mpris { tx }
     }
@@ -40,7 +43,7 @@ impl Mpris
     pub fn set_playback_state(&self, state:PlaybackState)
     { self.tx.send(Command::SetPlaybackState(state)).unwrap(); }
 
-    fn run<C>(dbus_name:String, display_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
+    fn run<C>(actions:Vec<Actions>, use_progress_bar:bool, mpris_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
     where
         C: Fn(Event) + Send + 'static
     {
@@ -49,7 +52,7 @@ impl Mpris
         let conn = Connection::new_session()?;
 
         conn.request_name(
-            format!("org.mpris.MediaPlayer2.{}", dbus_name), 
+            format!("org.mpris.MediaPlayer2.{}", mpris_name.to_lowercase()), 
             false, 
             true, 
             false
@@ -62,7 +65,7 @@ impl Mpris
 
         let mp = cr.register("org.mpris.MediaPlayer2", move |e:&mut IfaceBuilder<()>| {
             e.property("Identity")
-                .get(move |_, &mut _| Ok(display_name.clone()));
+                .get(move |_, &mut _| Ok(mpris_name.clone()));
             e.property("CanQuit")
                 .get(|_, &mut _| Ok(false))
                 .emits_changed_true();
@@ -76,29 +79,10 @@ impl Mpris
 
         let mpp = cr.register("org.mpris.MediaPlayer2.Player", |e:&mut IfaceBuilder<()>|{
             let callback = callback.clone();
-            
-            register_method(e, &callback, "Next", Event::Next);
-            register_method(e, &callback, "Previous", Event::Previous);
-            register_method(e, &callback, "Play", Event::Play);
-            register_method(e, &callback, "Pause", Event::Pause);
-            register_method(e, &callback, "PlayPause", Event::PlayPause);
+
+            // Defaults
             register_method(e, &callback, "Stop", Event::Stop);
 
-            e.property("CanGoNext")
-                .get(|_, _| Ok(true))
-                .emits_changed_true();
-            e.property("CanGoPrevious")
-                .get(|_, _| Ok(true))
-                .emits_changed_true();
-            e.property("CanPlay")
-                .get(|_, _| Ok(true))
-                .emits_changed_true();
-            e.property("CanPause")
-                .get(|_, _| Ok(true))
-                .emits_changed_true();
-            e.property("CanSeek")
-                .get(|_, _| Ok(true))
-                .emits_changed_true();
             e.property("CanControl")
                 .get(|_, _| Ok(true))
                 .emits_changed_true();
@@ -123,28 +107,79 @@ impl Mpris
                     Ok(position)
                 });
 
-            e.method("Seek", ("Offset",), (), {
-                let callback = callback.clone();
-                move |ctx, _, (offset,):(i64,)| {
-                    callback.lock().unwrap()(Event::Seek(offset * 1_000_000, false));
-                    ctx.push_msg(ctx.make_signal("Seeked", ()));
-                    Ok(())
-                }
-            });
+            // The following actions can be tweaked by the user.
 
-            e.method("SetPosition", ("TrackId", "Position"), (), {
-                let callback = callback.clone();
-                move |_, _, (_track_id, position):(Path, i64)| {
-                    if position > PROGRESS.read().unwrap().duration as i64 { return Ok(()); }
-                    
-                    if let Ok(position) = u64::try_from(position)
-                    {
-                        callback.lock().unwrap()(Event::Seek((position * 1_000_000) as i64, true));
+            for action in &actions
+            {
+                match action
+                {
+                    Actions::SkipPrev => {
+                        register_method(e, &callback, "Previous", Event::Previous);
+
+                        e.property("CanGoPrevious")
+                            .get(|_, _| Ok(true))
+                            .emits_changed_true();
+                    },
+                    Actions::PlayPause => {
+                        register_method(e, &callback, "Play", Event::Play);
+                        register_method(e, &callback, "Pause", Event::Pause);
+                        register_method(e, &callback, "PlayPause", Event::PlayPause);
+
+                        e.property("CanPlay")
+                            .get(|_, _| Ok(true))
+                            .emits_changed_true();
+                        e.property("CanPause")
+                            .get(|_, _| Ok(true))
+                            .emits_changed_true();
+                    },
+                    Actions::SkipNext => {
+                        register_method(e, &callback, "Next", Event::Next);
+
+                        e.property("CanGoNext")
+                            .get(|_, _| Ok(true))
+                            .emits_changed_true();
+                    },
+                    _ => continue
+                }
+            }
+
+            if use_progress_bar
+            {
+                e.property("CanSeek")
+                    .get(|_, _| Ok(true))
+                    .emits_changed_true();
+
+                e.method("Seek", ("Offset",), (), {
+                    let callback = callback.clone();
+
+                    move |ctx, _, (offset,):(i64,)| {
+                        let offset = offset * 1_000_000;
+
+                        //TODO: This needs testing.
+                        if actions.contains(&Actions::Rewind) && offset.is_negative()
+                        { callback.lock().unwrap()(Event::Seek(offset, false)); }
+                        else if actions.contains(&Actions::FastForward) && offset.is_positive()
+                        { callback.lock().unwrap()(Event::Seek(offset, false)); }
+
+                        ctx.push_msg(ctx.make_signal("Seeked", ()));
+                        Ok(())
                     }
+                });
 
-                    Ok(())
-                }
-            });
+                e.method("SetPosition", ("TrackId", "Position"), (), {
+                    let callback = callback.clone();
+                    move |_, _, (_track_id, position):(Path, i64)| {
+                        if position > PROGRESS.read().unwrap().duration as i64 { return Ok(()); }
+                        
+                        if let Ok(position) = u64::try_from(position)
+                        {
+                            callback.lock().unwrap()(Event::Seek((position * 1_000_000) as i64, true));
+                        }
+
+                        Ok(())
+                    }
+                });
+            }
         });
 
         cr.insert("/org/mpris/MediaPlayer2", &[mp, mpp], ());

@@ -6,7 +6,7 @@ use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Found
 
 use crate::{audio::controls::PROGRESS, utils::playback_state::PlaybackState};
 
-use super::types::{Event, Metadata};
+use super::types::{Event, Metadata, Actions};
 
 pub static HANDLER:RwLock<Option<Smtc>> = RwLock::new(None);
 
@@ -19,10 +19,12 @@ pub struct Smtc
 
 impl Smtc
 {
-    pub fn new<C>(hwnd:isize, callback:C) -> Self
+    pub fn new<C>(actions:Vec<Actions>, use_progress_bar:bool, hwnd:isize, callback:C) -> Option<Self>
     where
         C: Fn(Event) + Send + 'static
     {
+        if actions.is_empty() { return None; }
+
         let interop:ISystemMediaTransportControlsInterop = windows::core::factory::<
             SystemMediaTransportControls,
             ISystemMediaTransportControlsInterop
@@ -35,13 +37,22 @@ impl Smtc
         display.SetType(MediaPlaybackType::Music).unwrap();
 
         controls.SetIsEnabled(true).unwrap();
-        controls.SetIsPlayEnabled(true).unwrap();
-        controls.SetIsPauseEnabled(true).unwrap();
         controls.SetIsStopEnabled(true).unwrap();
-        controls.SetIsPreviousEnabled(true).unwrap();
-        controls.SetIsNextEnabled(true).unwrap();
-        controls.SetIsRewindEnabled(true).unwrap();
-        controls.SetIsFastForwardEnabled(true).unwrap();
+
+        for action in actions
+        {
+            match action
+            {
+                Actions::Rewind => controls.SetIsRewindEnabled(true).unwrap(),
+                Actions::SkipPrev => controls.SetIsPreviousEnabled(true).unwrap(),
+                Actions::PlayPause => {
+                    controls.SetIsPlayEnabled(true).unwrap();
+                    controls.SetIsPauseEnabled(true).unwrap();
+                },
+                Actions::SkipNext => controls.SetIsNextEnabled(true).unwrap(),
+                Actions::FastForward => controls.SetIsFastForwardEnabled(true).unwrap(),
+            }
+        }
 
         let callback = Arc::new(Mutex::new(callback));
         
@@ -82,9 +93,11 @@ impl Smtc
         });
         
         controls.ButtonPressed(&button_callback).unwrap();
-        controls.PlaybackPositionChangeRequested(&position_callback).unwrap();
+        
+        if use_progress_bar
+        { controls.PlaybackPositionChangeRequested(&position_callback).unwrap(); }
 
-        Smtc { controls, display, timeline }
+        Some(Smtc { controls, display, timeline })
     }
 
     pub fn set_metadata(&self, metadata:Metadata)
