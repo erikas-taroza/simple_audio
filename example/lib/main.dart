@@ -107,7 +107,7 @@ class _MyAppState extends State<MyApp>
                                         artist: "Artist",
                                         album: "Album"
                                     ));
-                                    await player.open(r"https://file-examples.com/storage/fe33d9e78163827659923f7/2017/11/file_example_MP3_2MG.mp3");
+                                    await player.open(r"https://file-examples.com/storage/fe1e49aa386382846a083f5/2017/11/file_example_MP3_2MG.mp3");
                                 },
                             ),
                             const SizedBox(height: 20),
