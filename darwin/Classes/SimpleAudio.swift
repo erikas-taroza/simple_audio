@@ -47,6 +47,16 @@ public class SimpleAudio
     
     func initialize()
     {
+        #if os(iOS)
+        let session = AVAudioSession.sharedInstance()
+        try! session.setCategory(
+            .playback,
+            options: [.allowBluetooth, .allowBluetoothA2DP]
+        )
+        
+        try! session.setActive(true)
+        #endif
+        
         let commandCenter = MPRemoteCommandCenter.shared()
         
         commandCenter.playCommand.isEnabled = true
@@ -96,7 +106,7 @@ public class SimpleAudio
         
         let nowPlaying = MPNowPlayingInfoCenter.default()
         
-        if #available(iOS 13.0, *), #available(macOS 10.12, *) {
+        if #available(iOS 13.0, *) {
             nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
         }
     }
@@ -154,7 +164,7 @@ public class SimpleAudio
         }
         
         let state = MPNowPlayingInfoCenter.default()
-        if #available(iOS 13.0, *), #available(macOS 10.12, *) {
+        if #available(iOS 13.0, *) {
             state.playbackState = translatedState
         }
         
