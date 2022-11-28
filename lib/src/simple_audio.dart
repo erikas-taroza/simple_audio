@@ -38,7 +38,7 @@ class SimpleAudio
     {
         Player.metadataCallbackStream(bridge: api).listen((event) {
             if(!event) { onPreviousCallback?.call(); }
-            else { onPreviousCallback?.call(); }
+            else { onNextCallback?.call(); }
         });
         
         methodChannel.setMethodCallHandler((call) async {
