@@ -62,7 +62,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
                 simpleAudioService?.playbackActions = actions
                 simpleAudioService?.compactPlaybackActions = call.argument<List<Int>>("compactActions")!!
 
-                simpleAudioService?.init(call.argument<Boolean>("useProgressBar") ?: true)
+                simpleAudioService?.init()
             }
             "setMetadata" -> {
                 simpleAudioService?.setMetadata(

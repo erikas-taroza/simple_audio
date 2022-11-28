@@ -34,7 +34,6 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     var compactPlaybackActions:List<Int> = listOf()
 
     var isPlaying:Boolean = false
-    private var useProgressBar:Boolean = true
 
     override fun onGetRoot(
         clientPackageName: String,
@@ -140,11 +139,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         }.build()
     }
 
-    fun init(useProgressBar:Boolean)
+    fun init()
     {
         if(mediaSession != null) return
-
-        this.useProgressBar = useProgressBar
 
         // Create the media session which defines the
         // controls and registers the callbacks.
@@ -217,7 +214,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             putText(METADATA_KEY_ARTIST, artist ?: "Unknown Artist")
             putText(METADATA_KEY_ALBUM, album ?: "Unknown Album")
             putString(METADATA_KEY_ART_URI, artUri ?: "")
-            if(duration != null && useProgressBar) putLong(METADATA_KEY_DURATION, duration.toLong() * 1000)
+            if(duration != null) putLong(METADATA_KEY_DURATION, duration.toLong() * 1000)
         }
 
         mediaSession!!.setMetadata(metadataBuilder.build())

@@ -21,14 +21,14 @@ pub struct Mpris
 
 impl Mpris
 {
-    pub fn new<C>(actions:Vec<Actions>, use_progress_bar:bool, mpris_name:String, callback:C) -> Self
+    pub fn new<C>(actions:Vec<Actions>, mpris_name:String, callback:C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
         let (tx, rx) = unbounded::<Command>();
         
         thread::spawn(move || {
-            Self::run(actions, use_progress_bar, mpris_name, rx, callback).unwrap();
+            Self::run(actions, mpris_name, rx, callback).unwrap();
         });
 
         Mpris { tx }
@@ -40,7 +40,7 @@ impl Mpris
     pub fn set_playback_state(&self, state:PlaybackState)
     { self.tx.send(Command::SetPlaybackState(state)).unwrap(); }
 
-    fn run<C>(actions:Vec<Actions>, use_progress_bar:bool, mpris_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
+    fn run<C>(actions:Vec<Actions>, mpris_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
     where
         C: Fn(Event) + Send + 'static
     {
@@ -104,6 +104,42 @@ impl Mpris
                     Ok(position)
                 });
 
+                e.property("CanSeek")
+                .get(|_, _| Ok(true))
+                .emits_changed_true();
+
+            e.method("Seek", ("Offset",), (), {
+                let callback = callback.clone();
+                let actions = actions.to_vec();
+
+                move |ctx, _, (offset,):(i64,)| {
+                    let offset = offset * 1_000_000;
+
+                    //TODO: This needs testing.
+                    if actions.contains(&Actions::Rewind) && offset.is_negative()
+                    { callback.lock().unwrap()(Event::Seek(offset, false)); }
+                    else if actions.contains(&Actions::FastForward) && offset.is_positive()
+                    { callback.lock().unwrap()(Event::Seek(offset, false)); }
+
+                    ctx.push_msg(ctx.make_signal("Seeked", ()));
+                    Ok(())
+                }
+            });
+
+            e.method("SetPosition", ("TrackId", "Position"), (), {
+                let callback = callback.clone();
+                move |_, _, (_track_id, position):(Path, i64)| {
+                    if position > PROGRESS.read().unwrap().duration as i64 { return Ok(()); }
+                    
+                    if let Ok(position) = u64::try_from(position)
+                    {
+                        callback.lock().unwrap()(Event::Seek((position * 1_000_000) as i64, true));
+                    }
+
+                    Ok(())
+                }
+            });
+
             // The following actions can be tweaked by the user.
 
             for action in &actions
@@ -138,44 +174,6 @@ impl Mpris
                     },
                     _ => continue
                 }
-            }
-
-            if use_progress_bar
-            {
-                e.property("CanSeek")
-                    .get(|_, _| Ok(true))
-                    .emits_changed_true();
-
-                e.method("Seek", ("Offset",), (), {
-                    let callback = callback.clone();
-
-                    move |ctx, _, (offset,):(i64,)| {
-                        let offset = offset * 1_000_000;
-
-                        //TODO: This needs testing.
-                        if actions.contains(&Actions::Rewind) && offset.is_negative()
-                        { callback.lock().unwrap()(Event::Seek(offset, false)); }
-                        else if actions.contains(&Actions::FastForward) && offset.is_positive()
-                        { callback.lock().unwrap()(Event::Seek(offset, false)); }
-
-                        ctx.push_msg(ctx.make_signal("Seeked", ()));
-                        Ok(())
-                    }
-                });
-
-                e.method("SetPosition", ("TrackId", "Position"), (), {
-                    let callback = callback.clone();
-                    move |_, _, (_track_id, position):(Path, i64)| {
-                        if position > PROGRESS.read().unwrap().duration as i64 { return Ok(()); }
-                        
-                        if let Ok(position) = u64::try_from(position)
-                        {
-                            callback.lock().unwrap()(Event::Seek((position * 1_000_000) as i64, true));
-                        }
-
-                        Ok(())
-                    }
-                });
             }
         });
 

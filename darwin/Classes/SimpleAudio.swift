@@ -13,7 +13,6 @@ public class SimpleAudio
     var currentMetadata:[String: Any] = [:]
     
     var showMediaNotification:Bool = true
-    var useProgressBar:Bool = true
 
     init(channel:FlutterMethodChannel?)
     {
@@ -29,8 +28,7 @@ public class SimpleAudio
             
                 showMediaNotification = args["showMediaNotification"] as! Bool
                 if(!showMediaNotification) { return }
-            
-                useProgressBar = args["useProgressBar"] as! Bool
+
                 let actions = args["actions"] as! [Int]
             
                 initialize(actions: actions.map { try! Actions.fromInt(i: $0) })

@@ -90,9 +90,6 @@ class SimpleAudio
     /// If [showMediaNotification] is false, this value does not matter. Otherwise, you will
     /// need to include [NotificationActions.playPause] in the list.
     /// 
-    /// **[useProgressBar]** Whether or not to show a progress bar in the media notification.
-    /// This value does not matter if [showMediaNotification] is false.
-    /// 
     /// **[androidNotificationIconPath]** A path that points to the icon the Android media
     /// notification will use. This icon should be stored in `./android/app/src/main/res/mipmap-xxx`.
     /// You will want to create images that are sized accordingly to the pixel density.
@@ -114,7 +111,6 @@ class SimpleAudio
         String mprisName = "SimpleAudio",
         bool showMediaNotification = true,
         List<NotificationActions> actions = NotificationActions.values,
-        bool useProgressBar = true,
         String androidNotificationIconPath = "mipmap/ic_launcher",
         List<int> androidCompactPlaybackActions = const [1, 2, 3],
     }) async
@@ -124,7 +120,6 @@ class SimpleAudio
 
         _player = await Player.newPlayer(
             bridge: api,
-            useProgressBar: useProgressBar,
             actions: showMediaNotification ?
                 Int32List.fromList(actions.map((e) => e.index).toList())
                 : Int32List(0),
@@ -136,7 +131,6 @@ class SimpleAudio
         {
             methodChannel.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
-                "useProgressBar": useProgressBar,
                 "actions": actions.map((e) => e.index).toList(),
                 "compactActions": androidCompactPlaybackActions,
                 "icon": androidNotificationIconPath
@@ -146,7 +140,6 @@ class SimpleAudio
         {
             methodChannel.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
-                "useProgressBar": useProgressBar,
                 "actions": actions.map((e) => e.index).toList()
             });
         }

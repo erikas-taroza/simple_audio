@@ -19,7 +19,7 @@ pub struct Smtc
 
 impl Smtc
 {
-    pub fn new<C>(actions:Vec<Actions>, use_progress_bar:bool, hwnd:isize, callback:C) -> Self
+    pub fn new<C>(actions:Vec<Actions>, hwnd:isize, callback:C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
@@ -91,9 +91,7 @@ impl Smtc
         });
         
         controls.ButtonPressed(&button_callback).unwrap();
-        
-        if use_progress_bar
-        { controls.PlaybackPositionChangeRequested(&position_callback).unwrap(); }
+        controls.PlaybackPositionChangeRequested(&position_callback).unwrap();
 
         Smtc { controls, display, timeline }
     }

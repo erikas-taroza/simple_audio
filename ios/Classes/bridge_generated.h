@@ -37,7 +37,6 @@ void store_dart_post_cobject(DartPostCObjectFnType ptr);
 
 void wire_new__static_method__Player(int64_t port_,
                                      struct wire_int_32_list *actions,
-                                     bool use_progress_bar,
                                      struct wire_uint_8_list *mpris_name,
                                      int64_t *hwnd);
 

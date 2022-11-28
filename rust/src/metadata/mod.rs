@@ -7,7 +7,7 @@ pub mod smtc;
 pub mod types;
 
 /// Initialize a platform specific metadata handler.
-pub fn init<C>(actions:Vec<Actions>, use_progress_bar:bool, mpris_name:String, hwnd:Option<i64>, callback:C)
+pub fn init<C>(actions:Vec<Actions>, mpris_name:String, hwnd:Option<i64>, callback:C)
 where
     C: Fn(Event) + Send + 'static
 {
@@ -16,7 +16,7 @@ where
     #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
         let mut mpris = mpris::HANDLER.write().unwrap();
-        *mpris = Some(mpris::Mpris::new(actions, use_progress_bar, mpris_name, callback));
+        *mpris = Some(mpris::Mpris::new(actions, mpris_name, callback));
     }
 
     #[cfg(target_os = "windows")]

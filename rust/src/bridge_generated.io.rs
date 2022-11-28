@@ -5,11 +5,10 @@ use super::*;
 pub extern "C" fn wire_new__static_method__Player(
     port_: i64,
     actions: *mut wire_int_32_list,
-    use_progress_bar: bool,
     mpris_name: *mut wire_uint_8_list,
     hwnd: *mut i64,
 ) {
-    wire_new__static_method__Player_impl(port_, actions, use_progress_bar, mpris_name, hwnd)
+    wire_new__static_method__Player_impl(port_, actions, mpris_name, hwnd)
 }
 
 #[no_mangle]
@@ -115,6 +114,8 @@ pub extern "C" fn new_uint_8_list_0(len: i32) -> *mut wire_uint_8_list {
     };
     support::new_leak_box_ptr(ans)
 }
+
+// Section: related functions
 
 // Section: impl Wire2Api
 

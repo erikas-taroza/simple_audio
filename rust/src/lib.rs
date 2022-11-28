@@ -24,7 +24,6 @@ impl Player
 {
     pub fn new(
         actions:Vec<i32>,
-        use_progress_bar:bool,
         mpris_name:String,
         hwnd:Option<i64>
     ) -> Player
@@ -33,7 +32,6 @@ impl Player
             actions.iter().map(|i| {
                 Actions::from(*i)
             }).collect::<Vec<Actions>>(),
-            use_progress_bar,
             mpris_name,
             hwnd,
             |e| {
@@ -226,7 +224,6 @@ impl Default for Player
     fn default() -> Self {
         crate::Player::new(
             vec![0, 1, 2, 3, 4],
-            true,
             "SimpleAudio".to_string(),
             None
         )
@@ -320,7 +317,6 @@ mod tests
     {
         let player = crate::Player::new(
             vec![2],
-            false,
             "SimpleAudio".to_string(),
             None
         );
