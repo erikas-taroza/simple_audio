@@ -105,9 +105,10 @@ class _MyAppState extends State<MyApp>
                                     await player.setMetadata(Metadata(
                                         title: "Title",
                                         artist: "Artist",
-                                        album: "Album"
+                                        album: "Album",
+                                        artUri: "https://imgs.search.brave.com/6O9qUMKrlM5XUEZ1yyVELLuLW3kyjbFkBFLeIbDMHwo/rs:fit:700:700:1/g:ce/aHR0cHM6Ly93d3cu/Zmx1d2VsLmNvbS9t/ZWRpYS9jYXRhbG9n/L3Byb2R1Y3QvY2Fj/aGUvNjU0ODUwM2Fh/ODMzZTY4ZmZkYzQ1/Yjc1YmU2ZGEyZTUv/Yy9vL2NvcHBlcl9p/bWFnZV9hLmpwZw"
                                     ));
-                                    await player.open(r"https://file-examples.com/storage/fe1e49aa386382846a083f5/2017/11/file_example_MP3_2MG.mp3");
+                                    await player.open(r"https://file-examples.com/storage/fe7b2149a76383f20ac005f/2017/11/file_example_MP3_1MG.mp3");
                                 },
                             ),
                             const SizedBox(height: 20),

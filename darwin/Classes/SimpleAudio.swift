@@ -49,11 +49,7 @@ public class SimpleAudio
     {
         #if os(iOS)
         let session = AVAudioSession.sharedInstance()
-        try! session.setCategory(
-            .playback,
-            options: [.allowBluetooth, .allowBluetoothA2DP]
-        )
-        
+        try! session.setCategory(.playback)
         try! session.setActive(true)
         #endif
         
@@ -104,11 +100,10 @@ public class SimpleAudio
             return .success
         }
         
+        #if os(macOS)
         let nowPlaying = MPNowPlayingInfoCenter.default()
-        
-        if #available(iOS 13.0, *) {
-            nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
-        }
+        nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
+        #endif
     }
     
     func setMetadata(
@@ -120,10 +115,12 @@ public class SimpleAudio
     )
     {
         currentMetadata = [
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
+            MPMediaItemPropertyMediaType: MPNowPlayingInfoMediaType.audio,
             MPMediaItemPropertyTitle: title ?? "Unknown Title",
             MPMediaItemPropertyArtist: artist ?? "Unknown Artist",
             MPMediaItemPropertyAlbumTitle: album ?? "Unknown Album",
-            MPMediaItemPropertyPlaybackDuration: String(duration ?? 0)
+            MPMediaItemPropertyPlaybackDuration: String(duration ?? 0),
         ]
         
         if(artUri != nil)
@@ -153,6 +150,9 @@ public class SimpleAudio
     // See enum type PlaybackState in simple_audio.dart for integer values.
     func setPlaybackState(state:Int?, position:Int?)
     {
+        let nowPlaying = MPNowPlayingInfoCenter.default()
+        
+        #if os(macOS)
         var translatedState:MPNowPlayingPlaybackState
         
         switch(state)
@@ -163,12 +163,21 @@ public class SimpleAudio
             default: translatedState = MPNowPlayingPlaybackState.unknown
         }
         
-        let state = MPNowPlayingInfoCenter.default()
-        if #available(iOS 13.0, *) {
-            state.playbackState = translatedState
+        nowPlaying.playbackState = translatedState
+        #else
+        if state == 0
+        {
+            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
+            currentMetadata[MPMediaItemPropertyMediaType] = MPNowPlayingInfoMediaType.audio
         }
+        else
+        {
+            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 0.0
+            currentMetadata[MPMediaItemPropertyMediaType] = MPNowPlayingInfoMediaType.none
+        }
+        #endif
         
         currentMetadata[MPNowPlayingInfoPropertyElapsedPlaybackTime] = String(position ?? 0)
-        state.nowPlayingInfo = currentMetadata
+        nowPlaying.nowPlayingInfo = currentMetadata
     }
 }
