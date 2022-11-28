@@ -137,14 +137,18 @@ class SimpleAudio
             methodChannel.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "useProgressBar": useProgressBar,
-                "icon": androidNotificationIconPath,
                 "actions": actions.map((e) => e.index).toList(),
-                "compactActions": androidCompactPlaybackActions
+                "compactActions": androidCompactPlaybackActions,
+                "icon": androidNotificationIconPath
             });
         }
         else if(Platform.isIOS || Platform.isMacOS)
         {
-            methodChannel.invokeMethod("init", null);
+            methodChannel.invokeMethod("init", {
+                "showMediaNotification": showMediaNotification,
+                "useProgressBar": useProgressBar,
+                "actions": actions.map((e) => e.index).toList()
+            });
         }
     }
 

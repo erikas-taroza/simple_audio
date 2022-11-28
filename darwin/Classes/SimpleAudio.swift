@@ -11,6 +11,9 @@ public class SimpleAudio
 {
     var channel:FlutterMethodChannel
     var currentMetadata:[String: Any] = [:]
+    
+    var showMediaNotification:Bool = true
+    var useProgressBar:Bool = true
 
     init(channel:FlutterMethodChannel?)
     {
@@ -22,9 +25,19 @@ public class SimpleAudio
         switch call.method
         {
             case "init":
-                initialize()
+                let args:[String: Any] = call.arguments as! [String: Any]
+            
+                showMediaNotification = args["showMediaNotification"] as! Bool
+                if(!showMediaNotification) { return }
+            
+                useProgressBar = args["useProgressBar"] as! Bool
+                let actions = args["actions"] as! [Int]
+            
+                initialize(actions: actions.map { try! Actions.fromInt(i: $0) })
             case "setMetadata":
                 let args:[String: Any] = call.arguments as! [String: Any]
+                    
+                if(!showMediaNotification) { return }
             
                 setMetadata(
                     title: args["title"] as? String,
@@ -35,6 +48,8 @@ public class SimpleAudio
                 )
             case "setPlaybackState":
                 let args:[String: Any] = call.arguments as! [String: Any]
+                    
+                if(!showMediaNotification) { return }
             
                 setPlaybackState(
                     state: args["state"] as? Int,
@@ -45,7 +60,7 @@ public class SimpleAudio
         }
     }
     
-    func initialize()
+    func initialize(actions:[Actions])
     {
         #if os(iOS)
         let session = AVAudioSession.sharedInstance()
@@ -55,42 +70,57 @@ public class SimpleAudio
         
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        commandCenter.playCommand.isEnabled = true
-        commandCenter.playCommand.addTarget { event in
-            self.channel.invokeMethod("play", arguments: nil)
-            return .success
+        if(actions.contains(Actions.playPause))
+        {
+            commandCenter.playCommand.isEnabled = true
+            commandCenter.playCommand.addTarget { event in
+                self.channel.invokeMethod("play", arguments: nil)
+                return .success
+            }
+            
+            commandCenter.pauseCommand.isEnabled = true
+            commandCenter.pauseCommand.addTarget { event in
+                self.channel.invokeMethod("pause", arguments: nil)
+                return .success
+            }
         }
         
-        commandCenter.pauseCommand.isEnabled = true
-        commandCenter.pauseCommand.addTarget { event in
-            self.channel.invokeMethod("pause", arguments: nil)
-            return .success
+        if(actions.contains(Actions.skipPrev))
+        {
+            commandCenter.previousTrackCommand.isEnabled = true
+            commandCenter.previousTrackCommand.addTarget { event in
+                self.channel.invokeMethod("previous", arguments: nil)
+                return .success
+            }
         }
         
-        commandCenter.previousTrackCommand.isEnabled = true
-        commandCenter.previousTrackCommand.addTarget { event in
-            self.channel.invokeMethod("previous", arguments: nil)
-            return .success
+        if(actions.contains(Actions.skipNext))
+        {
+            commandCenter.nextTrackCommand.isEnabled = true
+            commandCenter.nextTrackCommand.addTarget { event in
+                self.channel.invokeMethod("next", arguments: nil)
+                return .success
+            }
         }
         
-        commandCenter.nextTrackCommand.isEnabled = true
-        commandCenter.nextTrackCommand.addTarget { event in
-            self.channel.invokeMethod("next", arguments: nil)
-            return .success
+        if(actions.contains(Actions.fastForward))
+        {
+            commandCenter.skipForwardCommand.isEnabled = true
+            commandCenter.skipForwardCommand.preferredIntervals = [10.0]
+            commandCenter.skipForwardCommand.addTarget { event in
+                self.channel.invokeMethod("seekRelative", arguments: true)
+                return .success
+            }
         }
         
-        commandCenter.skipForwardCommand.isEnabled = true
-        commandCenter.skipForwardCommand.preferredIntervals = [10.0]
-        commandCenter.skipForwardCommand.addTarget { event in
-            self.channel.invokeMethod("seekRelative", arguments: true)
-            return .success
-        }
-        
-        commandCenter.skipBackwardCommand.isEnabled = true
-        commandCenter.skipBackwardCommand.preferredIntervals = [10.0]
-        commandCenter.skipBackwardCommand.addTarget { event in
-            self.channel.invokeMethod("seekRelative", arguments: false)
-            return .success
+        if(actions.contains(Actions.rewind))
+        {
+            commandCenter.skipBackwardCommand.isEnabled = true
+            commandCenter.skipBackwardCommand.preferredIntervals = [10.0]
+            commandCenter.skipBackwardCommand.addTarget { event in
+                self.channel.invokeMethod("seekRelative", arguments: false)
+                return .success
+            }
         }
         
         commandCenter.changePlaybackPositionCommand.isEnabled = true
@@ -180,4 +210,31 @@ public class SimpleAudio
         currentMetadata[MPNowPlayingInfoPropertyElapsedPlaybackTime] = String(position ?? 0)
         nowPlaying.nowPlayingInfo = currentMetadata
     }
+}
+
+enum Actions
+{
+    case rewind
+    case skipPrev
+    case playPause
+    case skipNext
+    case fastForward
+                
+    static func fromInt(i:Int) throws -> Actions
+    {
+        switch(i)
+        {
+            case 0: return .rewind
+            case 1: return .skipPrev
+            case 2: return .playPause
+            case 3: return .skipNext
+            case 4: return .fastForward
+            default: throw InvalidActionError.invalid
+        }
+    }
+}
+
+enum InvalidActionError:Error
+{
+    case invalid
 }

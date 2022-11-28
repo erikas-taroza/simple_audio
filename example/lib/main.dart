@@ -8,7 +8,11 @@ import 'package:simple_audio/simple_audio.dart';
 void main() async
 {
     SimpleAudio.init(
-        useProgressBar: false
+        actions: [
+            NotificationActions.playPause,
+            NotificationActions.skipNext,
+            NotificationActions.skipPrev
+        ]
     );
     runApp(const MyApp());
 }

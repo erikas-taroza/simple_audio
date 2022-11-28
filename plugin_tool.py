@@ -198,7 +198,7 @@ def build(openssl_path:str = None):
     is_windows = sys.platform == "win32"
     is_mac = sys.platform == "darwin"
 
-    if is_linux or is_windows or is_mac:
+    if is_linux or is_windows:
         print("Building Android libraries...\n")
 
         os.system("rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android")
@@ -207,13 +207,13 @@ def build(openssl_path:str = None):
         if os.path.exists("../android/src/main/jniLibs"):
             os.removedirs("../android/src/main/jniLibs")
 
-        os.system("cd rust && cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ../android/src/main/jniLibs build --release && cd ..")
+        os.system("cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ../android/src/main/jniLibs build --release --manifest-path ./rust/Cargo.toml")
 
     if is_linux:
         print("Building Linux libraries...\n")
 
         os.system("rustup target add x86_64-unknown-linux-gnu")
-        os.system("cd rust && cargo build --release --target x86_64-unknown-linux-gnu && cd ..")
+        os.system("cargo build --release --target x86_64-unknown-linux-gnu --manifest-path ./rust/Cargo.toml")
         os.makedirs(f"./linux/{package_name}", exist_ok=True)
 
         if os.path.exists(f"./linux/{package_name}/lib{package_name}.so"):
@@ -225,7 +225,7 @@ def build(openssl_path:str = None):
         print("Building Windows libraries...\n")
 
         os.system("rustup target add x86_64-pc-windows-msvc")
-        os.system("cd rust && cargo build --release --target x86_64-pc-windows-msvc && cd ..")
+        os.system("cargo build --release --target x86_64-pc-windows-msvc --manifest-path ./rust/Cargo.toml")
 
         if os.path.exists(f"./windows/{package_name}.dll"):
             os.remove(f"./windows/{package_name}.dll")
@@ -237,37 +237,33 @@ def build(openssl_path:str = None):
 
         # Build for macOS.
         os.system("rustup target add aarch64-apple-darwin x86_64-apple-darwin")
-        os.system("cd rust")
-        os.system("cargo build --release --target aarch64-apple-darwin")
-        os.system("cargo build --release --target x86_64-apple-darwin")
-        os.system(f'lipo "./target/aarch64-apple-darwin/release/lib{package_name}.dylib" "target/x86_64-apple-darwin/release/lib{package_name}.dylib" -output "lib{package_name}.dylib" -create')
-        os.system("cd ..")
+        os.system("cargo build --release --target aarch64-apple-darwin --manifest-path ./rust/Cargo.toml")
+        os.system("cargo build --release --target x86_64-apple-darwin --manifest-path ./rust/Cargo.toml")
+        os.system(f'lipo "./rust/target/aarch64-apple-darwin/release/lib{package_name}.dylib" "./rust/target/x86_64-apple-darwin/release/lib{package_name}.dylib" -output "lib{package_name}.dylib" -create')
 
         if os.path.exists(f"./macos/Libs/lib{package_name}.dylib"):
             os.remove(f"./macos/Libs/lib{package_name}.dylib")
 
-        shutil.move(f"./rust/lib{package_name}.dylib", "./macos/Libs")
+        shutil.move(f"./lib{package_name}.dylib", "./macos/Libs")
 
         # Build for iOS
         print("Building iOS libraries...\n")
 
         os.system("rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios")
-        os.system("cd rust")
-        os.system("cargo build --release --target aarch64-apple-ios")
+        os.system("cargo build --release --target aarch64-apple-ios --manifest-path ./rust/Cargo.toml")
 
         env_vars = f"OPENSSL_STATIC=1 OPENSSL_LIB_DIR=/usr/local/lib OPENSSL_INCLUDE_DIR={openssl_path} OPENSSL_NO_VENDOR=1 " if openssl_path is not None else ""
-        os.system(f"{env_vars}cargo build --release --target aarch64-apple-ios-sim")
+        os.system(f"{env_vars}cargo build --release --target aarch64-apple-ios-sim --manifest-path ./rust/Cargo.toml")
 
-        os.system("cargo build --release --target x86_64-apple-ios")
-        os.system(f'lipo "target/aarch64-apple-ios-sim/release/lib{package_name}.a" "target/x86_64-apple-ios/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
-        os.system(f"xcodebuild -create-xcframework -library ./target/aarch64-apple-ios/release/lib{package_name}.a -library ./lib{package_name}.a -output {package_name}.xcframework")
+        os.system("cargo build --release --target x86_64-apple-ios --manifest-path ./rust/Cargo.toml")
+        os.system(f'lipo "./rust/target/aarch64-apple-ios-sim/release/lib{package_name}.a" "./rust/target/x86_64-apple-ios/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
+        os.system(f"xcodebuild -create-xcframework -library ./rust/target/aarch64-apple-ios/release/lib{package_name}.a -library ./lib{package_name}.a -output {package_name}.xcframework")
         os.remove(f"./{package_name}.a")
-        os.system("cd ..")
 
         if os.path.exists(f"./ios/Frameworks/{package_name}.xcframework"):
             os.removedirs(f"./ios/Frameworks/{package_name}.xcframework")
 
-        shutil.move(f"./rust/{package_name}.xcframework", "./ios/Frameworks")
+        shutil.move(f"./{package_name}.xcframework", "./ios/Frameworks")
 
 
 if __name__ == "__main__":
