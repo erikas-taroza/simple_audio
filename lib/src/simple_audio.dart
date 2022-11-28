@@ -120,7 +120,7 @@ class SimpleAudio
     }) async
     {
         // You must include this action.
-        assert(showMediaNotification && actions.contains(NotificationActions.playPause));
+        if(showMediaNotification) assert(actions.contains(NotificationActions.playPause));
 
         _player = await Player.newPlayer(
             bridge: api,
@@ -135,6 +135,8 @@ class SimpleAudio
         if(Platform.isAndroid)
         {
             methodChannel.invokeMethod("init", {
+                "showMediaNotification": showMediaNotification,
+                "useProgressBar": useProgressBar,
                 "icon": androidNotificationIconPath,
                 "actions": actions.map((e) => e.index).toList(),
                 "compactActions": androidCompactPlaybackActions

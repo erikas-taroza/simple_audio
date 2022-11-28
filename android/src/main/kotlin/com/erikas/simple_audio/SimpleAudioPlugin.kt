@@ -47,6 +47,12 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "init" -> {
+                if(call.argument<Boolean>("showMediaNotification") == false)
+                {
+                    simpleAudioService = null
+                    return
+                }
+
                 simpleAudioService?.iconPath = call.argument("icon")!!
 
                 val actions = ArrayList<PlaybackActions>()
@@ -56,7 +62,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
                 simpleAudioService?.playbackActions = actions
                 simpleAudioService?.compactPlaybackActions = call.argument<List<Int>>("compactActions")!!
 
-                simpleAudioService?.init()
+                simpleAudioService?.init(call.argument<Boolean>("useProgressBar") ?: true)
             }
             "setMetadata" -> {
                 simpleAudioService?.setMetadata(
