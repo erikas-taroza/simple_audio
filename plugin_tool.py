@@ -204,10 +204,10 @@ def build(openssl_path:str = None):
         os.system("rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android")
         os.system("cargo install cargo-ndk")
 
-        if os.path.exists("../android/src/main/jniLibs"):
-            os.removedirs("../android/src/main/jniLibs")
+        if os.path.exists("./android/src/main/jniLibs"):
+            os.removedirs("./android/src/main/jniLibs")
 
-        os.system("cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ../android/src/main/jniLibs build --release --manifest-path ./rust/Cargo.toml")
+        os.system("cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ./android/src/main/jniLibs build --release --manifest-path ./rust/Cargo.toml")
 
     if is_linux:
         print("Building Linux libraries...\n")
@@ -258,7 +258,7 @@ def build(openssl_path:str = None):
         os.system("cargo build --release --target x86_64-apple-ios --manifest-path ./rust/Cargo.toml")
         os.system(f'lipo "./rust/target/aarch64-apple-ios-sim/release/lib{package_name}.a" "./rust/target/x86_64-apple-ios/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
         os.system(f"xcodebuild -create-xcframework -library ./rust/target/aarch64-apple-ios/release/lib{package_name}.a -library ./lib{package_name}.a -output {package_name}.xcframework")
-        os.remove(f"./{package_name}.a")
+        os.remove(f"./lib{package_name}.a")
 
         if os.path.exists(f"./ios/Frameworks/{package_name}.xcframework"):
             os.removedirs(f"./ios/Frameworks/{package_name}.xcframework")
