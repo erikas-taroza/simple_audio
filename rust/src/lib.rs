@@ -77,7 +77,7 @@ impl Player
         // After all the threads have been stopped, a new tx and rx is created.
         // This will reset the `true` signal.
         let mut txrx = TXRX.write().unwrap();
-        *txrx = Some(bounded(1));
+        *txrx = Some(bounded(10));
     }
 
     // ---------------------------------
