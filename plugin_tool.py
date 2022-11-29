@@ -198,7 +198,7 @@ def build(openssl_path:str = None):
     is_windows = sys.platform == "win32"
     is_mac = sys.platform == "darwin"
 
-    if is_linux or is_windows:
+    if is_linux:
         print("Building Android libraries...\n")
 
         os.system("rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android")

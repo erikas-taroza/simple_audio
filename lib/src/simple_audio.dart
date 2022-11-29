@@ -215,11 +215,11 @@ class SimpleAudio
         return await _player.seek(seconds: seconds);
     }
 
-    Future<void> setMetadata(Metadata metadata) async
+    void setMetadata(Metadata metadata)
     {
         if(Platform.isLinux || Platform.isWindows)
         {
-            return await _player.setMetadata(metadata: metadata);
+            _player.setMetadata(metadata: metadata);
         }
         else if(_usingNative)
         {
