@@ -204,10 +204,13 @@ def build(openssl_path:str = None):
         os.system("rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android")
         os.system("cargo install cargo-ndk")
 
-        if os.path.exists("./android/src/main/jniLibs"):
-            os.removedirs("./android/src/main/jniLibs")
+        architectures = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
+        for architecture in architectures:
+            path = f"./android/src/main/jniLibs/{architecture}/lib{package_name}.so"
+            if os.path.exists(path):
+                os.remove(path)
 
-        os.system("cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ./android/src/main/jniLibs build --release --manifest-path ./rust/Cargo.toml")
+        os.system("cd rust && cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o ../android/src/main/jniLibs build --release && cd ..")
 
     if is_linux:
         print("Building Linux libraries...\n")
