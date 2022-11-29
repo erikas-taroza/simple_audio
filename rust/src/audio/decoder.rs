@@ -50,13 +50,27 @@ impl Decoder
         loop
         {
             // Poll the status of the RX in lib.rs.
-            // If the value is true, that means we want to stop this stream.
+            // If the value is ThreadMessage::Quit, that means we want to stop this stream.
             // Breaking the loop drops everything which stops the cpal stream.
             match rx.try_recv()
             {
                 Err(_) => (),
-                Ok(message) => if message { break; }
+                Ok(message) => match message
+                {
+                    ThreadMessage::Play => {
+                        if let Some(cpal_output) = cpal_output.as_ref()
+                        { cpal_output.stream.play().unwrap(); } 
+                    },
+                    ThreadMessage::Pause => {
+                        if let Some(cpal_output) = cpal_output.as_ref()
+                        { cpal_output.stream.pause().unwrap(); } 
+                    },
+                    ThreadMessage::Quit => break,
+                }
             }
+
+            if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+            { continue; }
 
             // Seeking.
             let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()

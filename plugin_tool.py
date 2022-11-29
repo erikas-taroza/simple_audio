@@ -261,7 +261,7 @@ def build(openssl_path:str = None):
         os.remove(f"./lib{package_name}.a")
 
         if os.path.exists(f"./ios/Frameworks/{package_name}.xcframework"):
-            os.removedirs(f"./ios/Frameworks/{package_name}.xcframework")
+            shutil.rmtree(f"./ios/Frameworks/{package_name}.xcframework")
 
         shutil.move(f"./{package_name}.xcframework", "./ios/Frameworks")
 

@@ -2,6 +2,7 @@
 import FlutterMacOS
 #else
 import Flutter
+import AVFoundation
 #endif
 
 import MediaPlayer
@@ -144,7 +145,6 @@ public class SimpleAudio
     {
         currentMetadata = [
             MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
-            MPMediaItemPropertyMediaType: MPNowPlayingInfoMediaType.audio,
             MPMediaItemPropertyTitle: title ?? "Unknown Title",
             MPMediaItemPropertyArtist: artist ?? "Unknown Artist",
             MPMediaItemPropertyAlbumTitle: album ?? "Unknown Album",
@@ -193,15 +193,21 @@ public class SimpleAudio
         
         nowPlaying.playbackState = translatedState
         #else
+        let session = AVAudioSession.sharedInstance()
+        
         if state == 0
         {
-            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
-            currentMetadata[MPMediaItemPropertyMediaType] = MPNowPlayingInfoMediaType.audio
+            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: 1.0)
+            try? session.setActive(true)
         }
         else
         {
-            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 0.0
-            currentMetadata[MPMediaItemPropertyMediaType] = MPNowPlayingInfoMediaType.none
+            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: 0.0)
+            // Allow some time for the Rust code to execute
+            // to pause the stream.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                try? session.setActive(false)
+            }
         }
         #endif
         

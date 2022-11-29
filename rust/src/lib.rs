@@ -72,7 +72,7 @@ impl Player
         // they will read this value and break the decode loop if it is `true`.
         // This closes the thread and the cpal stream.
         if let Some(txrx) = &*TXRX.read().unwrap()
-        { txrx.0.send(true).unwrap(); }
+        { txrx.0.send(ThreadMessage::Quit).unwrap(); }
 
         // After all the threads have been stopped, a new tx and rx is created.
         // This will reset the `true` signal.
@@ -158,6 +158,9 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play()
     {
+        if let Some(txrx) = &*TXRX.read().unwrap()
+        { txrx.0.send(ThreadMessage::Play).unwrap(); }
+
         update_playback_state_stream(utils::playback_state::PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Play);
@@ -168,6 +171,9 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause()
     {
+        if let Some(txrx) = &*TXRX.read().unwrap()
+        { txrx.0.send(ThreadMessage::Pause).unwrap(); }
+
         update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
