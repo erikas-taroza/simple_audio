@@ -107,12 +107,18 @@ class SimpleAudio
     /// androidPlaybackActions = [Rewind, SkipPrev, PlayPause, SkipNext, FastForward]
     /// 
     /// androidCompactPlaybackActions = [1, 2, 3]
+    /// 
+    /// **[applePreferSkipButtons]** For the macOS and iOS media notifications. If set to true,
+    /// the notification will show [NotificationActions.skipPrev] and [NotificationActions.skipNext]
+    /// instead of [NotificationActions.rewind] and [NotificationActions.fastForward]
+    /// when all 4 values are provided in [actions].
     static Future<void> init({
         String mprisName = "SimpleAudio",
         bool showMediaNotification = true,
         List<NotificationActions> actions = NotificationActions.values,
         String androidNotificationIconPath = "mipmap/ic_launcher",
         List<int> androidCompactPlaybackActions = const [1, 2, 3],
+        bool applePreferSkipButtons = true
     }) async
     {
         // You must include this action.
@@ -140,7 +146,8 @@ class SimpleAudio
         {
             methodChannel.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
-                "actions": actions.map((e) => e.index).toList()
+                "actions": actions.map((e) => e.index).toList(),
+                "preferSkipButtons": applePreferSkipButtons
             });
         }
     }

@@ -31,8 +31,9 @@ public class SimpleAudio
                 if(!showMediaNotification) { return }
 
                 let actions = args["actions"] as! [Int]
+                let preferSkipButtons = args["preferSkipButtons"] as! Bool
             
-                initialize(actions: actions.map { try! Actions.fromInt(i: $0) })
+                initialize(actions: actions.map { try! Actions.fromInt(i: $0) }, preferSkipButtons: preferSkipButtons)
             case "setMetadata":
                 let args:[String: Any] = call.arguments as! [String: Any]
                     
@@ -59,7 +60,7 @@ public class SimpleAudio
         }
     }
     
-    func initialize(actions:[Actions])
+    func initialize(actions:[Actions], preferSkipButtons:Bool)
     {
         #if os(iOS)
         let session = AVAudioSession.sharedInstance()
@@ -102,7 +103,7 @@ public class SimpleAudio
             }
         }
         
-        if(actions.contains(Actions.fastForward))
+        if(actions.contains(Actions.fastForward) && !preferSkipButtons)
         {
             commandCenter.skipForwardCommand.isEnabled = true
             commandCenter.skipForwardCommand.preferredIntervals = [10.0]
@@ -112,7 +113,7 @@ public class SimpleAudio
             }
         }
         
-        if(actions.contains(Actions.rewind))
+        if(actions.contains(Actions.rewind) && !preferSkipButtons)
         {
             commandCenter.skipBackwardCommand.isEnabled = true
             commandCenter.skipBackwardCommand.preferredIntervals = [10.0]

@@ -7,11 +7,7 @@ import 'package:simple_audio/simple_audio.dart';
 
 void main() async
 {
-    SimpleAudio.init(
-        actions: [
-            NotificationActions.playPause
-        ]
-    );
+    SimpleAudio.init();
     runApp(const MyApp());
 }
 
