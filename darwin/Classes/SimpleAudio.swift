@@ -149,7 +149,7 @@ public class SimpleAudio
             MPMediaItemPropertyTitle: title ?? "Unknown Title",
             MPMediaItemPropertyArtist: artist ?? "Unknown Artist",
             MPMediaItemPropertyAlbumTitle: album ?? "Unknown Album",
-            MPMediaItemPropertyPlaybackDuration: String(duration ?? 0),
+            MPMediaItemPropertyPlaybackDuration: duration ?? 0,
         ]
         
         if(artUri != nil)
@@ -198,12 +198,12 @@ public class SimpleAudio
         
         if state == 0
         {
-            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: 1.0)
+            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
             try? session.setActive(true)
         }
         else
         {
-            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: 0.0)
+            currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 0.0
             // Allow some time for the Rust code to execute
             // to pause the stream.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

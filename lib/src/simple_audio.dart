@@ -235,14 +235,19 @@ class SimpleAudio
             Future<void> _() async
             {
                 // Wait for a valid duration.
-                while((await _progress).duration == 0) { continue; }
+                ProgressState progress = await _progress;
+                while(progress.duration == 0)
+                {
+                    progress = await _progress;
+                    continue;
+                }
 
                 await methodChannel.invokeMethod("setMetadata", {
                     "title": metadata.title,
                     "artist": metadata.artist,
                     "album": metadata.album,
                     "artUri": metadata.artUri,
-                    "duration": (await _progress).duration
+                    "duration": progress.duration
                 });
             }
             _();
