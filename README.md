@@ -33,8 +33,10 @@ You will need to edit 2 files located in the ``android/app/src/main`` directory.
 
 #### AndroidManifest.xml
 ```xml
+<!-- Add this permission. -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 <application>
-  <!-- Default Flutter stuff -->
+  <!-- ... -->
   
   <!-- This is required if you want to be able to see the notification. -->
   <service
@@ -81,6 +83,17 @@ You will have to add a dependency to your Xcode project.
 - At the top of your project hierarchy view, select the ``Runner`` project.
 - Select the ``Runner`` target, go to the ``General`` tab and scroll down until you see ``Frameworks, Libraries, Embedded Content``
 - Press the ``+`` icon and add the ``AudioToolbox.framework`` framework. Select ``Do Not Embed`` under the ``Embed`` column.
+
+Add this to your ``Info.plist`` file located in ``ios/Runner``:
+```xml
+<dict>
+  <!-- ... -->
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>audio</string>
+  </array>
+</dict>
+```
 
 ### macOS
 You will need to update the macOS build versions to ``10.13``
