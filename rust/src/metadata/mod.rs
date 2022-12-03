@@ -7,6 +7,7 @@ pub mod smtc;
 pub mod types;
 
 /// Initialize a platform specific metadata handler.
+#[allow(unused_variables)]
 pub fn init<C>(actions:Vec<Actions>, mpris_name:String, hwnd:Option<i64>, callback:C)
 where
     C: Fn(Event) + Send + 'static

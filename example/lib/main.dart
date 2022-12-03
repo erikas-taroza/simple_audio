@@ -51,6 +51,17 @@ class _MyAppState extends State<MyApp>
 
         player.playbackStateStream.listen((event) {
             setState(() => playbackState = event);
+
+            if(playbackState == PlaybackState.done)
+            {
+                player.setMetadata(Metadata(
+                    title: "Title",
+                    artist: "Artist",
+                    album: "Album",
+                    artUri: "https://imgs.search.brave.com/6O9qUMKrlM5XUEZ1yyVELLuLW3kyjbFkBFLeIbDMHwo/rs:fit:700:700:1/g:ce/aHR0cHM6Ly93d3cu/Zmx1d2VsLmNvbS9t/ZWRpYS9jYXRhbG9n/L3Byb2R1Y3QvY2Fj/aGUvNjU0ODUwM2Fh/ODMzZTY4ZmZkYzQ1/Yjc1YmU2ZGEyZTUv/Yy9vL2NvcHBlcl9p/bWFnZV9hLmpwZw"
+                ));
+                player.open(r"https://ia800503.us.archive.org/8/items/futuresoundfx-98/futuresoundfx-1.mp3?cnt=0");
+            }
         });
 
         player.progressStateStream.listen((event) {
@@ -106,7 +117,7 @@ class _MyAppState extends State<MyApp>
                                         album: "Album",
                                         artUri: "https://imgs.search.brave.com/6O9qUMKrlM5XUEZ1yyVELLuLW3kyjbFkBFLeIbDMHwo/rs:fit:700:700:1/g:ce/aHR0cHM6Ly93d3cu/Zmx1d2VsLmNvbS9t/ZWRpYS9jYXRhbG9n/L3Byb2R1Y3QvY2Fj/aGUvNjU0ODUwM2Fh/ODMzZTY4ZmZkYzQ1/Yjc1YmU2ZGEyZTUv/Yy9vL2NvcHBlcl9p/bWFnZV9hLmpwZw"
                                     ));
-                                    await player.open(r"https://file-examples.com/storage/fe19e1a6e563854389e633c/2017/11/file_example_MP3_2MG.mp3");
+                                    await player.open(r"https://ia800503.us.archive.org/8/items/futuresoundfx-98/futuresoundfx-1.mp3?cnt=0");
                                 },
                             ),
                             const SizedBox(height: 20),
