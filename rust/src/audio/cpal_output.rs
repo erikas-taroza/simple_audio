@@ -90,7 +90,7 @@ impl CpalOutput
             },
             move |err| {
                 panic!("ERR: An error occurred during the stream. {err}");
-            }
+            }, None
         );
 
         if let Err(err) = stream

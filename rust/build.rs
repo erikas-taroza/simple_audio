@@ -11,7 +11,11 @@ fn add_lib(name:impl AsRef<str>, _static:bool)
 
 fn main()
 {
-    // Adds the libc++_shared.so for oboe.
-    #[cfg(target_os = "android")]
-    add_lib("c++_shared", false);
+    let target = std::env::var("TARGET")
+        .expect("ERR: Could not check the target for the build.");
+
+    if target.contains("android")
+    {
+        add_lib("c++_shared", false);
+    }
 }
