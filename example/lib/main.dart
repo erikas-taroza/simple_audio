@@ -36,6 +36,8 @@ class _MyAppState extends State<MyApp>
     double position = 0;
     double duration = 0;
 
+    String path = r"https://ia800503.us.archive.org/8/items/futuresoundfx-98/futuresoundfx-1.mp3?cnt=0";
+
     String convertSecondsToReadableString(int seconds)
     {
         int m = seconds ~/ 60;
@@ -60,7 +62,7 @@ class _MyAppState extends State<MyApp>
                     album: "Album",
                     artUri: "https://imgs.search.brave.com/6O9qUMKrlM5XUEZ1yyVELLuLW3kyjbFkBFLeIbDMHwo/rs:fit:700:700:1/g:ce/aHR0cHM6Ly93d3cu/Zmx1d2VsLmNvbS9t/ZWRpYS9jYXRhbG9n/L3Byb2R1Y3QvY2Fj/aGUvNjU0ODUwM2Fh/ODMzZTY4ZmZkYzQ1/Yjc1YmU2ZGEyZTUv/Yy9vL2NvcHBlcl9p/bWFnZV9hLmpwZw"
                 ));
-                player.open(r"https://ia800503.us.archive.org/8/items/futuresoundfx-98/futuresoundfx-1.mp3?cnt=0");
+                player.open(path);
             }
         });
 
@@ -110,6 +112,7 @@ class _MyAppState extends State<MyApp>
                                     // if(file == null) return;
 
                                     // final PlatformFile pickedFile = file.files.single;
+                                    // path = pickedFile.path!;
 
                                     player.setMetadata(Metadata(
                                         title: "Title",
@@ -117,7 +120,7 @@ class _MyAppState extends State<MyApp>
                                         album: "Album",
                                         artUri: "https://imgs.search.brave.com/6O9qUMKrlM5XUEZ1yyVELLuLW3kyjbFkBFLeIbDMHwo/rs:fit:700:700:1/g:ce/aHR0cHM6Ly93d3cu/Zmx1d2VsLmNvbS9t/ZWRpYS9jYXRhbG9n/L3Byb2R1Y3QvY2Fj/aGUvNjU0ODUwM2Fh/ODMzZTY4ZmZkYzQ1/Yjc1YmU2ZGEyZTUv/Yy9vL2NvcHBlcl9p/bWFnZV9hLmpwZw"
                                     ));
-                                    await player.open(r"https://ia800503.us.archive.org/8/items/futuresoundfx-98/futuresoundfx-1.mp3?cnt=0");
+                                    await player.open(path);
                                 },
                             ),
                             const SizedBox(height: 20),

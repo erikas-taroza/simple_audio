@@ -158,6 +158,8 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play()
     {
+        if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { return; }
+
         if let Some(txrx) = &*TXRX.read().unwrap()
         { txrx.0.send(ThreadMessage::Play).unwrap(); }
 
@@ -171,6 +173,8 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause()
     {
+        if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { return; }
+
         if let Some(txrx) = &*TXRX.read().unwrap()
         { txrx.0.send(ThreadMessage::Pause).unwrap(); }
 
