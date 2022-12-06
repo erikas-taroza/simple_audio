@@ -15,7 +15,7 @@ pub struct CpalOutput
     _device:Device,
     _config:StreamConfig,
     spec:SignalSpec,
-    target_sample_rate:Option<f64>,
+    target_sample_rate:Option<u32>,
     pub stream:Stream,
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
@@ -24,13 +24,13 @@ pub struct CpalOutput
 
 impl CpalOutput
 {
-    fn get_config(spec:SignalSpec) -> (Device, StreamConfig, Option<f64>)
+    fn get_config(spec:SignalSpec) -> (Device, StreamConfig, Option<u32>)
     {
         let host = cpal::default_host();
         let device = host.default_output_device().expect("ERR: Failed to get default output device.");
 
         let config;
-        let target_sample_rate:Option<f64>;
+        let target_sample_rate:Option<u32>;
 
         #[cfg(target_os = "windows")]
         {
@@ -39,8 +39,8 @@ impl CpalOutput
             config = supported_configs.next()
                 .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
 
-            target_sample_rate = if spec.rate != config.sample_rate.0 as u32 {
-                Some(config.sample_rate.0 as f64)
+            target_sample_rate = if spec.rate != config.sample_rate.0 {
+                Some(config.sample_rate.0)
             } else { None };
         }
 
@@ -136,7 +136,7 @@ impl CpalOutput
         {
             let resampled = samplerate::convert(
                 self.spec.rate,
-                target_sample_rate as u32,
+                target_sample_rate,
                 self.spec.channels.count(),
                 samplerate::ConverterType::Linear,
                 samples
