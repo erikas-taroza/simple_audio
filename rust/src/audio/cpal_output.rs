@@ -1,5 +1,4 @@
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
-use dasp::{signal, interpolate::linear::Linear, Signal};
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
@@ -132,15 +131,16 @@ impl CpalOutput
         // Resample to the output device's specification.
         // This is only done on Windows because WASAPI does not
         // resample the output for us.
+        #[cfg(target_os = "windows")]
         if let Some(target_sample_rate) = self.target_sample_rate
         {
-            let mut signal = signal::from_interleaved_samples_iter(samples.iter().copied());
-            let linear:Linear<f32> = Linear::new(signal.next(), signal.next());
-            let resampled:Vec<f32> = signal.from_hz_to_hz(
-                linear,
-                self.spec.rate as f64,
-                target_sample_rate
-            ).take(samples.len() * target_sample_rate as usize / self.spec.rate as usize).collect();
+            let resampled = samplerate::convert(
+                self.spec.rate,
+                target_sample_rate as u32,
+                self.spec.channels.count(),
+                samplerate::ConverterType::Linear,
+                samples
+            ).unwrap();
 
             let mut resampled = resampled.as_slice();
             

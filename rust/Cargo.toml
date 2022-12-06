@@ -14,7 +14,6 @@ symphonia = { version = "0.5.1", features = ["aac", "alac", "isomp4", "mp3"] }
 rb = "0.4.1"
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 openssl-sys = { version = "0.9.77", features = ["vendored"] }
-dasp = { version = "0.11.0", features = ["interpolate", "interpolate-linear", "signal"] }
 
 [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))'.dependencies]
 dbus = "0.9.6"
@@ -23,6 +22,9 @@ dbus-crossroads = "0.5.1"
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-glue = { git = "https://github.com/rust-windowing/android-ndk-rs" }
 oboe = { git = "https://github.com/katyo/oboe-rs", branch = "fix-unsoundess" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+samplerate = "0.2.4"
 
 # target.'cfg(target_os = "windows")'.
 [target.'cfg(target_os = "windows")'.dependencies.windows]
