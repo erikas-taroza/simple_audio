@@ -1,4 +1,5 @@
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
+use dasp::{signal, interpolate::linear::Linear, Signal};
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
@@ -14,7 +15,8 @@ pub struct CpalOutput
 {
     _device:Device,
     _config:StreamConfig,
-    _spec:SignalSpec,
+    spec:SignalSpec,
+    target_sample_rate:Option<f64>,
     pub stream:Stream,
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
@@ -23,12 +25,13 @@ pub struct CpalOutput
 
 impl CpalOutput
 {
-    fn get_config(spec:SignalSpec) -> (Device, StreamConfig)
+    fn get_config(spec:SignalSpec) -> (Device, StreamConfig, Option<f64>)
     {
         let host = cpal::default_host();
         let device = host.default_output_device().expect("ERR: Failed to get default output device.");
 
         let config;
+        let target_sample_rate:Option<f64>;
 
         #[cfg(target_os = "windows")]
         {
@@ -36,6 +39,10 @@ impl CpalOutput
                 .expect("ERR: Failed to get supported outputs.");
             config = supported_configs.next()
                 .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
+
+            target_sample_rate = if spec.rate != config.sample_rate.0 as u32 {
+                Some(config.sample_rate.0 as f64)
+            } else { None };
         }
 
         #[cfg(not(target_os = "windows"))]
@@ -46,9 +53,10 @@ impl CpalOutput
                 sample_rate: cpal::SampleRate(spec.rate),
                 buffer_size: cpal::BufferSize::Default,
             };
+            target_sample_rate = None;
         }
 
-        (device, config)
+        (device, config, target_sample_rate)
     }
 
     /// Starts a new stream on the default device.
@@ -56,7 +64,7 @@ impl CpalOutput
     pub fn build_stream(spec:SignalSpec, duration:u64) -> Self
     {
         // Get the output config.
-        let (device, config) = Self::get_config(spec);
+        let (device, config, target_sample_rate) = Self::get_config(spec);
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
@@ -103,7 +111,8 @@ impl CpalOutput
         {
             _device: device,
             _config: config,
-            _spec: spec,
+            spec,
+            target_sample_rate,
             stream,
             ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
@@ -119,11 +128,30 @@ impl CpalOutput
         // CPAL wants the audio interleaved.
         self.sample_buffer.copy_interleaved_ref(decoded);
         let mut samples = self.sample_buffer.samples();
+
+        // Resample to the output device's specification.
+        // This is only done on Windows because WASAPI does not
+        // resample the output for us.
+        if let Some(target_sample_rate) = self.target_sample_rate
+        {
+            let mut signal = signal::from_interleaved_samples_iter(samples.iter().copied());
+            let linear:Linear<f32> = Linear::new(signal.next(), signal.next());
+            let resampled:Vec<f32> = signal.from_hz_to_hz(
+                linear,
+                self.spec.rate as f64,
+                target_sample_rate
+            ).take(samples.len() * target_sample_rate as usize / self.spec.rate as usize).collect();
+
+            let mut resampled = resampled.as_slice();
+            
+            while let Some(written) = self.ring_buffer_writer.write_blocking(resampled)
+            { resampled = &resampled[written..]; }
+
+            return;
+        }
         
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
-        {
-            samples = &samples[written..];
-        }
+        { samples = &samples[written..]; }
     }
 }

@@ -22,6 +22,10 @@ where
 
     #[cfg(target_os = "windows")]
     {
+        // Ignore this if a test is active. SMTC needs a HWND which is
+        // not available when running the tests.
+        if cfg!(test) { return; }
+
         let mut smtc = smtc::HANDLER.write().unwrap();
         *smtc = Some(smtc::Smtc::new(actions, hwnd.unwrap() as isize, callback));
     }
