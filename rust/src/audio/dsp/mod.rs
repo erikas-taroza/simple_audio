@@ -1,1 +1,1 @@
-pub mod resample;
+pub mod resampler;
