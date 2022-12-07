@@ -83,6 +83,18 @@ impl Decoder
                 }
             } else { 0 };
 
+            // Clean up seek stuff.
+            if SEEK_TS.read().unwrap().is_some()
+            {
+                *SEEK_TS.write().unwrap() = None;
+                decoder.reset();
+                // Clear the ring buffer which prevents the writer
+                // from blocking.
+                if let Some(cpal_output) = cpal_output.as_ref()
+                { let _ = cpal_output.ring_buffer_reader.skip(usize::MAX); }
+                continue;
+            }
+
             // Decode the next packet.
             let packet = match reader.next_packet()
             {
@@ -100,18 +112,6 @@ impl Decoder
             };
 
             if packet.track_id() != track_id { continue; }
-
-            // Clean up seek stuff.
-            if SEEK_TS.read().unwrap().is_some()
-            {
-                *SEEK_TS.write().unwrap() = None;
-                decoder.reset();
-                // Clear the ring buffer which prevents the writer
-                // from blocking.
-                if let Some(cpal_output) = cpal_output.as_ref()
-                { let _ = cpal_output.ring_buffer_reader.skip(usize::MAX); }
-                continue;
-            }
 
             match decoder.decode(&packet)
             {
