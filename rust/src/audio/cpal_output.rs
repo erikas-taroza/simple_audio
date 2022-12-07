@@ -2,7 +2,7 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-use super::controls::*;
+use super::{controls::*, dsp::resample::Resampler};
 
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number
@@ -14,23 +14,21 @@ pub struct CpalOutput
 {
     _device:Device,
     _config:StreamConfig,
-    spec:SignalSpec,
-    target_sample_rate:Option<u32>,
     pub stream:Stream,
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
-    sample_buffer:SampleBuffer<f32>
+    sample_buffer:SampleBuffer<f32>,
+    resampler:Option<Resampler>
 }
 
 impl CpalOutput
 {
-    fn get_config(spec:SignalSpec) -> (Device, StreamConfig, Option<u32>)
+    fn get_config(spec:SignalSpec) -> (Device, StreamConfig)
     {
         let host = cpal::default_host();
         let device = host.default_output_device().expect("ERR: Failed to get default output device.");
 
         let config;
-        let target_sample_rate:Option<u32>;
 
         #[cfg(target_os = "windows")]
         {
@@ -38,10 +36,6 @@ impl CpalOutput
                 .expect("ERR: Failed to get supported outputs.");
             config = supported_configs.next()
                 .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
-
-            target_sample_rate = if spec.rate != config.sample_rate.0 {
-                Some(config.sample_rate.0)
-            } else { None };
         }
 
         #[cfg(not(target_os = "windows"))]
@@ -52,10 +46,9 @@ impl CpalOutput
                 sample_rate: cpal::SampleRate(spec.rate),
                 buffer_size: cpal::BufferSize::Default,
             };
-            target_sample_rate = None;
         }
 
-        (device, config, target_sample_rate)
+        (device, config)
     }
 
     /// Starts a new stream on the default device.
@@ -63,7 +56,13 @@ impl CpalOutput
     pub fn build_stream(spec:SignalSpec, duration:u64) -> Self
     {
         // Get the output config.
-        let (device, config, target_sample_rate) = Self::get_config(spec);
+        let (device, config) = Self::get_config(spec);
+
+        // Create a resampler only if the code is running on Windows
+        // and if the output config's sample rate doesn't match the audio's.
+        let resampler:Option<Resampler> = if cfg!(target_os = "windows")
+            && spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0)) }
+            else { None };
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
@@ -110,12 +109,11 @@ impl CpalOutput
         {
             _device: device,
             _config: config,
-            spec,
-            target_sample_rate,
             stream,
             ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
-            sample_buffer
+            sample_buffer,
+            resampler
         }
     }
 
@@ -128,20 +126,11 @@ impl CpalOutput
         self.sample_buffer.copy_interleaved_ref(decoded);
         let mut samples = self.sample_buffer.samples();
 
-        // Resample to the output device's specification.
-        // This is only done on Windows because WASAPI does not
-        // resample the output for us.
-        #[cfg(target_os = "windows")]
-        if let Some(target_sample_rate) = self.target_sample_rate
+        // If there is a resampler, then write resampled values
+        // instead of the normal `samples`.
+        if let Some(resampler) = &self.resampler
         {
-            let resampled = samplerate::convert(
-                self.spec.rate,
-                target_sample_rate,
-                self.spec.channels.count(),
-                samplerate::ConverterType::Linear,
-                samples
-            ).unwrap();
-
+            let resampled = resampler.resample(samples);
             let mut resampled = resampled.as_slice();
             
             while let Some(written) = self.ring_buffer_writer.write_blocking(resampled)
