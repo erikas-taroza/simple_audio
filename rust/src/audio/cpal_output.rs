@@ -60,8 +60,8 @@ impl CpalOutput
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
-        let resampler:Option<Resampler> = if cfg!(target_os = "windows")
-            && spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0)) }
+        let resampler:Option<Resampler> = if cfg!(target_os = "windows") &&
+            spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration as usize)) }
             else { None };
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
@@ -122,14 +122,13 @@ impl CpalOutput
     {
         if decoded.frames() == 0 { return; }
 
-        // CPAL wants the audio interleaved.
-        self.sample_buffer.copy_interleaved_ref(decoded);
-        let mut samples = self.sample_buffer.samples();
-
         // If there is a resampler, then write resampled values
         // instead of the normal `samples`.
-        if let Some(resampler) = &self.resampler
+        if let Some(resampler) = &mut self.resampler
         {
+            self.sample_buffer.copy_planar_ref(decoded);
+            let samples = self.sample_buffer.samples();
+
             let resampled = resampler.resample(samples);
             let mut resampled = resampled.as_slice();
             
@@ -138,6 +137,10 @@ impl CpalOutput
 
             return;
         }
+
+        // CPAL wants the audio interleaved.
+        self.sample_buffer.copy_interleaved_ref(decoded);
+        let mut samples = self.sample_buffer.samples();
         
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
