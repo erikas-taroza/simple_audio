@@ -1,22 +1,26 @@
-use rubato::{FftFixedIn, VecResampler};
+use rubato::FftFixedIn;
 use symphonia::core::audio::SignalSpec;
 
 pub struct Resampler
 {
     resampler:FftFixedIn<f32>,
-    output_buffer:Vec<Vec<f32>>
+    output_buffer:Vec<Vec<f32>>,
+    num_frames:usize,
+    num_channels:usize
 }
 
 impl Resampler
 {
     pub fn new(spec:SignalSpec, to_sample_rate:usize, num_frames:usize) -> Self
     {
+        let num_channels = spec.channels.count();
+
         let resampler = FftFixedIn::<f32>::new(
             spec.rate as usize,
             to_sample_rate,
             num_frames,
             2,
-            spec.channels.count()
+            num_channels
         ).unwrap();
 
         let output_buffer = rubato::Resampler::output_buffer_allocate(&resampler);
@@ -24,7 +28,9 @@ impl Resampler
         Self
         {
             resampler,
-            output_buffer
+            output_buffer,
+            num_frames,
+            num_channels
         }
     }
 
@@ -33,8 +39,6 @@ impl Resampler
     /// Returns the resampled samples in an interleaved format.
     pub fn resample(&mut self, input:&[f32]) -> Vec<f32>
     {
-        let num_channels = self.resampler.nbr_channels();
-
         // The `input` is represented like so: LLLLLLRRRRRR
         // To resample this input, we split the channels (L, R) into 2 vectors.
         // The input now becomes [[LLLLLL], [RRRRRR]].
@@ -42,11 +46,10 @@ impl Resampler
         let mut planar:Vec<Vec<f32>> = vec![];
 
         let mut offset = 0;
-        let step_by = input.len() / num_channels;
-        for _ in 0..num_channels
+        for _ in 0..self.num_channels
         {
-            planar.push(input[offset..offset + step_by].to_vec());
-            offset += step_by;
+            planar.push(input[offset..offset + self.num_frames].to_vec());
+            offset += self.num_frames;
         }
 
         rubato::Resampler::process_into_buffer(
@@ -62,7 +65,7 @@ impl Resampler
 
         for i in 0..self.output_buffer[0].len()
         {
-            for channel in 0..num_channels
+            for channel in 0..self.num_channels
             {
                 interleaved.push(self.output_buffer[channel][i]);
             }
