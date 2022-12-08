@@ -14,7 +14,6 @@ impl Resampler
     pub fn new(spec:SignalSpec, to_sample_rate:usize, num_frames:usize) -> Self
     {
         let num_channels = spec.channels.count();
-        println!("{num_frames}");
 
         let resampler = FftFixedIn::<f32>::new(
             spec.rate as usize,
