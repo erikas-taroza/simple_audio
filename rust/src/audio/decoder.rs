@@ -141,6 +141,7 @@ impl Decoder
             }
         }
 
-        cpal_output.unwrap().stream.pause().unwrap();
+        if let Some(cpal_ouput) = cpal_output
+        { cpal_ouput.stream.pause().unwrap(); }
     }
 }

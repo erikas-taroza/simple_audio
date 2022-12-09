@@ -316,9 +316,12 @@ mod tests
         thread::sleep(Duration::from_secs(5));
         println!("Stopping now");
         player.stop();
-        thread::sleep(Duration::from_secs(5));
+        thread::sleep(Duration::from_millis(50));
         println!("Playing now");
         player.open("/home/erikas/Music/2.mp3".to_string(), true);
+        player.stop();
+        thread::sleep(Duration::from_millis(50));
+        player.open("/home/erikas/Music/1.mp3".to_string(), true);
         thread::sleep(Duration::from_secs(10));
     }
 
