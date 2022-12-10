@@ -129,7 +129,12 @@ impl CpalOutput
             self.sample_buffer.copy_planar_ref(decoded);
             let samples = self.sample_buffer.samples();
 
-            let resampled = resampler.resample(samples);
+            let resampled = match resampler.resample(samples)
+            {
+                Ok(resampled) => resampled,
+                Err(_) => Vec::new(),
+            };
+            
             let mut resampled = resampled.as_slice();
             
             while let Some(written) = self.ring_buffer_writer.write_blocking(resampled)
