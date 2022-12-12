@@ -18,7 +18,7 @@ pub struct CpalOutput
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>,
-    resampler:Option<Resampler>
+    resampler:Option<Resampler<f32>>
 }
 
 impl CpalOutput
@@ -43,7 +43,7 @@ impl CpalOutput
             let channels = spec.channels.count();
             config = cpal::StreamConfig {
                 channels: channels as cpal::ChannelCount,
-                sample_rate: cpal::SampleRate(spec.rate),
+                sample_rate: cpal::SampleRate(88200),
                 buffer_size: cpal::BufferSize::Default,
             };
         }
@@ -60,8 +60,8 @@ impl CpalOutput
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
-        let resampler:Option<Resampler> = if cfg!(target_os = "windows") &&
-            spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration as usize)) }
+        let resampler:Option<Resampler<f32>> = if //cfg!(target_os = "windows") &&
+            spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration)) }
             else { None };
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
@@ -122,31 +122,15 @@ impl CpalOutput
     {
         if decoded.frames() == 0 { return; }
 
-        // If there is a resampler, then write resampled values
-        // instead of the normal `samples`.
-        if let Some(resampler) = &mut self.resampler
-        {
-            self.sample_buffer.copy_planar_ref(decoded);
-            let samples = self.sample_buffer.samples();
+        let mut samples = if let Some(resampler) = &mut self.resampler {
+            // If there is a resampler, then write resampled values
+            // instead of the normal `samples`.
+            resampler.resample(&decoded)
+        } else {
+            self.sample_buffer.copy_interleaved_ref(decoded);
+            self.sample_buffer.samples()
+        };
 
-            let resampled = match resampler.resample(samples)
-            {
-                Ok(resampled) => resampled,
-                Err(_) => Vec::new(),
-            };
-            
-            let mut resampled = resampled.as_slice();
-            
-            while let Some(written) = self.ring_buffer_writer.write_blocking(resampled)
-            { resampled = &resampled[written..]; }
-
-            return;
-        }
-
-        // CPAL wants the audio interleaved.
-        self.sample_buffer.copy_interleaved_ref(decoded);
-        let mut samples = self.sample_buffer.samples();
-        
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
         { samples = &samples[written..]; }

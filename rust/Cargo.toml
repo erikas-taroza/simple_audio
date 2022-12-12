@@ -10,7 +10,8 @@ crate-type = ["staticlib", "cdylib"]
 cpal = { git = "https://github.com/erikas-taroza/cpal" }
 flutter_rust_bridge = "1"
 reqwest = { version = "0.11.12", features = ["blocking"] }
-symphonia = { version = "0.5.1", features = ["aac", "alac", "isomp4", "mp3"] }
+symphonia = { features = ["aac", "alac", "isomp4", "mp3"], git = "https://github.com/erikas-taroza/Symphonia" }
+# version = "0.5.1",
 rb = "0.4.1"
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 openssl-sys = { version = "0.9.77", features = ["vendored"] }
@@ -36,4 +37,4 @@ features = [
 ]
 
 [profile.release]
-lto = true
+# lto = true
