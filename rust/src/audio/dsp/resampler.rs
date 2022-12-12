@@ -5,7 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use symphonia::core::audio::{AudioBuffer, AudioBufferRef, SignalSpec};
+use symphonia::core::audio::{AudioBuffer, AudioBufferRef, SignalSpec, Signal};
 use symphonia::core::conv::{FromSample, IntoSample};
 use symphonia::core::sample::Sample;
 
@@ -43,12 +43,18 @@ where
     ///
     /// Returns the resampled samples in an interleaved format.
     pub fn resample(&mut self, input: &AudioBufferRef<'_>) -> &[T] {
-        if input.frames() != self.input.capacity() /*&& self.interleaved.len() == 0*/ {
-            return &self.interleaved;
-        }
-
         // Rubato only supports floating point samples, so convert the input buffer.
         input.convert(&mut self.input);
+
+        // Fill the rest of the input.
+        if input.frames() != self.input.capacity() {
+            self.input.fill(|planes, _| {
+                for plane in planes.planes().iter_mut() {
+                    plane[input.frames()..].fill(0.0);
+                }
+                Ok(())
+            }).unwrap();
+        }
 
         // Get audio planes.
         let planes = self.input.planes();
