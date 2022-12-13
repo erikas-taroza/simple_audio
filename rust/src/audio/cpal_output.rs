@@ -2,7 +2,7 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-use super::{controls::*, dsp::resampler::Resampler};
+use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}};
 
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number
@@ -18,7 +18,8 @@ pub struct CpalOutput
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>,
-    resampler:Option<Resampler<f32>>
+    resampler:Option<Resampler<f32>>,
+    normalizer:Normalizer
 }
 
 impl CpalOutput
@@ -63,6 +64,8 @@ impl CpalOutput
         let resampler:Option<Resampler<f32>> = if //cfg!(target_os = "windows") &&
             spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration)) }
             else { None };
+
+        let normalizer = Normalizer::new(duration);
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
@@ -113,7 +116,8 @@ impl CpalOutput
             ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
             sample_buffer,
-            resampler
+            resampler,
+            normalizer
         }
     }
 
@@ -122,7 +126,7 @@ impl CpalOutput
     {
         if decoded.frames() == 0 { return; }
 
-        let mut samples = if let Some(resampler) = &mut self.resampler {
+        let samples = if let Some(resampler) = &mut self.resampler {
             // If there is a resampler, then write resampled values
             // instead of the normal `samples`.
             resampler.resample(&decoded)
@@ -130,6 +134,8 @@ impl CpalOutput
             self.sample_buffer.copy_interleaved_ref(decoded);
             self.sample_buffer.samples()
         };
+
+        let mut samples = self.normalizer.normalize(samples);
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
