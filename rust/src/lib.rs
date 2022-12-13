@@ -261,8 +261,9 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://github.com/anars/blank-audio/blob/master/1-minute-of-silence.mp3?raw=true".to_string(), true);
-        thread::sleep(Duration::from_secs(10));
+        player.set_volume(0.5);
+        player.open("https://file-examples.com/storage/fee589dbcc6394c129ba7e9/2017/11/file_example_MP3_700KB.mp3".to_string(), true);
+        thread::sleep(Duration::from_secs(60));
     }
 
     // The following tests are to check the responsiveness.

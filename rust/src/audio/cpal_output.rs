@@ -18,8 +18,7 @@ pub struct CpalOutput
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>,
-    resampler:Option<Resampler<f32>>,
-    normalizer:Normalizer
+    resampler:Option<Resampler<f32>>
 }
 
 impl CpalOutput
@@ -44,7 +43,7 @@ impl CpalOutput
             let channels = spec.channels.count();
             config = cpal::StreamConfig {
                 channels: channels as cpal::ChannelCount,
-                sample_rate: cpal::SampleRate(88200),
+                sample_rate: cpal::SampleRate(spec.rate),
                 buffer_size: cpal::BufferSize::Default,
             };
         }
@@ -61,11 +60,9 @@ impl CpalOutput
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
-        let resampler:Option<Resampler<f32>> = if //cfg!(target_os = "windows") &&
+        let resampler:Option<Resampler<f32>> = if cfg!(target_os = "windows") &&
             spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration)) }
             else { None };
-
-        let normalizer = Normalizer::new(duration);
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
@@ -116,8 +113,7 @@ impl CpalOutput
             ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
             sample_buffer,
-            resampler,
-            normalizer
+            resampler
         }
     }
 
@@ -126,7 +122,7 @@ impl CpalOutput
     {
         if decoded.frames() == 0 { return; }
 
-        let samples = if let Some(resampler) = &mut self.resampler {
+        let mut samples = if let Some(resampler) = &mut self.resampler {
             // If there is a resampler, then write resampled values
             // instead of the normal `samples`.
             resampler.resample(&decoded)
@@ -135,7 +131,8 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        let mut samples = self.normalizer.normalize(samples);
+        // let mut normalizer = Normalizer::new();
+        // samples = normalizer.normalize(samples);
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)

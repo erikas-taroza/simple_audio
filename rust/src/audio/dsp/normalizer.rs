@@ -1,3 +1,5 @@
+const NORMALIZE_TO:f32 = 0.5;
+
 pub struct Normalizer
 {
     buffer:Vec<f32>
@@ -5,26 +7,42 @@ pub struct Normalizer
 
 impl Normalizer
 {
-    pub fn new(duration:u64) -> Self
+    pub fn new() -> Self
     {
-        Normalizer { buffer: vec![0.0f32; duration as usize] }
+        Normalizer { buffer: Vec::new() }
     }
 
     pub fn normalize(&mut self, input:&[f32]) -> &[f32]
     {
-        let normalized = input.to_owned();
-        let mut rms = 0.0;
-        normalized.iter().for_each(|sample| rms += sample.powi(2));
+        // self.buffer = input.to_vec();
 
-        let rms = rms / normalized.len() as f32;
-        let rms = rms.sqrt();
-        let gain = 0.1 / rms;
+        // for window in self.buffer.chunks_exact_mut(input.len() / 10)
+        // {
+        //     let peak = Self::calc_peak(window);
+        //     let gain = NORMALIZE_TO / peak;
+        //     window.iter_mut().for_each(|sample| *sample = *sample * gain);
+        // }
 
-        self.buffer = input.to_vec();
-        self.buffer.iter_mut().for_each(|sample| *sample = *sample * gain);
+        // let rms = Self::calc_rms(input);
+        // let gain = NORMALIZE_TO / rms;
 
-        // input.iter_mut().for_each(|sample| *sample = *sample * gain);
+        // let peak = Self::calc_peak(input);
+        // let gain = NORMALIZE_TO / peak;
+
+        // self.buffer = input.iter().map(|sample| sample * gain).collect();
 
         &self.buffer
+    }
+
+    fn calc_rms(input:&[f32]) -> f32
+    {
+        let mut sum = 0.0;
+        input.iter().for_each(|sample| sum += sample.powi(2));
+        (sum / input.len() as f32).sqrt()
+    }
+
+    fn calc_peak(input:&[f32]) -> f32
+    {
+        input.to_vec().into_iter().reduce(f32::max).unwrap_or(0.0).abs()
     }
 }
