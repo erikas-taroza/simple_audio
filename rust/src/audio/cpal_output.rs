@@ -1,3 +1,5 @@
+use std::sync::{Mutex, Arc, Condvar};
+
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
@@ -18,7 +20,8 @@ pub struct CpalOutput
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>,
-    resampler:Option<Resampler<f32>>
+    resampler:Option<Resampler<f32>>,
+    is_stream_done:Arc<(Mutex<bool>, Condvar)>
 }
 
 impl CpalOutput
@@ -73,6 +76,9 @@ impl CpalOutput
         let ring_buffer_writer = ring_buffer.producer();
         let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
 
+        let is_stream_done = Arc::new((Mutex::new(false), Condvar::new()));
+        let is_stream_done_clone = is_stream_done.clone();
+
         let stream = device.build_output_stream(
             &config,
             move |data:&mut [f32], _:&cpal::OutputCallbackInfo| {
@@ -90,6 +96,14 @@ impl CpalOutput
                 // This is where data should be modified (like changing volume).
                 // This will be the point where there is the lowest latency.
                 let written = ring_buffer_reader.read(data).unwrap_or(0);
+
+                // Notify that the stream was finished reading.
+                if written == 0 {
+                    let (mutex, cvar) = &*is_stream_done_clone;
+                    *mutex.lock().unwrap() = true;
+                    cvar.notify_one();
+                    return;
+                }
                 
                 // Set the volume.
                 data[0..written].iter_mut().for_each(|s| *s = *s * (BASE_VOLUME * *VOLUME.read().unwrap()));
@@ -113,7 +127,8 @@ impl CpalOutput
             ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
             sample_buffer,
-            resampler
+            resampler,
+            is_stream_done
         }
     }
 
@@ -123,9 +138,11 @@ impl CpalOutput
         if decoded.frames() == 0 { return; }
 
         let mut samples = if let Some(resampler) = &mut self.resampler {
+            self.sample_buffer.copy_planar_ref(decoded);
             // If there is a resampler, then write resampled values
             // instead of the normal `samples`.
-            resampler.resample(&decoded)
+            resampler.resample(self.sample_buffer.samples())
+                .unwrap_or_default()
         } else {
             self.sample_buffer.copy_interleaved_ref(decoded);
             self.sample_buffer.samples()
@@ -137,5 +154,25 @@ impl CpalOutput
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
         { samples = &samples[written..]; }
+    }
+
+    /// Clean up after playback is done.
+    pub fn flush(&mut self)
+    {
+        // If there is a resampler, then it may need to be flushed
+        // depending on the number of samples it has.
+        if let Some(resampler) = &mut self.resampler
+        {
+            let mut remaining_samples = resampler.flush().unwrap_or_default();
+
+            while let Some(written) = self.ring_buffer_writer.write_blocking(remaining_samples)
+            { remaining_samples = &remaining_samples[written..]; }
+        }
+
+        // Wait for all the samples to be read.
+        let (mutex, cvar) = &*self.is_stream_done;
+        let _ = cvar.wait(mutex.lock().unwrap());
+
+        self.stream.pause().unwrap();
     }
 }

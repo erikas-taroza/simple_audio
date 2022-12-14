@@ -261,9 +261,8 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.set_volume(0.5);
-        player.open("https://file-examples.com/storage/fee589dbcc6394c129ba7e9/2017/11/file_example_MP3_700KB.mp3".to_string(), true);
-        thread::sleep(Duration::from_secs(60));
+        player.open("https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg".to_string(), true);
+        thread::sleep(Duration::from_secs(7));
     }
 
     // The following tests are to check the responsiveness.
