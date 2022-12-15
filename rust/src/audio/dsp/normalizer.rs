@@ -1,4 +1,4 @@
-const NORMALIZE_TO:f32 = 0.5;
+const NORMALIZE_TO:f32 = 1.0;
 
 pub struct Normalizer
 {
@@ -14,22 +14,19 @@ impl Normalizer
 
     pub fn normalize(&mut self, input:&[f32]) -> &[f32]
     {
-        // self.buffer = input.to_vec();
+        self.buffer = input.to_vec();
 
-        // for window in self.buffer.chunks_exact_mut(input.len() / 10)
-        // {
-        //     let peak = Self::calc_peak(window);
-        //     let gain = NORMALIZE_TO / peak;
-        //     window.iter_mut().for_each(|sample| *sample = *sample * gain);
-        // }
+        let mut peaks:Vec<f32> = Vec::new();
+        for window in self.buffer.chunks_exact(input.len() / 10)
+        {
+            let peak = Self::calc_peak(window);
+            peaks.push(peak.abs());
+        }
 
-        // let rms = Self::calc_rms(input);
-        // let gain = NORMALIZE_TO / rms;
+        let rms = Self::calc_rms(&peaks);
+        let gain = NORMALIZE_TO / rms;
 
-        // let peak = Self::calc_peak(input);
-        // let gain = NORMALIZE_TO / peak;
-
-        // self.buffer = input.iter().map(|sample| sample * gain).collect();
+        self.buffer = input.iter().map(|sample| sample * gain).collect();
 
         &self.buffer
     }
@@ -43,6 +40,8 @@ impl Normalizer
 
     fn calc_peak(input:&[f32]) -> f32
     {
-        input.to_vec().into_iter().reduce(f32::max).unwrap_or(0.0).abs()
+        input.to_vec().into_iter()
+            .map(|sample| sample.abs())
+            .reduce(f32::max).unwrap_or(1.0)
     }
 }
