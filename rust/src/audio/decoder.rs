@@ -153,21 +153,20 @@ impl Decoder
 
         // This code is only ran if the stream
         // reached the end of the audio.
-        if has_reached_end
-        {
-            // Flushing isn't needed when the user deliberately
-            // stops the stream because they no longer care about the remaining samples.
-            if let Some(cpal_output) = cpal_output.as_mut()
-            { cpal_output.flush(); }
+        if !has_reached_end { return; }
+        
+        // Flushing isn't needed when the user deliberately
+        // stops the stream because they no longer care about the remaining samples.
+        if let Some(cpal_output) = cpal_output.as_mut()
+        { cpal_output.flush(); }
 
-            // Send the done message once cpal finishes flushing.
-            // There may be samples left over and we don't want to
-            // start playing another file before they are read.
-            update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
-            update_progress_state_stream(ProgressState { position: 0, duration: 0 });
-            *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
-            IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-            crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
-        }
+        // Send the done message once cpal finishes flushing.
+        // There may be samples left over and we don't want to
+        // start playing another file before they are read.
+        update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
+        update_progress_state_stream(ProgressState { position: 0, duration: 0 });
+        *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
+        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
     }
 }
