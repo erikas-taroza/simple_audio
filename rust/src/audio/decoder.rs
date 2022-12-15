@@ -47,6 +47,8 @@ impl Decoder
         let rx = lock.as_ref().unwrap().1.clone();
         drop(lock);
 
+        let mut has_reached_end = false;
+
         loop
         {
             // Poll the status of the RX in lib.rs.
@@ -111,14 +113,10 @@ impl Decoder
             let packet = match reader.next_packet()
             {
                 Ok(packet) => packet,
-                // An error occurs when the stream ends
-                // so we handle sending the DONE update here.
+                // An error occurs when the stream
+                // has reached the end of the audio.
                 Err(_) => {
-                    update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
-                    update_progress_state_stream(ProgressState { position: 0, duration: 0 });
-                    *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
-                    IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-                    crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
+                    has_reached_end = true;
                     break;
                 }
             };
@@ -153,7 +151,23 @@ impl Decoder
             }
         }
 
-        if let Some(cpal_output) = &mut cpal_output
-        { cpal_output.flush(); }
+        // This code is only ran if the stream
+        // reached the end of the audio.
+        if has_reached_end
+        {
+            // Flushing isn't needed when the user deliberately
+            // stops the stream because they no longer care about the remaining samples.
+            if let Some(cpal_output) = cpal_output.as_mut()
+            { cpal_output.flush(); }
+
+            // Send the done message once cpal finishes flushing.
+            // There may be samples left over and we don't want to
+            // start playing another file before they are read.
+            update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
+            update_progress_state_stream(ProgressState { position: 0, duration: 0 });
+            *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
+            IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+            crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
+        }
     }
 }
