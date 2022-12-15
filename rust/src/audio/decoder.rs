@@ -52,10 +52,21 @@ impl Decoder
             // Poll the status of the RX in lib.rs.
             // If the value is ThreadMessage::Quit, that means we want to stop this stream.
             // Breaking the loop drops everything which stops the cpal stream.
-            match rx.try_recv()
+            let recv:Option<ThreadMessage> = if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+                // This will always be None on the first iteration
+                // which is good because we don't need to block
+                // on the first iteration.
+                && cpal_output.is_some()
             {
-                Err(_) => (),
-                Ok(message) => match message
+                rx.recv().ok()
+            } else {
+                rx.try_recv().ok()
+            };
+
+            match recv
+            {
+                None => (),
+                Some(message) => match message
                 {
                     ThreadMessage::Play => {
                         if let Some(cpal_output) = cpal_output.as_ref()

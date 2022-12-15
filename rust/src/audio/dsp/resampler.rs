@@ -54,11 +54,11 @@ where
         let num_samples = input.len() / self.input.len();
 
         for (ch, frame) in input.chunks_exact(num_samples).enumerate() {
-            self.input[ch].extend::<Vec<f32>>(frame
-                .iter()
-                .map(|sample| (*sample).into_sample())
-                .collect()
-            );
+            self.input[ch]
+                .extend::<Vec<f32>>(
+                    frame.iter().map(|sample| (*sample).into_sample())
+                    .collect()
+                );
         }
 
         // If the given input does not have enough samples,
@@ -69,10 +69,12 @@ where
 
         // The input may have more samples than the resampler
         // was allocated for, so take only what is needed.
-        let input_to_resample: Vec<Vec<f32>> = self.input.iter_mut()
+        let duration = self.duration;
+        let input_to_resample: Vec<Vec<f32>> = self.input
+            .iter_mut()
             .map(|ch| {
-                let samples = ch.iter().take(self.duration).copied().collect();
-                ch.drain(0..self.duration);
+                let samples = ch.iter().take(duration).copied().collect();
+                ch.drain(0..duration);
                 samples
             })
             .collect();
@@ -106,7 +108,9 @@ where
         let missing = self.duration - self.input[0].len();
 
         // No empty samples have to be added.
-        if missing <= 0 { return None; }
+        if missing <= 0 {
+            return None;
+        }
 
         for ch in 0..self.input.len() {
             self.input[ch].extend(vec![0.0; missing])
