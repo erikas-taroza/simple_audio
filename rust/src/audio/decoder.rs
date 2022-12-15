@@ -50,8 +50,8 @@ impl Decoder
         loop
         {
             // Poll the status of the RX in lib.rs.
-            // If the value is ThreadMessage::Quit, that means we want to stop this stream.
-            // Breaking the loop drops everything which stops the cpal stream.
+            // If the player is paused, then block this thread until a message comes in
+            // to save the CPU.
             let recv:Option<ThreadMessage> = if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
                 // This will always be None on the first iteration
                 // which is good because we don't need to block
@@ -68,15 +68,16 @@ impl Decoder
                 None => (),
                 Some(message) => match message
                 {
-                    ThreadMessage::Play => {
+                    ThreadMessage::Play if cfg!(not(target_os = "windows")) => {
                         if let Some(cpal_output) = cpal_output.as_ref()
                         { cpal_output.stream.play().unwrap(); } 
                     },
-                    ThreadMessage::Pause => {
+                    ThreadMessage::Pause if cfg!(not(target_os = "windows")) => {
                         if let Some(cpal_output) = cpal_output.as_ref()
                         { cpal_output.stream.pause().unwrap(); } 
                     },
                     ThreadMessage::Quit => break,
+                    _ => ()
                 }
             }
 
