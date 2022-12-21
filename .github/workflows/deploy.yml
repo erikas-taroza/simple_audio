@@ -1,4 +1,4 @@
-name: Build Rust Libraries
+name: Build & Deploy Rust Libraries
 
 on:
   push:
@@ -10,16 +10,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: python ./plugin_tool.py -b linux
+
+      - name: Install Rust -sys dependencies
+        run: |
+          sudo apt install libasound2-dev
+          sudo apt install libdbus-1-dev pkg-config
+          
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./rust
+          
+      - name: Build Linux Library
+        run: |
+          pip install requests
+          python ./plugin_tool.py -b linux
+          
+      - name: Commit
+        run: |
+          git config --local user.email "erikastaroza@gmail.com"
+          git config --local user.name "erikas-taroza"
+          git pull
+          git commit -a -m "CI/CD: Update Linux libs"
+          
+      - name: Push Changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
   build_android:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +48,29 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: python ./plugin_tool.py -b android
+          
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./rust
+          
+      - name: Build Android Libraries
+        run: |
+          pip install requests
+          python ./plugin_tool.py -b android
+          
+      - name: Commit
+        run: |
+          git config --local user.email "erikastaroza@gmail.com"
+          git config --local user.name "erikas-taroza"
+          git pull
+          git commit -a -m "CI/CD: Update Android libs"
+          
+      - name: Push Changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
   build_windows:
     runs-on: windows-latest
     steps:
@@ -35,7 +78,29 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: python3 .\plugin_tool.py -b windows
+          
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./rust
+          
+      - name: Build Windows Library
+        run: |
+          pip3 install requests
+          python3 .\plugin_tool.py -b windows
+          
+      - name: Commit
+        run: |
+          git config --local user.email "erikastaroza@gmail.com"
+          git config --local user.name "erikas-taroza"
+          git pull
+          git commit -a -m "CI/CD: Update Windows libs"
+          
+      - name: Push Changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
   build_macos:
     runs-on: macos-latest
     steps:
@@ -43,7 +108,29 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: python ./plugin_tool.py -b macos
+          
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./rust
+          
+      - name: Build macOS Libraries
+        run: |
+          pip install requests
+          python ./plugin_tool.py -b macos
+          
+      - name: Commit
+        run: |
+          git config --local user.email "erikastaroza@gmail.com"
+          git config --local user.name "erikas-taroza"
+          git pull
+          git commit -a -m "CI/CD: Update macOS libs"
+          
+      - name: Push Changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
   build_ios:
     runs-on: macos-latest
     steps:
@@ -51,4 +138,43 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: python ./plugin_tool.py -b ios
+          
+      - name: Cache OpenSSL setup
+        uses: actions/cache@v3
+        id: ios-openssl-cache
+        with:
+          key: ios-openssl-cache
+          path: |
+            ~/openssl
+            /usr/local/lib
+          
+      - if: steps.ios-openssl-cache.outputs.cache-hit != 'true'
+        name: OpenSSL setup for iOS Simluator
+        run: |
+          cd ~
+          git clone https://github.com/openssl/openssl.git
+          cd openssl
+          ./Configure
+          sudo make install
+            
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./rust
+            
+      - name: Build iOS Libraries
+        run: |
+          pip install requests
+          python ./plugin_tool.py -b ios --ios-ssl ~/openssl/include
+          
+      - name: Commit
+        run: |
+          git config --local user.email "erikastaroza@gmail.com"
+          git config --local user.name "erikas-taroza"
+          git pull
+          git commit -a -m "CI/CD: Update iOS libs"
+          
+      - name: Push Changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
