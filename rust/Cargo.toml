@@ -22,7 +22,6 @@ dbus = "0.9.6"
 dbus-crossroads = "0.5.1"
 
 [target.'cfg(target_os = "android")'.dependencies]
-ndk-glue = { git = "https://github.com/rust-windowing/android-ndk-rs" }
 oboe = { git = "https://github.com/katyo/oboe-rs", branch = "fix-unsoundess" }
 
 # target.'cfg(target_os = "windows")'.
