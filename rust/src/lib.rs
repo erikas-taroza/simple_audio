@@ -22,7 +22,7 @@ mod metadata;
 use std::{fs::File, io::Cursor, thread};
 
 use audio::{decoder::Decoder, controls::*};
-use crossbeam::channel::bounded;
+use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
 use reqwest::blocking::Client;
@@ -79,6 +79,9 @@ impl Player
             }
         );
 
+        let mut txrx = TXRX.write().unwrap();
+        *txrx = Some(unbounded());
+
         Player { dummy: 0 }
     }
 
@@ -93,7 +96,7 @@ impl Player
         // After all the threads have been stopped, a new tx and rx is created.
         // This will reset the `true` signal.
         let mut txrx = TXRX.write().unwrap();
-        *txrx = Some(bounded(10));
+        *txrx = Some(unbounded());
     }
 
     // ---------------------------------
@@ -123,10 +126,7 @@ impl Player
             else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
         } else { Box::new(File::open(path).unwrap()) };
 
-        Self::internal_stop();
-
-        if autoplay { Self::internal_play(); }
-        else { Self::internal_pause(); }
+        IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
 
         thread::spawn(move || {
             Decoder::default().open_stream(source);
@@ -201,7 +201,7 @@ impl Player
 
     /// Allows for access in other places
     /// where we would want to update the stream and
-    /// the `IS_PLAYING` AtomicBool.)
+    /// the `IS_PLAYING` AtomicBool.
     /// This stops all threads that are streaming.
     fn internal_stop()
     {

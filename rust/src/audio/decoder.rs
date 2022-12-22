@@ -94,7 +94,10 @@ impl Decoder
                         if let Some(cpal_output) = cpal_output.as_ref()
                         { cpal_output.stream.pause().unwrap(); } 
                     },
-                    ThreadMessage::Quit => break,
+                    ThreadMessage::Quit => {
+                        println!("break");
+                        break
+                    },
                     _ => ()
                 }
             }
