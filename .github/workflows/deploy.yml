@@ -184,6 +184,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build_linux, build_android, build_windows, build_macos, build_ios]
     steps:
+      - uses: actions/checkout@v2
       - run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
