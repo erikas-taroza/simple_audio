@@ -281,8 +281,8 @@ if __name__ == "__main__":
     if args.code_gen:
         code_gen()
 
-    if args.build or len(args.build) == 0:
+    if args.build != None:
         targets = args.build
-        if not args.build:
+        if len(args.build) == 0:
             targets = ["android", "linux", "windows", "ios", "macos"]
         build(targets, args.ios_ssl)
