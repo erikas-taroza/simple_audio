@@ -34,7 +34,8 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull
-          git commit -a -m "CI/CD: Update Linux libs"
+          git add .
+          git commit -m "CI/CD: Update Linux libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -64,7 +65,8 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull
-          git commit -a -m "CI/CD: Update Android libs"
+          git add .
+          git commit -m "CI/CD: Update Android libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -94,7 +96,8 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull
-          git commit -a -m "CI/CD: Update Windows libs"
+          git add .
+          git commit -m "CI/CD: Update Windows libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -124,7 +127,8 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull
-          git commit -a -m "CI/CD: Update macOS libs"
+          git add .
+          git commit -m "CI/CD: Update macOS libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -172,7 +176,8 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull
-          git commit -a -m "CI/CD: Update iOS libs"
+          git add .
+          git commit -m "CI/CD: Update iOS libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
