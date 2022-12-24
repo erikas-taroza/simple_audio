@@ -38,13 +38,10 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter)
 target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
 
-set(CRATE_NAME "simple_audio")
-set(CRATE_NAME ${CRATE_NAME} PARENT_SCOPE)
-add_subdirectory(${CRATE_NAME})
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
 set(simple_audio_bundled_libraries
-  "$<TARGET_FILE:${CRATE_NAME}>"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio.so"
   PARENT_SCOPE
 )
