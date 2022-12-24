@@ -91,13 +91,7 @@ impl Player
 
         // Wait for the decoder thread to stop before proceeding.
         if let Some(txrx) = &*TXRX2.read().unwrap()
-        {
-            loop
-            {
-                let result = txrx.1.recv();
-                if result.is_ok() { break; }
-            }
-        }
+        { let _ = txrx.1.recv(); }
 
         // Create new TXRXs to clear the messages.
         let mut txrx = TXRX.write().unwrap();
