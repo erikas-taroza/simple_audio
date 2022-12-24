@@ -79,24 +79,32 @@ impl Player
             }
         );
 
-        let mut txrx = TXRX.write().unwrap();
-        *txrx = Some(unbounded());
-
         Player { dummy: 0 }
     }
 
     fn signal_to_stop()
     {
         // If there are any threads in existence that were spawned when calling open(),
-        // they will read this value and break the decode loop if it is `true`.
+        // they will read this value and break the decode loop.
         // This closes the thread and the cpal stream.
-        if let Some(txrx) = &*TXRX.read().unwrap()
-        { txrx.0.send(ThreadMessage::Quit).unwrap(); }
+        TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
 
-        // After all the threads have been stopped, a new tx and rx is created.
-        // This will reset the `true` signal.
+        // Wait for the decoder thread to stop before proceeding.
+        if let Some(txrx) = &*TXRX2.read().unwrap()
+        {
+            loop
+            {
+                let result = txrx.1.recv();
+                if result.is_ok() { break; }
+            }
+        }
+
+        // Create new TXRXs to clear the messages.
         let mut txrx = TXRX.write().unwrap();
-        *txrx = Some(unbounded());
+        *txrx = unbounded();
+
+        let mut txrx2 = TXRX2.write().unwrap();
+        *txrx2 = Some(unbounded());
     }
 
     // ---------------------------------
@@ -176,8 +184,7 @@ impl Player
     {
         if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { return; }
 
-        if let Some(txrx) = &*TXRX.read().unwrap()
-        { txrx.0.send(ThreadMessage::Play).unwrap(); }
+        TXRX.read().unwrap().0.send(ThreadMessage::Play).unwrap();
 
         update_playback_state_stream(utils::playback_state::PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
@@ -191,8 +198,7 @@ impl Player
     {
         if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { return; }
 
-        if let Some(txrx) = &*TXRX.read().unwrap()
-        { txrx.0.send(ThreadMessage::Pause).unwrap(); }
+        TXRX.read().unwrap().0.send(ThreadMessage::Pause).unwrap();
 
         update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);

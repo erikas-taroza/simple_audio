@@ -18,11 +18,23 @@
 
 use std::sync::{RwLock, atomic::AtomicBool};
 
-use crossbeam::channel::{Sender, Receiver};
+use crossbeam::channel::{Sender, Receiver, unbounded};
+use lazy_static::lazy_static;
 
 use crate::utils::progress_state_stream::ProgressState;
 
-pub static TXRX:RwLock<Option<(Sender<ThreadMessage>, Receiver<ThreadMessage>)>> = RwLock::new(None);
+lazy_static!
+{
+    /// Use this to communicate between the main thread and the decoder thread
+    /// Ex: play/pause commands
+    pub static ref TXRX:RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
+
+    /// Use this to communicate from the decoder to the main thread.
+    /// Ex: Tell the main thread this thread is done.
+    // This is an option because we don't want to wait for a non existent thread on the first run.
+    pub static ref TXRX2:RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
+}
+
 pub static IS_PLAYING:AtomicBool = AtomicBool::new(false);
 pub static VOLUME:RwLock<f32> = RwLock::new(1.0);
 pub static SEEK_TS:RwLock<Option<u64>> = RwLock::new(None);
@@ -32,5 +44,5 @@ pub enum ThreadMessage
 {
     Play,
     Pause,
-    Quit
+    Stop
 }

@@ -59,8 +59,10 @@ impl Decoder
         drop(lock);
 
         // Clone a receiver to listen for the stop signal.
-        let lock = TXRX.read().unwrap();
-        let rx = lock.as_ref().unwrap().1.clone();
+        let rx = TXRX.read().unwrap().1.clone();
+
+        let lock = TXRX2.read().unwrap();
+        let tx = lock.as_ref().unwrap().0.clone();
         drop(lock);
 
         let mut has_reached_end = false;
@@ -94,10 +96,7 @@ impl Decoder
                         if let Some(cpal_output) = cpal_output.as_ref()
                         { cpal_output.stream.pause().unwrap(); } 
                     },
-                    ThreadMessage::Quit => {
-                        println!("break");
-                        break
-                    },
+                    ThreadMessage::Stop => break,
                     _ => ()
                 }
             }
@@ -169,6 +168,9 @@ impl Decoder
                 }
             }
         }
+
+        // Tell the main thread that everything is done here.
+        tx.send(true).unwrap();
 
         // This code is only ran if the stream
         // reached the end of the audio.

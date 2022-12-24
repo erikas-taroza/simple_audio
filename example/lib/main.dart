@@ -120,6 +120,7 @@ class _MyAppState extends State<MyApp>
                                         album: "Album",
                                         artUri: "https://imgs.search.brave.com/6O9qUMKrlM5XUEZ1yyVELLuLW3kyjbFkBFLeIbDMHwo/rs:fit:700:700:1/g:ce/aHR0cHM6Ly93d3cu/Zmx1d2VsLmNvbS9t/ZWRpYS9jYXRhbG9n/L3Byb2R1Y3QvY2Fj/aGUvNjU0ODUwM2Fh/ODMzZTY4ZmZkYzQ1/Yjc1YmU2ZGEyZTUv/Yy9vL2NvcHBlcl9p/bWFnZV9hLmpwZw"
                                     ));
+                                    await player.stop();
                                     await player.open(path);
                                 },
                             ),
