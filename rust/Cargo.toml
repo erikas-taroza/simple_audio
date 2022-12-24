@@ -8,7 +8,7 @@ crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 cpal = { git = "https://github.com/erikas-taroza/cpal" }
-flutter_rust_bridge = "1"
+flutter_rust_bridge = "1.57.0"
 reqwest = { version = "0.11.12", features = ["blocking"] }
 symphonia = { features = ["aac", "alac", "isomp4", "mp3"], git = "https://github.com/erikas-taroza/Symphonia" }
 # version = "0.5.1",
