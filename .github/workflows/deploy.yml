@@ -194,6 +194,7 @@ jobs:
       - run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git pull
           git reset --soft HEAD~5
           git add .
           git commit -m "CI: Update libraries"
