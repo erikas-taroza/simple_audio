@@ -120,6 +120,15 @@ def init():
             mac_podspec = mac_podspec.strip()[:-3] + "  s.vendored_libraries = 'Libs/**/*'\nend"
             podspec.write(mac_podspec)
 
+    swift_text = open(f"./macos/Classes/{pascal_case_package_name}Plugin.swift", "r").read()
+    if "dummy_method" not in swift_text:
+            with open(f"./macos/Classes/{pascal_case_package_name}Plugin.swift", "w") as swift:
+                entry_point = "public static func register(with registrar: FlutterPluginRegistrar) {"
+                split = swift_text.split(entry_point)
+                split[1] = "\n\t\tlet _ = dummy_method_to_enforce_bundling()" + split[1]
+                swift_text = split[0] + entry_point + split[1]
+                swift.write(swift_text)
+
     # iOS
     ios_podspec = open(f"./ios/{package_name}.podspec", "r").read()
     if "s.vendored_frameworks" not in ios_podspec:
@@ -135,7 +144,7 @@ def init():
             with open(f"./ios/Classes/Swift{pascal_case_package_name}Plugin.swift", "w") as swift:
                 entry_point = "public static func register(with registrar: FlutterPluginRegistrar) {"
                 split = swift_text.split(entry_point)
-                split[1] = "\n\t\tprint(dummy_method_to_enforce_bundling())" + split[1]
+                split[1] = "\n\t\tlet _ = dummy_method_to_enforce_bundling()" + split[1]
                 swift_text = split[0] + entry_point + split[1]
                 swift.write(swift_text)
     # Obj-C project
@@ -234,12 +243,12 @@ def build(targets:list[str], openssl_path:str = None):
             os.system("rustup target add aarch64-apple-darwin x86_64-apple-darwin")
             os.system("cargo build --release --target aarch64-apple-darwin --manifest-path ./rust/Cargo.toml")
             os.system("cargo build --release --target x86_64-apple-darwin --manifest-path ./rust/Cargo.toml")
-            os.system(f'lipo "./rust/target/aarch64-apple-darwin/release/lib{package_name}.dylib" "./rust/target/x86_64-apple-darwin/release/lib{package_name}.dylib" -output "lib{package_name}.dylib" -create')
+            os.system(f'lipo "./rust/target/aarch64-apple-darwin/release/lib{package_name}.a" "./rust/target/x86_64-apple-darwin/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
 
-            if os.path.exists(f"./macos/Libs/lib{package_name}.dylib"):
-                os.remove(f"./macos/Libs/lib{package_name}.dylib")
+            if os.path.exists(f"./macos/Libs/lib{package_name}.a"):
+                os.remove(f"./macos/Libs/lib{package_name}.a")
 
-            shutil.move(f"./lib{package_name}.dylib", "./macos/Libs")
+            shutil.move(f"./lib{package_name}.a", "./macos/Libs")
 
         if "ios" in targets:
             # Build for iOS
