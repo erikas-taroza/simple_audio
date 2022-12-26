@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'simple_audio'
-  s.version          = '1.0.0'
+  s.version          = '1.0.1'
   s.summary          = 'A cross-platform solution for playing audio in Flutter.'
   s.description      = <<-DESC
 A cross-platform solution for playing audio in Flutter.
