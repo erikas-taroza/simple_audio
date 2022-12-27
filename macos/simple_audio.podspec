@@ -1,7 +1,16 @@
-#
-# To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint simple_audio.podspec` to validate before publishing.
-#
+# Download the binary from GitHub.
+version = "1.0.1"
+lib_url = "https://github.com/erikas-taroza/simple_audio/blob/v#{version}/macos/Libs/libsimple_audio.a?raw=true"
+
+`
+cd Libs
+if [ ! -f libsimple_audio.a ]
+then
+  curl #{lib_url} -o libsimple_audio.a
+fi
+cd ..
+`
+
 Pod::Spec.new do |s|
   s.name             = 'simple_audio'
   s.version          = '1.0.1'
