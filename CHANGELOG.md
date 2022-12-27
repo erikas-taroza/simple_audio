@@ -1,3 +1,6 @@
+## 1.0.2
+- Build scripts download binaries (for pub.dev)
+
 ## 1.0.1
 - Set versions in `pubspec.yaml`
 - Simplified Linux CMAKE
