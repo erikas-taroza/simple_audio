@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+
 # Download the binaries from GitHub.
 set(Version "1.0.1")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs")
