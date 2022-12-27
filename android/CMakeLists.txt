@@ -2,7 +2,7 @@
 set(Version "1.0.1")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs")
 
-if(NOT EXISTS ${LibPath})
+if(NOT EXISTS "${LibPath}/arm64-v8a/libsimple_audio.so")
   file(DOWNLOAD
     "https://github.com/erikas-taroza/simple_audio/blob/v${Version}/android/src/main/jniLibs/arm64-v8a/libsimple_audio.so?raw=true"
     "${LibPath}/arm64-v8a/libsimple_audio.so"
