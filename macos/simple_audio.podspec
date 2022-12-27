@@ -3,10 +3,11 @@ version = "1.0.1"
 lib_url = "https://github.com/erikas-taroza/simple_audio/blob/v#{version}/macos/Libs/libsimple_audio.a?raw=true"
 
 `
+mkdir Libs
 cd Libs
 if [ ! -f libsimple_audio.a ]
 then
-  curl #{lib_url} -o libsimple_audio.a
+  curl -L "#{lib_url}" -o libsimple_audio.a
 fi
 cd ..
 `

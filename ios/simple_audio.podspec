@@ -3,6 +3,7 @@ version = "1.0.1"
 lib_url = "https://github.com/erikas-taroza/simple_audio/blob/v#{version}/ios/Frameworks/simple_audio.xcframework"
 
 `
+mkdir Frameworks
 cd Frameworks
 if [ ! -d simple_audio.xcframework ]
 then
@@ -10,9 +11,9 @@ then
   cd simple_audio.xcframework
   mkdir ios-arm64
   mkdir ios-arm64_x86_64-simulator
-  curl #{lib_url}/Info.plist?raw=true -o Info.plist
-  curl #{lib_url}/ios-arm64/libsimple_audio.a?raw=true -o ios-arm64/libsimple_audio.a
-  curl #{lib_url}/ios-arm64_x86_64-simulator/libsimple_audio.a?raw=true -o ios-arm64_x86_64-simulator/libsimple_audio.a
+  curl -L "#{lib_url}/Info.plist?raw=true" -o Info.plist
+  curl -L "#{lib_url}/ios-arm64/libsimple_audio.a?raw=true" -o ios-arm64/libsimple_audio.a
+  curl -L "#{lib_url}/ios-arm64_x86_64-simulator/libsimple_audio.a?raw=true" -o ios-arm64_x86_64-simulator/libsimple_audio.a
 fi
 cd ../..
 `
