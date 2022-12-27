@@ -11,7 +11,7 @@ public class SwiftSimpleAudioPlugin: NSObject, FlutterPlugin
         let instance = SwiftSimpleAudioPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         
-        let _ = dummy_method_to_enforce_bundling()
+        let _ = dummy()
         simpleAudio = SimpleAudio(channel: channel)
     }
 
@@ -19,4 +19,7 @@ public class SwiftSimpleAudioPlugin: NSObject, FlutterPlugin
     {
         simpleAudio!.handle(call, result: result)
     }
+
+    public static func dummy() -> Int64
+    { return dummy_method_to_enforce_bundling() }
 }
