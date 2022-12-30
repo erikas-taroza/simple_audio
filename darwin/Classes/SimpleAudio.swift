@@ -222,7 +222,7 @@ public class SimpleAudio
             currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 0.0
             // Allow some time for the Rust code to execute
             // to pause the stream.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 // setActive will throw an error (and stop playback) if
                 // it is given `false` when audio is still playing.
                 // Call this only if there is nothing playing.
