@@ -1,5 +1,7 @@
 ## 1.0.3
 - Improved README
+- Added license headers to files that were missing it
+- iOS calling play/pause quickly stops playback
 
 ## 1.0.2
 - Build scripts download binaries (for pub.dev)
