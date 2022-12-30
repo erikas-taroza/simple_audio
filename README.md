@@ -14,7 +14,7 @@ platforms (audio_service, dart_vlc). This made it hard to deal with bugs from di
 - Media controllers on all platforms
   - **Linux:** MPRIS
   - **Android:** MediaSessionCompat
-  - **Windows:** SMTC
+  - **Windows:** SystemMediaTransportControls
   - **iOS/macOS:** Control center
 - Playback of local and online resources
 
