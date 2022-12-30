@@ -11,7 +11,11 @@ platforms (audio_service, dart_vlc). This made it hard to deal with bugs from di
 ## Features
 - Simple API
 - Cross platform (Android, Linux, Windows, iOS, macOS)
-- Media notifications on all platforms to access controls (iOS and macOS use the control center)
+- Media controllers on all platforms
+  - **Linux:** MPRIS
+  - **Android:** MediaSessionCompat
+  - **Windows:** SMTC
+  - **iOS/macOS:** Control center
 - Playback of local and online resources
 
 ## Usage
@@ -21,6 +25,45 @@ platforms (audio_service, dart_vlc). This made it hard to deal with bugs from di
 - Use the APIs provided in the instantiated object.
 
 To see a sample player project, please check the [example](https://github.com/erikas-taroza/simple_audio/tree/master/example).
+
+```dart
+// Initialize SimpleAudio
+void main() {
+  SimpleAudio.init();
+  runApp(const MyApp());
+}
+
+// Instantiate a SimpleAudio object.
+final SimpleAudio player = SimpleAudio();
+
+// Stop the current playback.
+await player.stop();
+
+// Open a file for playing.
+player.open("path/to/your/file.mp3", autoplay: true);
+// OR
+player.open("https://my-files.com/file.mp3", autoplay: true);
+
+// Play
+player.play();
+
+// Pause
+player.pause();
+
+// Set the volume (0.0 - 1.0)
+player.setVolume(0.5);
+
+// Seek to the 5th second.
+player.seek(5);
+
+// Set the OS's media controller metadata.
+player.setMetadata(Metadata(
+  title: "My Title",
+  artist: "My Artist",
+  album: "My Album",
+  artUri: "https://my-files.com/image.jpg"
+));
+```
 
 ## Setup
 Some platform specific things have to be set up in order for this plugin to function properly.

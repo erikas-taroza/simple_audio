@@ -168,7 +168,7 @@ class SimpleAudio
         }
     }
 
-    Future<void> open(String path, [bool autoplay = true]) async
+    Future<void> open(String path, {bool autoplay = true}) async
     {
         await _player.open(path: path, autoplay: autoplay);
 

@@ -1,3 +1,6 @@
+## 1.0.3
+- Improved README
+
 ## 1.0.2
 - Build scripts download binaries (for pub.dev)
 
