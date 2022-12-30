@@ -86,6 +86,8 @@ class SimpleAudio
                 case "seek":
                     seek(call.arguments);
                     break;
+                case "isPlaying":
+                    return await isPlaying;
             }
         });
     }

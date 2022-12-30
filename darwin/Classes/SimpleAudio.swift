@@ -195,7 +195,7 @@ public class SimpleAudio
         nowPlaying.playbackState = translatedState
         #else
         let session = AVAudioSession.sharedInstance()
-        
+
         if state == 0
         {
             currentMetadata[MPNowPlayingInfoPropertyPlaybackRate] = 1.0
@@ -207,7 +207,14 @@ public class SimpleAudio
             // Allow some time for the Rust code to execute
             // to pause the stream.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                try? session.setActive(false)
+                // setActive will throw an error (and stop playback) if
+                // it is given `false` when audio is still playing.
+                // Call this only if there is nothing playing.
+                self.channel.invokeMethod("isPlaying", arguments: nil) { res in
+                    if(res is Bool && !(res as! Bool)) {
+                        try? session.setActive(false)
+                    }
+                }
             }
         }
         #endif
