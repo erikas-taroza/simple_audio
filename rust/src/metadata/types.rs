@@ -22,7 +22,8 @@ pub struct Metadata
     pub title:Option<String>,
     pub artist:Option<String>,
     pub album:Option<String>,
-    pub art_uri:Option<String>
+    pub art_uri:Option<String>,
+    pub art_bytes:Option<Vec<u8>>
 }
 
 /// Callback events from the media notification.

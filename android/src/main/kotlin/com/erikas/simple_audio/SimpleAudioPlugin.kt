@@ -86,6 +86,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
                     call.argument("artist"),
                     call.argument("album"),
                     call.argument("artUri"),
+                    call.argument("artBytes"),
                     call.argument("duration")
                 )
             }

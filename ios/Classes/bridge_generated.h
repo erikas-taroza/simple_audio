@@ -28,6 +28,7 @@ typedef struct wire_Metadata {
   struct wire_uint_8_list *artist;
   struct wire_uint_8_list *album;
   struct wire_uint_8_list *art_uri;
+  struct wire_uint_8_list *art_bytes;
 } wire_Metadata;
 
 typedef struct DartCObject *WireSyncReturn;

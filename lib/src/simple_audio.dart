@@ -242,6 +242,15 @@ class SimpleAudio
 
     void setMetadata(Metadata metadata)
     {
+        if(metadata.artUri != null || metadata.artBytes != null)
+        {
+            // Only one type of art can be provided.
+            assert(
+                (metadata.artUri != null && metadata.artBytes == null)
+                || (metadata.artUri == null && metadata.artBytes != null)
+            );
+        }
+
         if(Platform.isLinux || Platform.isWindows)
         {
             _player.setMetadata(metadata: metadata);
@@ -265,6 +274,7 @@ class SimpleAudio
                     "artist": metadata.artist,
                     "album": metadata.album,
                     "artUri": metadata.artUri,
+                    "artBytes": metadata.artBytes,
                     "duration": progress.duration
                 });
             }

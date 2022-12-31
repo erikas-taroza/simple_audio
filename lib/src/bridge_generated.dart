@@ -394,6 +394,11 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_opt_uint_8_list(Uint8List? raw) {
+    return raw == null ? ffi.nullptr : api2wire_uint_8_list(raw);
+  }
+
+  @protected
   int api2wire_u64(int raw) {
     return raw;
   }
@@ -423,6 +428,7 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
     wireObj.artist = api2wire_opt_String(apiObj.artist);
     wireObj.album = api2wire_opt_String(apiObj.album);
     wireObj.art_uri = api2wire_opt_String(apiObj.artUri);
+    wireObj.art_bytes = api2wire_opt_uint_8_list(apiObj.artBytes);
   }
 
   void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {
@@ -878,6 +884,8 @@ class wire_Metadata extends ffi.Struct {
   external ffi.Pointer<wire_uint_8_list> album;
 
   external ffi.Pointer<wire_uint_8_list> art_uri;
+
+  external ffi.Pointer<wire_uint_8_list> art_bytes;
 }
 
 typedef DartPostCObjectFnType = ffi.Pointer<

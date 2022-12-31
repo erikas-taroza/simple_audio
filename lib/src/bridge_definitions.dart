@@ -80,12 +80,14 @@ class Metadata {
   final String? artist;
   final String? album;
   final String? artUri;
+  final Uint8List? artBytes;
 
   Metadata({
     this.title,
     this.artist,
     this.album,
     this.artUri,
+    this.artBytes,
   });
 }
 
