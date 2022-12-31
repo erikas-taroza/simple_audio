@@ -177,7 +177,14 @@ public class SimpleAudio
             #if os(macOS)
             if #available(macOS 10.13.2, *) {
                 let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
-                    return NSImage(contentsOf: URL(string: artUri!)!)!
+                    if(artUri != nil) {
+                        return NSImage(contentsOf: URL(string: artUri!)!)!
+                    }
+                    else if(artBytes != nil) {
+                        return NSImage(data: artBytes!.data)!
+                    }
+                    
+                    return NSImage()
                 })
                 currentMetadata[MPMediaItemPropertyArtwork] = artwork
             }
