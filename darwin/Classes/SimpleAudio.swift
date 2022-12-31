@@ -60,6 +60,7 @@ public class SimpleAudio
                     artist: args["artist"] as? String,
                     album: args["album"] as? String,
                     artUri: args["artUri"] as? String,
+                    artBytes: args["artBytes"] as? FlutterStandardTypedData,
                     duration: args["duration"] as? Int
                 )
             case "setPlaybackState":
@@ -157,6 +158,7 @@ public class SimpleAudio
         artist:String?,
         album:String?,
         artUri:String?,
+        artBytes:FlutterStandardTypedData?,
         duration:Int?
     )
     {
@@ -168,21 +170,28 @@ public class SimpleAudio
             MPMediaItemPropertyPlaybackDuration: duration ?? 0,
         ]
         
-        if(artUri != nil)
+        if(artUri != nil || artBytes != nil)
         {
+            let size = CGSize(width: 200, height: 200)
+            
             #if os(macOS)
             if #available(macOS 10.13.2, *) {
-                let size = CGSize(width: 200, height: 200)
                 let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
                     return NSImage(contentsOf: URL(string: artUri!)!)!
                 })
                 currentMetadata[MPMediaItemPropertyArtwork] = artwork
             }
             #else
-            let size = CGSize(width: 200, height: 200)
             let artwork = MPMediaItemArtwork(boundsSize: size, requestHandler: { size in
-                let data = try! Data(contentsOf: URL(string: artUri!)!)
-                return UIImage(data: data)!
+                if(artUri != nil) {
+                    let data = try! Data(contentsOf: URL(string: artUri!)!)
+                    return UIImage(data: data)!
+                }
+                else if(artBytes != nil) {
+                    return UIImage(data: artBytes!.data)!
+                }
+                
+                return UIImage()
             })
             currentMetadata[MPMediaItemPropertyArtwork] = artwork
             #endif

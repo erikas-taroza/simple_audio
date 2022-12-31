@@ -73,7 +73,7 @@ SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   SDWebImage: e5cc87bf736e60f49592f307bdf9e157189298a3
-  simple_audio: 5eb71e13c733864108806672c08169bd68b0a693
+  simple_audio: 19dc0925fd442f2e55a09bf88ca714e611e2d6df
   SwiftyGif: 6c3eafd0ce693cad58bb63d2b2fb9bacb8552780
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
