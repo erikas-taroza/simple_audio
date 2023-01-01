@@ -18,7 +18,7 @@
 
 use std::{sync::{Arc, Mutex, RwLock}, time::Duration};
 
-use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus, PlaybackPositionChangeRequestedEventArgs}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::RandomAccessStreamReference};
+use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus, PlaybackPositionChangeRequestedEventArgs}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::{RandomAccessStreamReference, InMemoryRandomAccessStream, DataWriter}};
 
 use crate::{audio::controls::PROGRESS, utils::playback_state::PlaybackState};
 
@@ -129,6 +129,16 @@ impl Smtc
         {
             let uri = Uri::CreateUri(&HSTRING::from(art_uri)).unwrap();
             let stream = RandomAccessStreamReference::CreateFromUri(&uri).unwrap();
+            self.display.SetThumbnail(&stream).unwrap();
+        }
+
+        if let Some(art_bytes) = metadata.art_bytes
+        {
+            let mem_stream = InMemoryRandomAccessStream::new().unwrap();
+            let writer = DataWriter::CreateDataWriter(&mem_stream).unwrap();
+            writer.WriteBytes(art_bytes.as_slice()).unwrap();
+
+            let stream = RandomAccessStreamReference::CreateFromStream(&mem_stream).unwrap();
             self.display.SetThumbnail(&stream).unwrap();
         }
         
