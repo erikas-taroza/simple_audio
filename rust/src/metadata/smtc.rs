@@ -134,9 +134,13 @@ impl Smtc
 
         if let Some(art_bytes) = metadata.art_bytes
         {
+            // SEE: https://learn.microsoft.com/en-us/uwp/api/windows.storage.streams.datareader?view=winrt-22621
             let mem_stream = InMemoryRandomAccessStream::new().unwrap();
             let writer = DataWriter::CreateDataWriter(&mem_stream).unwrap();
             writer.WriteBytes(art_bytes.as_slice()).unwrap();
+            writer.StoreAsync().unwrap();
+            writer.FlushAsync().unwrap();
+            writer.DetachStream().unwrap();
 
             let stream = RandomAccessStreamReference::CreateFromStream(&mem_stream).unwrap();
             self.display.SetThumbnail(&stream).unwrap();
