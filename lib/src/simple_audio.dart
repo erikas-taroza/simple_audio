@@ -20,6 +20,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 import './ffi.dart';
 
@@ -240,7 +241,7 @@ class SimpleAudio
         return await _player.seek(seconds: seconds);
     }
 
-    void setMetadata(Metadata metadata)
+    Future<void> setMetadata(Metadata metadata) async
     {
         if(metadata.artUri != null || metadata.artBytes != null)
         {
@@ -249,6 +250,33 @@ class SimpleAudio
                 (metadata.artUri != null && metadata.artBytes == null)
                 || (metadata.artUri == null && metadata.artBytes != null)
             );
+        }
+
+        // MPRIS cant't take an image as bytes.
+        // Convert to a temp file and pass URI instead.
+        if(Platform.isLinux && metadata.artBytes != null)
+        {
+            String tempPath = "${(await getApplicationSupportDirectory()).path}/simple_audio";
+
+            // Clear the temporary directory.
+            Directory dir = Directory(tempPath);
+            if(await dir.exists()) await dir.delete(recursive: true);
+
+            String path = "$tempPath/${metadata.artBytes.hashCode}.jpg";
+
+            File image = File(path);
+            if(!await image.exists()) await image.create(recursive: true);
+            await image.writeAsBytes(metadata.artBytes!);
+
+            Metadata m = Metadata(
+                title: metadata.title,
+                artist: metadata.artist,
+                album: metadata.album,
+                artUri: "file://$path"
+            );
+
+            _player.setMetadata(metadata: m);
+            return;
         }
 
         if(Platform.isLinux || Platform.isWindows)
