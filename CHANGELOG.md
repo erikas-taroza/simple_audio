@@ -1,3 +1,6 @@
+## 1.0.4
+- Media controllers can take images as bytes.
+
 ## 1.0.3
 - Improved README
 - Added license headers to files that were missing it

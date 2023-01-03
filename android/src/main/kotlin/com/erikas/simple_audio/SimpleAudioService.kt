@@ -121,17 +121,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setOngoing(true)
             setContentIntent(mediaSession!!.controller.sessionActivity)
 
-            val artUri = metadata.getString(METADATA_KEY_ART_URI)
-            if(artUri != null && artUri.isNotEmpty()) {
-                val uri = Uri.parse(artUri)
-
-                val bitmap = if(uri.scheme == "http" || uri.scheme == "https")
-                {
-                    val imageBytes = URL(artUri).readBytes()
-                    BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.count())
-                }
-                else { BitmapFactory.decodeFile(artUri) }
-
+            val bitmap = metadata.getBitmap(METADATA_KEY_ART)
+            if(bitmap != null)
+            {
                 // Handle rectangular images and scale them in
                 // so that they are in a square format.
                 if(bitmap.width > bitmap.height)
@@ -222,14 +214,34 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         artist:String?,
         album:String?,
         artUri:String?,
+        artBytes:ByteArray?,
         duration:Int?
     )
     {
+        // If a URI was received.
+        val bitmap:Bitmap? = if(artUri != null) {
+            val uri = Uri.parse(artUri)
+
+            val bitmap = if(uri.scheme == "http" || uri.scheme == "https")
+            {
+                val imageBytes = URL(artUri).readBytes()
+                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            }
+            else { BitmapFactory.decodeFile(artUri) }
+
+            bitmap
+        }
+        // If bytes were received.
+        else if(artBytes != null) {
+            BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
+        }
+        else { null }
+
         val metadataBuilder = MediaMetadataCompat.Builder().apply {
             putText(METADATA_KEY_TITLE, title ?: "Unknown Title")
             putText(METADATA_KEY_ARTIST, artist ?: "Unknown Artist")
             putText(METADATA_KEY_ALBUM, album ?: "Unknown Album")
-            putString(METADATA_KEY_ART_URI, artUri ?: "")
+            putBitmap(METADATA_KEY_ART, bitmap)
             if(duration != null) putLong(METADATA_KEY_DURATION, duration.toLong() * 1000)
         }
 
