@@ -202,8 +202,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     fun kill()
     {
-        mediaSession!!.isActive = false
-        mediaSession!!.release()
+        mediaSession?.isActive = false
+        mediaSession?.release()
         mediaSession = null
         stopForeground(true)
         stopSelf()

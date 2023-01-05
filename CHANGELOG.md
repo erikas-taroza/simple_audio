@@ -1,5 +1,6 @@
 ## 1.0.4
 - Media controllers can take images as bytes.
+- **Android:** Playback not working when reopening app
 
 ## 1.0.3
 - Improved README
