@@ -27,7 +27,6 @@ pub struct StreamableFile
     buffer:Vec<Option<u8>>,
     write_position:usize,
     read_position:usize,
-    seek_position:Option<usize>,
     finished_writing:bool,
     url:String
 }
@@ -41,43 +40,15 @@ impl StreamableFile
             buffer: Vec::new(),
             write_position: 0,
             read_position: 0,
-            seek_position: None,
             finished_writing: false,
             url: url.to_string()
         }
     }
 
     /// Gets the next chunk in the sequence.
-    fn get_chunk(&mut self)
+    fn get_chunk(&mut self, start:usize)
     {
-        // Get the chunk for the seek.
-        if self.seek_position.is_some()
-        {
-            let seek_position = self.seek_position.unwrap();
-            self.seek_position = None;
-            println!("Seeking at: {}", seek_position);
-
-            // If the seek is after the buffer, then fill previous
-            // values with None.
-            if seek_position > self.buffer.len() {
-                println!("Filling buffer after seeking");
-                self.buffer.append(&mut vec![None; seek_position - self.buffer.len()]);
-            }
-            // If the seek is in the buffer, then make sure
-            // there is a chunk available.
-            else if seek_position < self.buffer.len() {
-                let forward_slice = &self.buffer[seek_position..seek_position + CHUNK_SIZE];
-                if !forward_slice.contains(&None) {
-                    println!("Buffer doesn't contain None values");
-                    return;
-                }
-            }
-
-            self.write_position = seek_position;
-        }
-
         // Get the next chunk.
-        let start = self.write_position;
         let end = start + CHUNK_SIZE;
         let chunk = Client::new().get(self.url.clone())
             .header("Range", format!("bytes={start}-{end}"))
@@ -90,10 +61,13 @@ impl StreamableFile
         // Add chunk to buffer.
         let mut chunk:Vec<Option<u8>> = chunk.iter().map(|b| Some(*b))
             .collect();
-        self.buffer.append(&mut chunk);
 
-        // Move write_position by how much data was received.
-        self.write_position += num_received;
+        if self.buffer.is_empty() || start > self.buffer.len() {
+            self.buffer.append(&mut chunk);
+        }
+        else {
+            // self.buffer[start..end]
+        }
 
         // We have finished filling the buffer if we do not receive
         // any more data.
@@ -107,18 +81,21 @@ impl Read for StreamableFile
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
+        println!("read");
         // This defines the end position of the packet
         // we want to read.
         let read_max = self.read_position + buf.len();
 
         // If we haven't received all the chunks,
         // then get more.
-        if self.buffer.is_empty() || self.seek_position.is_some() ||
+        if self.buffer.is_empty() ||
             // If the position we are reading at is close to the end of the chunk,
             // then fetch more.
             (!self.finished_writing && read_max >= self.buffer.len().saturating_sub(FETCH_OFFSET))
         {
-            self.get_chunk();
+            self.get_chunk(self.write_position);
+            // Move write_position by how much data was received.
+            self.write_position += CHUNK_SIZE + 1;
         }
 
         // If we are reading after the buffer has been filled,
@@ -151,17 +128,36 @@ impl Seek for StreamableFile
 {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64>
     {
+        println!("Seeking {pos:?}");
+        let seek_position;
+        
         match pos
         {
             std::io::SeekFrom::Start(pos) => {
-                self.seek_position = Some(pos as usize);
-                self.read_position = pos as usize;
+                println!("start");
+                seek_position = pos as usize;
+                
+                // if seek_position > self.buffer.len() {
+                //     self.buffer.append(&mut vec![None; seek_position - self.buffer.len()]);
+                //     self.get_chunk(seek_position);
+                // }
+                // self.read_position = pos as usize;
             },
-            std::io::SeekFrom::End(_) => todo!(),
-            std::io::SeekFrom::Current(_) => todo!(),
+            std::io::SeekFrom::End(pos) => {
+                seek_position = self.buffer.len() + pos as usize;
+            },
+            std::io::SeekFrom::Current(pos) => {
+                seek_position = self.read_position + pos as usize;
+            },
         }
 
-        Ok(self.read_position as u64)
+        self.read_position = seek_position;
+        while self.buffer.len() < seek_position {
+            self.get_chunk(self.write_position);
+            self.write_position += CHUNK_SIZE + 1;
+        }
+
+        Ok(seek_position as u64)
     }
 }
 
@@ -171,7 +167,7 @@ unsafe impl Sync for StreamableFile {}
 impl MediaSource for StreamableFile
 {
     fn is_seekable(&self) -> bool {
-        false
+        true
     }
 
     fn byte_len(&self) -> Option<u64> {
