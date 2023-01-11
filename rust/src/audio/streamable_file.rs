@@ -55,19 +55,16 @@ impl StreamableFile
             .send().unwrap().bytes().unwrap().to_vec();
         
         let num_received = chunk.len();
+        // Move write_position by how much data was received.
+        self.write_position += num_received;
 
-        println!("Received chunk ({}): {}", self.buffer.len() / CHUNK_SIZE, num_received);
+        println!("Received chunk num[{}]: {start}-{end}", self.buffer.len() / CHUNK_SIZE);
 
         // Add chunk to buffer.
         let mut chunk:Vec<Option<u8>> = chunk.iter().map(|b| Some(*b))
             .collect();
 
-        if self.buffer.is_empty() || start > self.buffer.len() {
-            self.buffer.append(&mut chunk);
-        }
-        else {
-            // self.buffer[start..end]
-        }
+        self.buffer.append(&mut chunk);
 
         // We have finished filling the buffer if we do not receive
         // any more data.
@@ -81,21 +78,20 @@ impl Read for StreamableFile
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
-        println!("read");
         // This defines the end position of the packet
         // we want to read.
         let read_max = self.read_position + buf.len();
+        println!("Read: read_pos[{}] read_max[{read_max}] write_pos[{}]", self.read_position, self.write_position);
 
-        // If we haven't received all the chunks,
-        // then get more.
-        if self.buffer.is_empty() ||
-            // If the position we are reading at is close to the end of the chunk,
-            // then fetch more.
-            (!self.finished_writing && read_max >= self.buffer.len().saturating_sub(FETCH_OFFSET))
+        if !self.buffer.is_empty() {
+            assert!(self.write_position > self.read_position);
+        }
+
+        // If the position we are reading at is close to the end of the chunk,
+        // then fetch more.
+        if !self.finished_writing && read_max >= self.buffer.len().saturating_sub(FETCH_OFFSET)
         {
             self.get_chunk(self.write_position);
-            // Move write_position by how much data was received.
-            self.write_position += CHUNK_SIZE + 1;
         }
 
         // If we are reading after the buffer has been filled,
@@ -128,34 +124,28 @@ impl Seek for StreamableFile
 {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64>
     {
-        println!("Seeking {pos:?}");
-        let seek_position;
-        
-        match pos
+        let seek_position:usize = match pos
         {
             std::io::SeekFrom::Start(pos) => {
-                println!("start");
-                seek_position = pos as usize;
-                
-                // if seek_position > self.buffer.len() {
-                //     self.buffer.append(&mut vec![None; seek_position - self.buffer.len()]);
-                //     self.get_chunk(seek_position);
-                // }
-                // self.read_position = pos as usize;
+                pos as usize
             },
             std::io::SeekFrom::End(pos) => {
-                seek_position = self.buffer.len() + pos as usize;
+                (self.buffer.len() as i64 + pos) as usize
             },
             std::io::SeekFrom::Current(pos) => {
-                seek_position = self.read_position + pos as usize;
+                (self.read_position as i64 + pos) as usize
             },
+        };
+
+        println!("Seeking: pos[{seek_position}] type[{pos:?}]");
+
+        if seek_position > self.buffer.len() {
+            self.buffer.append(&mut vec![None; seek_position - self.buffer.len()]);
+            self.write_position = seek_position;
+            self.get_chunk(self.write_position);
         }
 
         self.read_position = seek_position;
-        while self.buffer.len() < seek_position {
-            self.get_chunk(self.write_position);
-            self.write_position += CHUNK_SIZE + 1;
-        }
 
         Ok(seek_position as u64)
     }
@@ -167,7 +157,8 @@ unsafe impl Sync for StreamableFile {}
 impl MediaSource for StreamableFile
 {
     fn is_seekable(&self) -> bool {
-        true
+        // true
+        self.buffer.len() / CHUNK_SIZE >= 2
     }
 
     fn byte_len(&self) -> Option<u64> {
