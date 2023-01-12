@@ -46,7 +46,9 @@ impl StreamableFile
     }
 
     /// Gets the next chunk in the sequence.
-    fn get_chunk(&mut self, start:usize)
+    /// 
+    /// Returns the number of bytes received.
+    fn get_chunk(&mut self, start:usize) -> usize
     {
         // Get the next chunk.
         let end = start + CHUNK_SIZE;
@@ -55,8 +57,6 @@ impl StreamableFile
             .send().unwrap().bytes().unwrap().to_vec();
         
         let num_received = chunk.len();
-        // Move write_position by how much data was received.
-        self.write_position += num_received;
 
         println!("Received chunk num[{}]: {start}-{end}", self.buffer.len() / CHUNK_SIZE);
 
@@ -64,13 +64,22 @@ impl StreamableFile
         let mut chunk:Vec<Option<u8>> = chunk.iter().map(|b| Some(*b))
             .collect();
 
-        self.buffer.append(&mut chunk);
+        // When the chunk is in consecutive order.
+        if self.buffer.len() < end {
+            self.buffer.append(&mut chunk);
+        }
+        // When the chunk is located earlier in the file.
+        else {
+            self.buffer[start..end + 1].copy_from_slice(&chunk);
+        }
 
         // We have finished filling the buffer if we do not receive
         // any more data.
         if num_received == 0 {
             self.finished_writing = true;
         }
+
+        num_received
     }
 }
 
@@ -87,11 +96,24 @@ impl Read for StreamableFile
             assert!(self.write_position > self.read_position);
         }
 
+        // Replace any None values from a previous seek
+        // with data.
+        if !self.buffer.is_empty()
+        {
+            let slice = &self.buffer[self.read_position..read_max];
+            if slice.contains(&None)
+            {
+                self.get_chunk(self.read_position);
+            }
+        }
+
         // If the position we are reading at is close to the end of the chunk,
         // then fetch more.
         if !self.finished_writing && read_max >= self.buffer.len().saturating_sub(FETCH_OFFSET)
         {
-            self.get_chunk(self.write_position);
+            let num_received = self.get_chunk(self.write_position);
+            // Move write_position by how much data was received.
+            self.write_position += num_received;
         }
 
         // If we are reading after the buffer has been filled,
@@ -142,7 +164,9 @@ impl Seek for StreamableFile
         if seek_position > self.buffer.len() {
             self.buffer.append(&mut vec![None; seek_position - self.buffer.len()]);
             self.write_position = seek_position;
-            self.get_chunk(self.write_position);
+            let num_received = self.get_chunk(self.write_position);
+            // Move write_position by how much data was received.
+            self.write_position += num_received;
         }
 
         self.read_position = seek_position;
@@ -157,8 +181,7 @@ unsafe impl Sync for StreamableFile {}
 impl MediaSource for StreamableFile
 {
     fn is_seekable(&self) -> bool {
-        // true
-        self.buffer.len() / CHUNK_SIZE >= 2
+        true
     }
 
     fn byte_len(&self) -> Option<u64> {
