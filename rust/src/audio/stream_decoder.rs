@@ -14,22 +14,52 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+use std::fs::File;
+use std::io::{Read, Seek, SeekFrom, Write};
+
 use cpal::traits::StreamTrait;
+use crossbeam::channel::unbounded;
 use rb::RbConsumer;
-use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
+use reqwest::blocking::Client;
+use symphonia::{core::{io::MediaSourceStream, formats::{FormatOptions, SeekTo, SeekMode, FormatReader}, meta::MetadataOptions, probe::Hint, units::Time}, default};
+use tempfile::NamedTempFile;
 
-use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream};
+use crate::utils::{progress_state_stream::*, playback_state_stream::*};
 
-use super::{cpal_output::CpalOutput, controls::*};
+use super::{controls::*, cpal_output::CpalOutput};
 
-#[derive(Default)]
-pub struct Decoder;
+const CHUNK_SIZE:u64 = 1024 * 64;
+const FETCH_OFFSET:u64 = 10000;
 
-impl Decoder
+pub struct StreamDecoder
 {
-    pub fn decode(&mut self, source:Box<dyn MediaSource>)
+    url:String,
+    source:NamedTempFile,
+    read_pos:u64,
+    // skipped:Vec<Range>
+}
+
+impl StreamDecoder
+{
+    pub fn new(url:String) -> StreamDecoder
     {
-        let mss = MediaSourceStream::new(source, Default::default());
+        StreamDecoder
+        {
+            url,
+            source: tempfile::NamedTempFile::new().unwrap(),
+            read_pos: 0,
+            // skipped: Vec::new()
+        }
+    }
+
+    pub fn decode(&mut self)
+    {
+        self.get_chunk(0);
+
+        println!("{:?}", self.source.path());
+
+        let file = File::open(self.source.path()).unwrap();
+        let mss = MediaSourceStream::new(Box::new(file), Default::default());
 
         let format_options = FormatOptions { enable_gapless: true, ..Default::default() };
         let metadata_options:MetadataOptions = Default::default();
@@ -62,13 +92,20 @@ impl Decoder
         let rx = TXRX.read().unwrap().1.clone();
 
         let lock = TXRX2.read().unwrap();
-        let tx = lock.as_ref().unwrap().0.clone();
+        let test = unbounded();
+        let tx = lock.as_ref().unwrap_or(&test).0.clone();
         drop(lock);
 
         let mut has_reached_end = false;
 
         loop
         {
+            // Get a chunk if we are running out of data.
+            let len = self.source.as_file().metadata().unwrap().len();
+            if self.read_pos >= len.saturating_sub(FETCH_OFFSET) {
+                self.get_chunk(len);
+            }
+
             // Poll the status of the RX in lib.rs.
             // If the player is paused, then block this thread until a message comes in
             // to save the CPU.
@@ -107,6 +144,11 @@ impl Decoder
             // Seeking.
             let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
             {
+                //TODO: Seeking
+                let pos = timebase.calc_timestamp(Time::from(seek_ts));
+                self.seek(pos - 1024);
+                println!("{pos}");
+
                 let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(track_id) };
                 match reader.seek(SeekMode::Accurate, seek_to)
                 {
@@ -140,6 +182,9 @@ impl Decoder
             };
 
             if packet.track_id() != track_id { continue; }
+
+            // Keep track of how much data we are reading.
+            self.read_pos += packet.data.len() as u64;
 
             match decoder.decode(&packet)
             {
@@ -189,5 +234,57 @@ impl Decoder
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
+    }
+
+    /// Gets the next chunk in the sequence.
+    /// 
+    /// Returns the number of bytes received.
+    fn get_chunk(&mut self, start:u64) -> u64
+    {
+        // Get the next chunk.
+        let end = start + CHUNK_SIZE;
+        let mut chunk = Client::new().get(self.url.clone())
+            .header("Range", format!("bytes={start}-{end}"))
+            .send().unwrap().bytes().unwrap().to_vec();
+        
+        let num_received = chunk.len() as u64;
+
+        // Add chunk to file.
+        let file = self.source.as_file_mut();
+        let file_len = file.metadata().unwrap().len();
+
+        println!("Received chunk num[{}]: {start}-{end}", file_len / CHUNK_SIZE);
+
+        // When the chunk is in consecutive order.
+        if file_len < end {
+            let prev = file.stream_position().unwrap();
+            
+            file.set_len(file_len + CHUNK_SIZE).unwrap();
+            file.seek(SeekFrom::Start(file_len)).unwrap();
+            file.write_all(&mut chunk).unwrap();
+            file.seek(SeekFrom::Start(prev)).unwrap();
+        }
+        // When the chunk is located earlier in the file.
+        else {
+            // self.buffer[start..start + num_received].copy_from_slice(&chunk);
+        }
+
+        // We have finished filling the buffer if we do not receive
+        // any more data.
+        if num_received == 0 {
+            // self.finished_writing = true;
+        }
+
+        num_received
+    }
+
+    /// Appends 0 to the file until `position` is reached.
+    /// 
+    /// Reads a chunk at position.
+    fn seek(&mut self, position:u64)
+    {
+        let file = self.source.as_file_mut();
+        file.set_len(position).unwrap();
+        self.get_chunk(position);
     }
 }

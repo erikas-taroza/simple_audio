@@ -21,7 +21,7 @@ mod metadata;
 
 use std::{fs::File, io::Cursor, thread};
 
-use audio::{decoder::Decoder, controls::*, streamable_file::StreamableFile};
+use audio::{decoder::Decoder, controls::*, streamable_file::StreamableFile, stream_decoder::StreamDecoder};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
@@ -122,17 +122,19 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String, autoplay:bool)
     {
-        let source:Box<dyn MediaSource> = if path.contains("http") {
-            if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
-            // Everything but m3u/m3u8
-            // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
-            else { Box::new(StreamableFile::new(path.as_str())) }
-        } else { Box::new(File::open(path).unwrap()) };
+        // let source:Box<dyn MediaSource> = if path.contains("http") {
+        //     if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
+        //     // Everything but m3u/m3u8
+        //     // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
+        //     else { Box::new(StreamableFile::new(path.as_str())) }
+        // } else { Box::new(File::open(path).unwrap()) };
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
 
         thread::spawn(move || {
-            Decoder::default().open_stream(source);
+            // Decoder::default().decode(source);
+            let mut stream_decoder = StreamDecoder::new(path);
+            stream_decoder.decode();
         });
     }
 
@@ -278,8 +280,12 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg".to_string(), true);
-        thread::sleep(Duration::from_secs(7));
+        player.open("https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_MP3_5MG.mp3".to_string(), true);
+        player.set_volume(0.2);
+        thread::sleep(Duration::from_secs(5));
+        println!("~~~~~~~~~~~~~~~~");
+        player.seek(67);
+        thread::sleep(Duration::from_secs(1000));
     }
 
     // The following tests are to check the responsiveness.

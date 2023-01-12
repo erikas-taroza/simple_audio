@@ -15,6 +15,7 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 pub mod decoder;
+pub mod stream_decoder;
 pub mod controls;
 pub mod streamable_file;
 mod cpal_output;
