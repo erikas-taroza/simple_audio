@@ -70,7 +70,7 @@ impl StreamableFile
         }
         // When the chunk is located earlier in the file.
         else {
-            self.buffer[start..end + 1].copy_from_slice(&chunk);
+            self.buffer[start..start + num_received].copy_from_slice(&chunk);
         }
 
         // We have finished filling the buffer if we do not receive
@@ -90,11 +90,13 @@ impl Read for StreamableFile
         // This defines the end position of the packet
         // we want to read.
         let read_max = self.read_position + buf.len();
-        println!("Read: read_pos[{}] read_max[{read_max}] write_pos[{}]", self.read_position, self.write_position);
+        println!("Read: read_pos[{}] read_max[{read_max}] write_pos[{}] buffer[{}]", self.read_position, self.write_position, self.buffer.len());
 
         if !self.buffer.is_empty() {
             assert!(self.write_position > self.read_position);
         }
+
+        assert_eq!(self.write_position, self.buffer.len());
 
         // Replace any None values from a previous seek
         // with data.
@@ -185,6 +187,6 @@ impl MediaSource for StreamableFile
     }
 
     fn byte_len(&self) -> Option<u64> {
-        None
+        Some(self.buffer.len() as u64)
     }
 }
