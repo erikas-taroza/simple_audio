@@ -11,13 +11,12 @@ cpal = { git = "https://github.com/erikas-taroza/cpal" }
 flutter_rust_bridge = "1.57.0"
 reqwest = { version = "0.11.12", features = ["blocking"] }
 symphonia = { features = ["aac", "alac", "isomp4", "mp3"], git = "https://github.com/pdeljanov/Symphonia" }
-# version = "0.5.1",
 rb = "0.4.1"
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 openssl-sys = { version = "0.9.77", features = ["vendored"] }
 rubato = "0.12.0"
 lazy_static = "1.4.0"
-tempfile = "3.3.0"
+rangemap = "1.3.0"
 
 [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))'.dependencies]
 dbus = "0.9.6"

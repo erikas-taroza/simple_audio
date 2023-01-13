@@ -16,6 +16,7 @@
 
 use std::io::{Read, Seek};
 
+use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
@@ -24,19 +25,20 @@ const FETCH_OFFSET:usize = 10000;
 
 pub struct StreamableFile
 {
+    url:String,
     buffer:Vec<u8>,
     write_position:usize,
     read_position:usize,
     finished_writing:bool,
-    url:String
+    downloaded:RangeSet<usize>
 }
 
 impl StreamableFile
 {
-    pub fn new(url:&str) -> Self
+    pub fn new(url:String) -> Self
     {
         // Get the size of the file we are streaming.
-        let res = Client::new().head(url)
+        let res = Client::new().head(&url)
             .send()
             .unwrap();
 
@@ -54,11 +56,12 @@ impl StreamableFile
 
         StreamableFile
         {
+            url,
             buffer: vec![0; size],
             write_position: 0,
             read_position: 0,
             finished_writing: false,
-            url: url.to_string()
+            downloaded: RangeSet::new()
         }
     }
 
@@ -103,10 +106,20 @@ impl Read for StreamableFile
         // If the position we are reading at is close to the end of the chunk,
         // then fetch more.
         if !self.finished_writing && read_max >= self.write_position.saturating_sub(FETCH_OFFSET)
+        // TODO: Check if downloaded range.
         {
-            let num_received = self.get_chunk(self.write_position);
+            let start = self.write_position;
+            let num_received = self.get_chunk(start);
             // Move write_position by how much data was received.
             self.write_position += num_received;
+        
+            // Commit this chunk to the `downloaded` range.
+            if self.write_position > start {
+                self.downloaded.insert(start..self.write_position);
+            }
+            else {
+                self.downloaded.insert(start..self.write_position + 1);
+            }
         }
 
         // If we are reading after the buffer has been filled,
