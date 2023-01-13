@@ -21,7 +21,7 @@ mod metadata;
 
 use std::{fs::File, io::Cursor, thread};
 
-use audio::{decoder::Decoder, controls::*, streamable_file::StreamableFile, stream_decoder::StreamDecoder};
+use audio::{decoder::Decoder, controls::*, streamable_file::StreamableFile};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
@@ -122,19 +122,17 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path:String, autoplay:bool)
     {
-        // let source:Box<dyn MediaSource> = if path.contains("http") {
-        //     if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
-        //     // Everything but m3u/m3u8
-        //     // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
-        //     else { Box::new(StreamableFile::new(path.as_str())) }
-        // } else { Box::new(File::open(path).unwrap()) };
+        let source:Box<dyn MediaSource> = if path.contains("http") {
+            if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
+            // Everything but m3u/m3u8
+            // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
+            else { Box::new(StreamableFile::new(path.as_str())) }
+        } else { Box::new(File::open(path).unwrap()) };
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
 
         thread::spawn(move || {
-            // Decoder::default().decode(source);
-            let mut stream_decoder = StreamDecoder::new(path);
-            stream_decoder.decode();
+            Decoder::default().decode(source);
         });
     }
 
@@ -280,12 +278,12 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_MP3_5MG.mp3".to_string(), true);
-        player.set_volume(0.2);
+        player.open("https://rr5---sn-a5mekn6k.googlevideo.com/videoplayback?expire=1673617056&ei=PwrBY6bBMNb6kgb576fgBA&ip=2600%3A8801%3A4760%3A44%3A2511%3A7996%3Ae1e0%3A59aa&id=o-AECB19jrV0mVuUqMf5P9fnLzK1aCx4ap-UXgEGhHsdWZ&itag=140&source=youtube&requiressl=yes&mh=e_&mm=31%2C26&mn=sn-a5mekn6k%2Csn-o097znse&ms=au%2Conr&mv=m&mvi=5&pl=39&gcr=us&initcwndbps=2117500&vprv=1&mime=audio%2Fmp4&ns=gE9C_NVhG5gnchLPOnbP2hUK&gir=yes&clen=1577690&dur=97.300&lmt=1656476836865407&mt=1673595187&fvip=5&keepalive=yes&fexp=24007246&c=WEB&txp=2318224&n=emFEs1nHBMm1Sg&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cgcr%2Cvprv%2Cmime%2Cns%2Cgir%2Cclen%2Cdur%2Clmt&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=AG3C_xAwRAIgEoLqG6lKlEqYZ2-kMxkzkwyeGjAX8U34es1Qp1EmNSkCIDKxvxpexGrDL654wowu1irPen1OGwEjZj8_ZfoAbcVg&sig=AOq0QJ8wRgIhAOUd9v1bzT9uMlTf6jsURiFHSC8oyBGHnoaNY4c8irF_AiEA4KlD3YUSXDMmxZxcGl_6lR6di4W2xqwUU-YYHqWKXDA=".to_string(), true);
+        player.set_volume(0.05);
         thread::sleep(Duration::from_secs(5));
         println!("~~~~~~~~~~~~~~~~");
-        player.seek(67);
-        thread::sleep(Duration::from_secs(1000));
+        player.seek(27);
+        thread::sleep(Duration::from_secs(10));
     }
 
     // The following tests are to check the responsiveness.

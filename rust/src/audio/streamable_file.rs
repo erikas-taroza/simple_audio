@@ -24,7 +24,7 @@ const FETCH_OFFSET:usize = 10000;
 
 pub struct StreamableFile
 {
-    buffer:Vec<Option<u8>>,
+    buffer:Vec<u8>,
     write_position:usize,
     read_position:usize,
     finished_writing:bool,
@@ -35,9 +35,26 @@ impl StreamableFile
 {
     pub fn new(url:&str) -> Self
     {
+        // Get the size of the file we are streaming.
+        let res = Client::new().head(url)
+            .send()
+            .unwrap();
+
+        let header = res
+            .headers().get("Content-Length")
+            .unwrap();
+
+        let size:usize = header
+            .to_str()
+            .unwrap()
+            .parse()
+            .unwrap();
+
+        println!("{size}");
+
         StreamableFile
         {
-            buffer: Vec::new(),
+            buffer: vec![0; size],
             write_position: 0,
             read_position: 0,
             finished_writing: false,
@@ -52,26 +69,17 @@ impl StreamableFile
     {
         // Get the next chunk.
         let end = start + CHUNK_SIZE;
+
         let chunk = Client::new().get(self.url.clone())
             .header("Range", format!("bytes={start}-{end}"))
             .send().unwrap().bytes().unwrap().to_vec();
         
         let num_received = chunk.len();
 
-        println!("Received chunk num[{}]: {start}-{end}", self.buffer.len() / CHUNK_SIZE);
+        println!("Received chunk num[{}]: {start}-{end}", self.write_position / CHUNK_SIZE);
 
-        // Add chunk to buffer.
-        let mut chunk:Vec<Option<u8>> = chunk.iter().map(|b| Some(*b))
-            .collect();
-
-        // When the chunk is in consecutive order.
-        if self.buffer.len() < end {
-            self.buffer.append(&mut chunk);
-        }
-        // When the chunk is located earlier in the file.
-        else {
-            self.buffer[start..start + num_received].copy_from_slice(&chunk);
-        }
+        // Write the chunk data to the buffer.
+        self.buffer[start..start + num_received].copy_from_slice(&chunk);
 
         // We have finished filling the buffer if we do not receive
         // any more data.
@@ -90,28 +98,11 @@ impl Read for StreamableFile
         // This defines the end position of the packet
         // we want to read.
         let read_max = self.read_position + buf.len();
-        println!("Read: read_pos[{}] read_max[{read_max}] write_pos[{}] buffer[{}]", self.read_position, self.write_position, self.buffer.len());
-
-        if !self.buffer.is_empty() {
-            assert!(self.write_position > self.read_position);
-        }
-
-        assert_eq!(self.write_position, self.buffer.len());
-
-        // Replace any None values from a previous seek
-        // with data.
-        if !self.buffer.is_empty()
-        {
-            let slice = &self.buffer[self.read_position..read_max];
-            if slice.contains(&None)
-            {
-                self.get_chunk(self.read_position);
-            }
-        }
+        println!("Read: read_pos[{}] read_max[{read_max}] write_pos[{}]", self.read_position, self.write_position);
 
         // If the position we are reading at is close to the end of the chunk,
         // then fetch more.
-        if !self.finished_writing && read_max >= self.buffer.len().saturating_sub(FETCH_OFFSET)
+        if !self.finished_writing && read_max >= self.write_position.saturating_sub(FETCH_OFFSET)
         {
             let num_received = self.get_chunk(self.write_position);
             // Move write_position by how much data was received.
@@ -129,17 +120,14 @@ impl Read for StreamableFile
         // fill the buffer with 0s.
         // This happens at the end of the file.
         if self.buffer.len() < read_max {
-            self.buffer.append(&mut vec![Some(0); read_max - self.buffer.len()]);
+            self.buffer.append(&mut vec![0; read_max - self.buffer.len()]);
         }
 
         // These are the bytes that we want to read.
-        let bytes:Vec<u8> = self.buffer[self.read_position..read_max]
-            .iter().take(buf.len())
-            .map(|b| b.unwrap())
-            .collect();
+        let bytes = &self.buffer[self.read_position..read_max];
+        buf.copy_from_slice(bytes);
 
         self.read_position += buf.len();
-        buf.copy_from_slice(bytes.as_slice());
         Ok(buf.len())
     }
 }
@@ -154,24 +142,33 @@ impl Seek for StreamableFile
                 pos as usize
             },
             std::io::SeekFrom::End(pos) => {
-                (self.buffer.len() as i64 + pos) as usize
+                let pos = self.buffer.len() as i64 + pos;
+
+                if pos < 0 {
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid seek"));
+                }
+
+                pos as usize
             },
             std::io::SeekFrom::Current(pos) => {
-                (self.read_position as i64 + pos) as usize
+                let pos = self.read_position as i64 + pos;
+
+                if pos < 0 {
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid seek"));
+                }
+
+                pos as usize
             },
         };
 
-        println!("Seeking: pos[{seek_position}] type[{pos:?}]");
-
         if seek_position > self.buffer.len() {
-            self.buffer.append(&mut vec![None; seek_position - self.buffer.len()]);
-            self.write_position = seek_position;
-            let num_received = self.get_chunk(self.write_position);
-            // Move write_position by how much data was received.
-            self.write_position += num_received;
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid seek"));
         }
 
+        println!("Seeking: pos[{seek_position}] type[{pos:?}]");
+
         self.read_position = seek_position;
+        self.write_position = seek_position;
 
         Ok(seek_position as u64)
     }
