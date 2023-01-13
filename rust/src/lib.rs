@@ -1,5 +1,5 @@
 // This file is a part of simple_audio
-// Copyright (c) 2022 Erikas Taroza <erikastaroza@gmail.com>
+// Copyright (c) 2022-2023 Erikas Taroza <erikastaroza@gmail.com>
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License as
@@ -130,6 +130,12 @@ impl Player
         } else { Box::new(File::open(path).unwrap()) };
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
+
+        // In case the user hasn't called stop before opening the first track.
+        if TXRX2.read().unwrap().is_none() {
+            let mut txrx2 = TXRX2.write().unwrap();
+            *txrx2 = Some(unbounded());
+        }
 
         thread::spawn(move || {
             Decoder::default().decode(source);
