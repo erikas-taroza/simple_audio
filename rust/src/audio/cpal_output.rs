@@ -155,11 +155,12 @@ impl CpalOutput
         if decoded.frames() == 0 { return; }
 
         let mut samples = if let Some(resampler) = &mut self.resampler {
-            self.sample_buffer.copy_planar_ref(decoded);
             // If there is a resampler, then write resampled values
             // instead of the normal `samples`.
-            resampler.resample(self.sample_buffer.samples())
-                .unwrap_or_default()
+            match resampler.resample(decoded) {
+                Some(resampled) => resampled,
+                None => &[],
+            }
         } else {
             self.sample_buffer.copy_interleaved_ref(decoded);
             self.sample_buffer.samples()
@@ -178,12 +179,12 @@ impl CpalOutput
     {
         // If there is a resampler, then it may need to be flushed
         // depending on the number of samples it has.
-        if let Some(resampler) = &mut self.resampler
-        {
+        if let Some(resampler) = &mut self.resampler {
             let mut remaining_samples = resampler.flush().unwrap_or_default();
 
-            while let Some(written) = self.ring_buffer_writer.write_blocking(remaining_samples)
-            { remaining_samples = &remaining_samples[written..]; }
+            while let Some(written) = self.ring_buffer_writer.write_blocking(remaining_samples) {
+                remaining_samples = &remaining_samples[written..];
+            }
         }
 
         // Wait for all the samples to be read.
