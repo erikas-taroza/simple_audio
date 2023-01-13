@@ -130,6 +130,12 @@ impl Player
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
 
+        // In case the user hasn't called stop before opening the first track.
+        if TXRX2.read().unwrap().is_none() {
+            let mut txrx2 = TXRX2.write().unwrap();
+            *txrx2 = Some(unbounded());
+        }
+
         thread::spawn(move || {
             Decoder::default().open_stream(source);
         });
