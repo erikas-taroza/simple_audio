@@ -146,14 +146,24 @@ impl StreamDecoder
             {
                 //TODO: Seeking
                 let pos = timebase.calc_timestamp(Time::from(seek_ts));
-                self.seek(pos - 1024);
-                println!("{pos}");
+                self.seek(pos);
 
                 let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(track_id) };
                 match reader.seek(SeekMode::Accurate, seek_to)
                 {
                     Ok(seeked_to) => seeked_to.required_ts,
-                    Err(_) => 0
+                    Err(err) => {
+                        match err
+                        {
+                            symphonia::core::errors::Error::IoError(err) => println!("IO: {err}"),
+                            symphonia::core::errors::Error::DecodeError(err) => println!("Decode: {err}"),
+                            symphonia::core::errors::Error::SeekError(err) => println!("Seek: {err:?}"),
+                            symphonia::core::errors::Error::Unsupported(err) => println!("Unsup: {err}"),
+                            symphonia::core::errors::Error::LimitError(err) => println!("Limit: {err}"),
+                            symphonia::core::errors::Error::ResetRequired => println!("Reset: {err}"),
+                        }
+                        0
+                    }
                 }
             } else { 0 };
 
@@ -283,6 +293,8 @@ impl StreamDecoder
     /// Reads a chunk at position.
     fn seek(&mut self, position:u64)
     {
+        self.read_pos = position;
+
         let file = self.source.as_file_mut();
         file.set_len(position).unwrap();
         self.get_chunk(position);
