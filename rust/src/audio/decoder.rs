@@ -51,8 +51,8 @@ impl Decoder
 
         // Used only for outputting the current position and duration.
         let timebase = track.codec_params.time_base.unwrap();
-        let duration = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
-        let duration = timebase.calc_time(duration).seconds;
+        let ts = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
+        let duration = timebase.calc_time(ts).seconds;
 
         let mut lock = PROGRESS.write().unwrap();
         *lock = ProgressState { position: 0, duration };
@@ -108,7 +108,7 @@ impl Decoder
             let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
             {
                 let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(track_id) };
-                match reader.seek(SeekMode::Accurate, seek_to)
+                match reader.seek(SeekMode::Coarse, seek_to)
                 {
                     Ok(seeked_to) => seeked_to.required_ts,
                     Err(_) => 0

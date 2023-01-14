@@ -15,13 +15,15 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 use std::io::{Read, Seek};
+use std::thread;
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 const CHUNK_SIZE:usize = 1024 * 64;
-const FETCH_OFFSET:usize = 10000;
+const FETCH_OFFSET:usize = CHUNK_SIZE / 2;
 
 pub struct StreamableFile
 {
@@ -30,7 +32,8 @@ pub struct StreamableFile
     write_position:usize,
     read_position:usize,
     finished_writing:bool,
-    downloaded:RangeSet<usize>
+    downloaded:RangeSet<usize>,
+    receiver:Option<Receiver<Vec<u8>>>
 }
 
 impl StreamableFile
@@ -61,36 +64,58 @@ impl StreamableFile
             write_position: 0,
             read_position: 0,
             finished_writing: false,
-            downloaded: RangeSet::new()
+            downloaded: RangeSet::new(),
+            receiver: None
         }
     }
 
     /// Gets the next chunk in the sequence.
     /// 
-    /// Returns the number of bytes received.
-    fn get_chunk(&mut self, start:usize) -> usize
+    /// Returns the received bytes by sending them via `tx`.
+    fn read_chunk(tx:Sender<Vec<u8>>, url:String, start:usize)
     {
-        // Get the next chunk.
         let end = start + CHUNK_SIZE;
 
-        let chunk = Client::new().get(self.url.clone())
+        let chunk = Client::new().get(url)
             .header("Range", format!("bytes={start}-{end}"))
             .send().unwrap().bytes().unwrap().to_vec();
         
-        let num_received = chunk.len();
+        tx.send(chunk).unwrap();
+    }
 
-        println!("Received chunk num[{}]: {start}-{end}", self.write_position / CHUNK_SIZE);
+    /// Polls the receiver if it exists.
+    /// 
+    /// If there is data to receive, then write it to the buffer.
+    /// 
+    /// Changes made are commited to `downloaded` and 
+    /// `write_position` is moved.
+    fn try_write_chunk(&mut self)
+    {
+        if let Some(rx) = &self.receiver
+        {
+            let start = self.write_position;
 
-        // Write the chunk data to the buffer.
-        self.buffer[start..start + num_received].copy_from_slice(&chunk);
+            // Block on the first chunk.
+            let result = if self.downloaded.is_empty() {
+                rx.recv().ok()
+            } else { rx.try_recv().ok() };
 
-        // We have finished filling the buffer if we do not receive
-        // any more data.
-        if num_received == 0 {
-            self.finished_writing = true;
+            match result
+            {
+                None => (),
+                Some(data) => {
+                    // Write the data.
+                    let end = start + data.len();
+                    self.buffer[start..end].copy_from_slice(data.as_slice());
+                    self.downloaded.insert(start..end);
+
+                    // Clean up.
+                    self.write_position += data.len();
+                    self.finished_writing = data.len() < CHUNK_SIZE;
+                    self.receiver = None;
+                }
+            }
         }
-
-        num_received
     }
 }
 
@@ -98,6 +123,8 @@ impl Read for StreamableFile
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
+        println!("{:?}", self.downloaded);
+
         // This defines the end position of the packet
         // we want to read.
         let read_max = self.read_position + buf.len();
@@ -106,21 +133,21 @@ impl Read for StreamableFile
         // If the position we are reading at is close to the end of the chunk,
         // then fetch more.
         if !self.finished_writing && read_max >= self.write_position.saturating_sub(FETCH_OFFSET)
+            && self.receiver.is_none()
         // TODO: Check if downloaded range.
         {
+            let (tx, rx) = channel();
+            self.receiver = Some(rx);
+
+            let url = self.url.clone();
             let start = self.write_position;
-            let num_received = self.get_chunk(start);
-            // Move write_position by how much data was received.
-            self.write_position += num_received;
-        
-            // Commit this chunk to the `downloaded` range.
-            if self.write_position > start {
-                self.downloaded.insert(start..self.write_position);
-            }
-            else {
-                self.downloaded.insert(start..self.write_position + 1);
-            }
+            thread::spawn(move || {
+                Self::read_chunk(tx, url, start);
+            });
         }
+
+        // Write any new bytes.
+        self.try_write_chunk();
 
         // If we are reading after the buffer has been filled,
         // then throw an error to signal that we have reached the end.
@@ -193,7 +220,7 @@ unsafe impl Sync for StreamableFile {}
 impl MediaSource for StreamableFile
 {
     fn is_seekable(&self) -> bool {
-        true
+        super::controls::SEEK_TS.read().unwrap().is_some()
     }
 
     fn byte_len(&self) -> Option<u64> {

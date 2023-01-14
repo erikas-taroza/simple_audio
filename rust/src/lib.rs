@@ -126,7 +126,7 @@ impl Player
             if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
             // Everything but m3u/m3u8
             // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
-            else { Box::new(StreamableFile::new(path.as_str())) }
+            else { Box::new(StreamableFile::new(path)) }
         } else { Box::new(File::open(path).unwrap()) };
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
@@ -284,12 +284,14 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://rr5---sn-a5mekn6k.googlevideo.com/videoplayback?expire=1673617056&ei=PwrBY6bBMNb6kgb576fgBA&ip=2600%3A8801%3A4760%3A44%3A2511%3A7996%3Ae1e0%3A59aa&id=o-AECB19jrV0mVuUqMf5P9fnLzK1aCx4ap-UXgEGhHsdWZ&itag=140&source=youtube&requiressl=yes&mh=e_&mm=31%2C26&mn=sn-a5mekn6k%2Csn-o097znse&ms=au%2Conr&mv=m&mvi=5&pl=39&gcr=us&initcwndbps=2117500&vprv=1&mime=audio%2Fmp4&ns=gE9C_NVhG5gnchLPOnbP2hUK&gir=yes&clen=1577690&dur=97.300&lmt=1656476836865407&mt=1673595187&fvip=5&keepalive=yes&fexp=24007246&c=WEB&txp=2318224&n=emFEs1nHBMm1Sg&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cgcr%2Cvprv%2Cmime%2Cns%2Cgir%2Cclen%2Cdur%2Clmt&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=AG3C_xAwRAIgEoLqG6lKlEqYZ2-kMxkzkwyeGjAX8U34es1Qp1EmNSkCIDKxvxpexGrDL654wowu1irPen1OGwEjZj8_ZfoAbcVg&sig=AOq0QJ8wRgIhAOUd9v1bzT9uMlTf6jsURiFHSC8oyBGHnoaNY4c8irF_AiEA4KlD3YUSXDMmxZxcGl_6lR6di4W2xqwUU-YYHqWKXDA=".to_string(), true);
-        player.set_volume(0.05);
+        player.open("https://cf-media.sndcdn.com/TDsKzx9gqrfp.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vVERzS3p4OWdxcmZwLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjczNjU5Njk4fX19XX0_&Signature=Wibi1Mogv~nysXv7xXvPxLfXSsIUcJiU9ZO-UlDyVhY~kLgdrLtWBgnfjjxObVYn7iE9c1DrI3UYpy~ZzBMbiKHVL6RMnyx3~xDzRY3QPiJdppeW9-eQQ2MtVUSpwyVesw1Zo5ueuVjfbGrPZ21eOnFK-vdaFlrzg0Z0IjU6pAgGHyw-QEUnCcnDeIS4CY9U5P9ZKADhfMeVlPPusAetYH0tJokZzDQPaY5NCdpeasxVdtjdD-bOTxrVsqErMmtpuYQVB35Ui4uRbviqMYTkBMTf6BcQogfFJvCScCEkADRr81ZShCEYgqIWdbHAHUc8YrLQG5~oxFCSSVgaH3kbmg__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true);
+        player.set_volume(0.2);
         thread::sleep(Duration::from_secs(5));
-        println!("~~~~~~~~~~~~~~~~");
-        player.seek(27);
-        thread::sleep(Duration::from_secs(10));
+        // println!("~~~~~~~~~~~~~~~~");
+        // player.seek(16);
+        // thread::sleep(Duration::from_secs(10));
+        // player.seek(0);
+        // thread::sleep(Duration::from_secs(10));
     }
 
     // The following tests are to check the responsiveness.
