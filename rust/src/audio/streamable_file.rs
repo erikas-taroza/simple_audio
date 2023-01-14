@@ -32,6 +32,7 @@ pub struct StreamableFile
     write_position:usize,
     read_position:usize,
     finished_writing:bool,
+    should_buffer:bool,
     downloaded:RangeSet<usize>,
     receiver:Option<Receiver<Vec<u8>>>
 }
@@ -64,6 +65,7 @@ impl StreamableFile
             write_position: 0,
             read_position: 0,
             finished_writing: false,
+            should_buffer: false,
             downloaded: RangeSet::new(),
             receiver: None
         }
@@ -133,7 +135,7 @@ impl Read for StreamableFile
         // If the position we are reading at is close to the end of the chunk,
         // then fetch more.
         if !self.finished_writing && read_max >= self.write_position.saturating_sub(FETCH_OFFSET)
-            && self.receiver.is_none()
+            && self.receiver.is_none() && !self.should_buffer
         // TODO: Check if downloaded range.
         {
             let (tx, rx) = channel();
@@ -148,6 +150,18 @@ impl Read for StreamableFile
 
         // Write any new bytes.
         self.try_write_chunk();
+
+        // Start buffering if the `read_position` is not
+        // downloaded. This should be done after seeking.
+        // This fixes the issue with seeking on MP3 (no blocking on data).
+        // This also makes it so that the previous buffer doesn't keep on
+        // getting played. Instead, there is silence.
+        if !self.downloaded.contains(&self.read_position) {
+            self.should_buffer = true;
+            return Ok(buf.len());
+        }
+
+        self.should_buffer = false;
 
         // If we are reading after the buffer has been filled,
         // then throw an error to signal that we have reached the end.
@@ -208,7 +222,7 @@ impl Seek for StreamableFile
         println!("Seeking: pos[{seek_position}] type[{pos:?}]");
 
         self.read_position = seek_position;
-        self.write_position = seek_position;
+        self.write_position = seek_position + 1;
 
         Ok(seek_position as u64)
     }
@@ -220,7 +234,7 @@ unsafe impl Sync for StreamableFile {}
 impl MediaSource for StreamableFile
 {
     fn is_seekable(&self) -> bool {
-        super::controls::SEEK_TS.read().unwrap().is_some()
+        true
     }
 
     fn byte_len(&self) -> Option<u64> {
