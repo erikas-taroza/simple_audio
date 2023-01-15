@@ -1,5 +1,5 @@
 // This file is a part of simple_audio
-// Copyright (c) 2022 Erikas Taroza <erikastaroza@gmail.com>
+// Copyright (c) 2022-2023 Erikas Taroza <erikastaroza@gmail.com>
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License as
@@ -87,8 +87,7 @@ impl StreamableFile
     /// 
     /// If there is data to receive, then write it to the buffer.
     /// 
-    /// Changes made are commited to `downloaded` and 
-    /// `write_position` is moved.
+    /// Changes made are commited to `downloaded`.
     fn try_write_chunk(&mut self)
     {
         if let Some(rx) = &self.receiver
@@ -204,14 +203,12 @@ impl Seek for StreamableFile
     {
         let seek_position:usize = match pos
         {
-            std::io::SeekFrom::Start(pos) => {
-                pos as usize
-            },
+            std::io::SeekFrom::Start(pos) => pos as usize,
             std::io::SeekFrom::End(pos) => {
                 let pos = self.buffer.len() as i64 + pos;
 
                 if pos < 0 {
-                    return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid seek"));
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek end: {pos}")));
                 }
 
                 pos as usize
@@ -220,7 +217,7 @@ impl Seek for StreamableFile
                 let pos = self.read_position as i64 + pos;
 
                 if pos < 0 {
-                    return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid seek"));
+                    return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek current: {pos}")));
                 }
 
                 pos as usize
@@ -228,7 +225,7 @@ impl Seek for StreamableFile
         };
 
         if seek_position > self.buffer.len() {
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid seek"));
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek: {seek_position} > {}", self.buffer.len())));
         }
 
         println!("Seeking: pos[{seek_position}] type[{pos:?}]");
