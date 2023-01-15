@@ -33,7 +33,8 @@ pub struct StreamableFile
     finished_writing:bool,
     should_buffer:bool,
     downloaded:RangeSet<usize>,
-    receiver:Option<Receiver<(usize, Vec<u8>)>>
+    requested:RangeSet<usize>,
+    receivers:Vec<(u128, Receiver<(usize, Vec<u8>)>)>
 }
 
 impl StreamableFile
@@ -65,7 +66,8 @@ impl StreamableFile
             finished_writing: false,
             should_buffer: false,
             downloaded: RangeSet::new(),
-            receiver: None
+            requested: RangeSet::new(),
+            receivers: Vec::new()
         }
     }
 
@@ -83,17 +85,19 @@ impl StreamableFile
         tx.send((start, chunk)).unwrap();
     }
 
-    /// Polls the receiver if it exists.
+    /// Polls all receivers.
     /// 
     /// If there is data to receive, then write it to the buffer.
     /// 
     /// Changes made are commited to `downloaded`.
     fn try_write_chunk(&mut self)
     {
-        if let Some(rx) = &self.receiver
+        let mut completed_downloads = Vec::new();
+
+        for (id, rx) in &self.receivers
         {
             // Block on the first chunk.
-            let result = if self.downloaded.is_empty() {
+            let result = if self.downloaded.is_empty() || self.should_buffer {
                 rx.recv().ok()
             } else { rx.try_recv().ok() };
 
@@ -108,10 +112,13 @@ impl StreamableFile
 
                     // Clean up.
                     self.finished_writing = chunk.len() < CHUNK_SIZE;
-                    self.receiver = None;
+                    completed_downloads.push(*id);
                 }
             }
         }
+
+        // Remove completed receivers.
+        self.receivers.retain(|(id, _)| !completed_downloads.contains(&id));
     }
 
     /// Determines if a chunk should be downloaded by getting
@@ -129,7 +136,13 @@ impl StreamableFile
 
         let closest_range = closest_range.unwrap();
         
-        (self.read_position + buf_len >= closest_range.end - FETCH_OFFSET, closest_range.end)
+        // Make sure that the same chunk isn't being downloaded again.
+        // This may happen because the next `read` call happens
+        // before the chunk has finished downloading. In that case,
+        // it is unnecessary to request another chunk.
+        let is_already_downloading = self.requested.contains(&(self.read_position + CHUNK_SIZE));
+        
+        (self.read_position + buf_len >= closest_range.end - FETCH_OFFSET && !is_already_downloading, closest_range.end)
     }
 }
 
@@ -137,6 +150,13 @@ impl Read for StreamableFile
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
+        // If we are reading after the buffer,
+        // then throw an error to signal that we have reached the end.
+        if self.read_position >= self.buffer.len() {
+            println!("Finished reading!");
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "End of file."));
+        }
+
         // This defines the end position of the packet
         // we want to read.
         let read_max = self.read_position + buf.len();
@@ -146,14 +166,19 @@ impl Read for StreamableFile
         let (should_get_chunk, chunk_write_pos) = self.should_get_chunk(buf.len());
         
         println!("Read: read_pos[{}] read_max[{read_max}] buf[{}] write_pos[{chunk_write_pos}] download[{should_get_chunk}]", self.read_position, buf.len());
-        if !self.finished_writing && should_get_chunk && self.receiver.is_none()
+        if !self.finished_writing && should_get_chunk
         {
             println!("Getting chunk...");
 
-            let (tx, rx) = channel();
-            self.receiver = Some(rx);
+            self.requested.insert(chunk_write_pos..chunk_write_pos + CHUNK_SIZE + 1);
 
             let url = self.url.clone();
+            let (tx, rx) = channel();
+
+            let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+                .unwrap().as_millis();
+            self.receivers.push((id, rx));
+
             thread::spawn(move || {
                 Self::read_chunk(tx, url, chunk_write_pos);
             });
@@ -165,21 +190,12 @@ impl Read for StreamableFile
         // Start buffering if the `read_position` is not
         // downloaded. This should be done after seeking.
         // This fixes the issue with seeking on MP3 (no blocking on data).
-        // This also makes it so that the previous buffer doesn't keep on
-        // getting played. Instead, there is silence.
         if !self.downloaded.contains(&self.read_position) {
             self.should_buffer = true;
             return Ok(buf.len());
         }
 
         self.should_buffer = false;
-
-        // If we are reading after the buffer has been filled,
-        // then throw an error to signal that we have reached the end.
-        if self.read_position >= self.buffer.len() && self.finished_writing {
-            println!("Finished reading!");
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, "End of file."));
-        }
 
         // If the buffer doesn't align with what is being requested,
         // fill the buffer with 0s.
