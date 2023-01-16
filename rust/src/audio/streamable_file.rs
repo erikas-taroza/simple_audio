@@ -104,9 +104,12 @@ impl StreamableFile
                 None => (),
                 Some((position, chunk)) => {
                     // Write the data.
-                    let end = position + chunk.len();
-                    self.buffer[position..end].copy_from_slice(chunk.as_slice());
-                    self.downloaded.insert(position..end);
+                    let end = (position + chunk.len()).min(self.buffer.len());
+
+                    if position != end {
+                        self.buffer[position..end].copy_from_slice(chunk.as_slice());
+                        self.downloaded.insert(position..end);
+                    }
 
                     // Clean up.
                     completed_downloads.push(*id);
@@ -138,8 +141,12 @@ impl StreamableFile
         // before the chunk has finished downloading. In that case,
         // it is unnecessary to request another chunk.
         let is_already_downloading = self.requested.contains(&(self.read_position + CHUNK_SIZE));
+
+        let should_get_chunk = self.read_position + buf_len >= closest_range.end - FETCH_OFFSET
+            && !is_already_downloading
+            && closest_range.end != self.buffer.len();
         
-        (self.read_position + buf_len >= closest_range.end - FETCH_OFFSET && !is_already_downloading, closest_range.end)
+        (should_get_chunk, closest_range.end)
     }
 }
 
