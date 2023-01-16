@@ -30,7 +30,6 @@ pub struct StreamableFile
     url:String,
     buffer:Vec<u8>,
     read_position:usize,
-    finished_writing:bool,
     should_buffer:bool,
     downloaded:RangeSet<usize>,
     requested:RangeSet<usize>,
@@ -63,7 +62,6 @@ impl StreamableFile
             url,
             buffer: vec![0; size],
             read_position: 0,
-            finished_writing: false,
             should_buffer: false,
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
@@ -111,7 +109,6 @@ impl StreamableFile
                     self.downloaded.insert(position..end);
 
                     // Clean up.
-                    self.finished_writing = chunk.len() < CHUNK_SIZE;
                     completed_downloads.push(*id);
                 }
             }
@@ -166,10 +163,8 @@ impl Read for StreamableFile
         let (should_get_chunk, chunk_write_pos) = self.should_get_chunk(buf.len());
         
         println!("Read: read_pos[{}] read_max[{read_max}] buf[{}] write_pos[{chunk_write_pos}] download[{should_get_chunk}]", self.read_position, buf.len());
-        if !self.finished_writing && should_get_chunk
+        if should_get_chunk
         {
-            println!("Getting chunk...");
-
             self.requested.insert(chunk_write_pos..chunk_write_pos + CHUNK_SIZE + 1);
 
             let url = self.url.clone();
@@ -191,6 +186,7 @@ impl Read for StreamableFile
         // downloaded. This should be done after seeking.
         // This fixes the issue with seeking on MP3 (no blocking on data).
         if !self.downloaded.contains(&self.read_position) {
+            println!("Buffering...");
             self.should_buffer = true;
             return Ok(buf.len());
         }
@@ -241,7 +237,8 @@ impl Seek for StreamableFile
         };
 
         if seek_position > self.buffer.len() {
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek: {seek_position} > {}", self.buffer.len())));
+            return Ok(0);
+            // return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek: {seek_position} > {}", self.buffer.len())));
         }
 
         println!("Seeking: pos[{seek_position}] type[{pos:?}]");
