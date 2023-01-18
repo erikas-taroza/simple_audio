@@ -72,9 +72,9 @@ impl StreamableFile
     /// Gets the next chunk in the sequence.
     /// 
     /// Returns the received bytes by sending them via `tx`.
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize)
+    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize)
     {
-        let end = start + CHUNK_SIZE;
+        let end = (start + CHUNK_SIZE).min(file_size);
 
         let chunk = Client::new().get(url)
             .header("Range", format!("bytes={start}-{end}"))
@@ -155,10 +155,9 @@ impl Read for StreamableFile
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
         // If we are reading after the buffer,
-        // then throw an error to signal that we have reached the end.
+        // then return early with 0 written bytes.
         if self.read_position >= self.buffer.len() {
-            println!("Finished reading!");
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, "End of file."));
+            return Ok(0);
         }
 
         // This defines the end position of the packet
@@ -175,6 +174,7 @@ impl Read for StreamableFile
             self.requested.insert(chunk_write_pos..chunk_write_pos + CHUNK_SIZE + 1);
 
             let url = self.url.clone();
+            let file_size = self.buffer.len();
             let (tx, rx) = channel();
 
             let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
@@ -182,7 +182,7 @@ impl Read for StreamableFile
             self.receivers.push((id, rx));
 
             thread::spawn(move || {
-                Self::read_chunk(tx, url, chunk_write_pos);
+                Self::read_chunk(tx, url, chunk_write_pos, file_size);
             });
         }
 
@@ -244,8 +244,8 @@ impl Seek for StreamableFile
         };
 
         if seek_position > self.buffer.len() {
+            println!("Seek position {seek_position} > file size");
             return Ok(0);
-            // return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek: {seek_position} > {}", self.buffer.len())));
         }
 
         println!("Seeking: pos[{seek_position}] type[{pos:?}]");
