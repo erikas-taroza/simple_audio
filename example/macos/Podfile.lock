@@ -1,6 +1,6 @@
 PODS:
   - FlutterMacOS (1.0.0)
-  - simple_audio (1.0.3):
+  - simple_audio (1.0.4):
     - FlutterMacOS
 
 DEPENDENCIES:
