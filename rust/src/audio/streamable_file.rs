@@ -30,7 +30,6 @@ pub struct StreamableFile
     url:String,
     buffer:Vec<u8>,
     read_position:usize,
-    should_buffer:bool,
     downloaded:RangeSet<usize>,
     requested:RangeSet<usize>,
     receivers:Vec<(u128, Receiver<(usize, Vec<u8>)>)>
@@ -62,7 +61,6 @@ impl StreamableFile
             url,
             buffer: vec![0; size],
             read_position: 0,
-            should_buffer: false,
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
             receivers: Vec::new()
@@ -88,14 +86,15 @@ impl StreamableFile
     /// If there is data to receive, then write it to the buffer.
     /// 
     /// Changes made are commited to `downloaded`.
-    fn try_write_chunk(&mut self)
+    fn try_write_chunk(&mut self, should_buffer:bool)
     {
         let mut completed_downloads = Vec::new();
 
         for (id, rx) in &self.receivers
         {
-            // Block on the first chunk.
-            let result = if self.downloaded.is_empty() || self.should_buffer {
+            // Block on the first chunk or when buffering.
+            // Buffering fixes the issue with seeking on MP3 (no blocking on data).
+            let result = if self.downloaded.is_empty() || should_buffer {
                 rx.recv().ok()
             } else { rx.try_recv().ok() };
 
@@ -187,18 +186,8 @@ impl Read for StreamableFile
         }
 
         // Write any new bytes.
-        self.try_write_chunk();
-
-        // Start buffering if the `read_position` is not
-        // downloaded. This should be done after seeking.
-        // This fixes the issue with seeking on MP3 (no blocking on data).
-        if !self.downloaded.contains(&self.read_position) {
-            println!("Buffering...");
-            self.should_buffer = true;
-            return Ok(buf.len());
-        }
-
-        self.should_buffer = false;
+        let should_buffer = !self.downloaded.contains(&self.read_position);
+        self.try_write_chunk(should_buffer);
 
         // If the buffer doesn't align with what is being requested,
         // fill the buffer with 0s.
@@ -245,7 +234,7 @@ impl Seek for StreamableFile
 
         if seek_position > self.buffer.len() {
             println!("Seek position {seek_position} > file size");
-            return Ok(0);
+            return Ok(self.read_position as u64);
         }
 
         println!("Seeking: pos[{seek_position}] type[{pos:?}]");
