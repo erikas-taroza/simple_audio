@@ -205,23 +205,23 @@ impl Seek for StreamableFile
         let seek_position:usize = match pos
         {
             std::io::SeekFrom::Start(pos) => pos as usize,
-            std::io::SeekFrom::End(pos) => {
-                let pos = self.buffer.len() as i64 + pos;
-
-                if pos < 0 {
-                    return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek end: {pos}")));
-                }
-
-                pos as usize
-            },
             std::io::SeekFrom::Current(pos) => {
                 let pos = self.read_position as i64 + pos;
-
-                if pos < 0 {
-                    return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Invalid seek current: {pos}")));
-                }
-
-                pos as usize
+                pos.try_into().map_err(|_| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput, 
+                        format!("Invalid seek: {pos}")
+                    )
+                })?
+            },
+            std::io::SeekFrom::End(pos) => {
+                let pos = self.buffer.len() as i64 + pos;
+                pos.try_into().map_err(|_| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput, 
+                        format!("Invalid seek: {pos}")
+                    )
+                })?
             },
         };
 
