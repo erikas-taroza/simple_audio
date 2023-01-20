@@ -7,10 +7,10 @@ edition = "2021"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-cpal = { git = "https://github.com/erikas-taroza/cpal" }
+cpal = { git = "https://github.com/RustAudio/cpal" }
 flutter_rust_bridge = "1.57.0"
 reqwest = { version = "0.11.12", features = ["blocking"] }
-symphonia = { features = ["aac", "alac", "isomp4", "mp3"], git = "https://github.com/pdeljanov/Symphonia" }
+symphonia = { version = "0.5.2", features = ["all"] }
 rb = "0.4.1"
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 openssl-sys = { version = "0.9.77", features = ["vendored"] }
@@ -22,9 +22,6 @@ arrayvec = "0.7.2"
 [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))'.dependencies]
 dbus = "0.9.6"
 dbus-crossroads = "0.5.1"
-
-[target.'cfg(target_os = "android")'.dependencies]
-oboe = { git = "https://github.com/katyo/oboe-rs", branch = "fix-unsoundess" }
 
 # target.'cfg(target_os = "windows")'.
 [target.'cfg(target_os = "windows")'.dependencies.windows]
