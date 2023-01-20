@@ -161,7 +161,7 @@ impl Read for StreamableFile
 
         // This defines the end position of the packet
         // we want to read.
-        let read_max = self.read_position + buf.len();
+        let read_max = (self.read_position + buf.len()).min(self.buffer.len());
 
         // If the position we are reading at is close
         // to the last downloaded chunk, then fetch more.
@@ -189,19 +189,12 @@ impl Read for StreamableFile
         let should_buffer = !self.downloaded.contains(&self.read_position);
         self.try_write_chunk(should_buffer);
 
-        // If the buffer doesn't align with what is being requested,
-        // fill the buffer with 0s.
-        // This happens at the end of the file.
-        if self.buffer.len() < read_max {
-            self.buffer.append(&mut vec![0; read_max - self.buffer.len()]);
-        }
-
         // These are the bytes that we want to read.
         let bytes = &self.buffer[self.read_position..read_max];
-        buf.copy_from_slice(bytes);
+        buf[0..bytes.len()].copy_from_slice(bytes);
 
-        self.read_position += buf.len();
-        Ok(buf.len())
+        self.read_position += bytes.len();
+        Ok(bytes.len())
     }
 }
 
