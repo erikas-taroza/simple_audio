@@ -56,7 +56,7 @@ impl Normalizer
 
     fn calc_peak(input:&[f32]) -> f32
     {
-        input.to_vec().into_iter()
+        input.iter().copied()
             .map(|sample| sample.abs())
             .reduce(f32::max).unwrap_or(1.0)
     }

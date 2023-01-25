@@ -132,9 +132,7 @@ impl Mpris
                     let offset = offset * 1_000_000;
 
                     //TODO: This needs testing.
-                    if actions.contains(&Actions::Rewind) && offset.is_negative()
-                    { callback.lock().unwrap()(Event::Seek(offset, false)); }
-                    else if actions.contains(&Actions::FastForward) && offset.is_positive()
+                    if actions.contains(&Actions::Rewind) || actions.contains(&Actions::FastForward)
                     { callback.lock().unwrap()(Event::Seek(offset, false)); }
 
                     ctx.push_msg(ctx.make_signal("Seeked", ()));

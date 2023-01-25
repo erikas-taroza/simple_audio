@@ -51,7 +51,7 @@ pub enum Command
     SetPlaybackState(PlaybackState)
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Actions
 {
     Rewind,

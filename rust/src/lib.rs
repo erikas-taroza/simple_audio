@@ -70,7 +70,7 @@ impl Player
                         {
                             let progress = PROGRESS.read().unwrap();
                             if position.is_negative()
-                            { Self::internal_seek(progress.position.saturating_sub(position.abs() as u64)); }
+                            { Self::internal_seek(progress.position.saturating_sub(position.unsigned_abs())); }
                             else
                             { Self::internal_seek(progress.position + position as u64); }
                         }
@@ -113,7 +113,7 @@ impl Player
     { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }
 
     pub fn get_progress(&self) -> ProgressState
-    { PROGRESS.read().unwrap().clone() }
+    { *PROGRESS.read().unwrap() }
 
     // ---------------------------------
     //            PLAYBACK
@@ -146,7 +146,7 @@ impl Player
         let response = Client::new().get(url.clone())
             .header("Range", "bytes=0-")
             .send()
-            .expect(format!("ERR: Could not open {url}").as_str());
+            .unwrap_or_else(|_| panic!("ERR: Could not open {url}"));
             
         response.bytes().unwrap().to_vec()
     }
@@ -165,10 +165,10 @@ impl Player
         let m3u_content = Client::new().get(url.clone())
             .header("Range", "bytes=0-")
             .send()
-            .expect(format!("ERR: Could not open {url}").as_str())
+            .unwrap_or_else(|_| panic!("ERR: Could not open {url}"))
             .text().expect("ERR: Could not read content of M3U file.");
 
-        for line in m3u_content.split("\n").collect::<Vec<&str>>()
+        for line in m3u_content.split('\n').collect::<Vec<&str>>()
         {
             if !line.contains("http") { continue; }
             total_data.append(&mut Self::get_bytes_from_network(line.to_string()));

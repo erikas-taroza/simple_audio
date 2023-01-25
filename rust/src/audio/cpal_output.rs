@@ -123,7 +123,7 @@ impl CpalOutput
                 }
                 
                 // Set the volume.
-                data[0..written].iter_mut().for_each(|s| *s = *s * (BASE_VOLUME * *VOLUME.read().unwrap()));
+                data[0..written].iter_mut().for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
             },
             move |err| {
                 panic!("ERR: An error occurred during the stream. {err}");
@@ -157,10 +157,7 @@ impl CpalOutput
         let mut samples = if let Some(resampler) = &mut self.resampler {
             // If there is a resampler, then write resampled values
             // instead of the normal `samples`.
-            match resampler.resample(decoded) {
-                Some(resampled) => resampled,
-                None => &[],
-            }
+            resampler.resample(decoded).unwrap_or(&[])
         } else {
             self.sample_buffer.copy_interleaved_ref(decoded);
             self.sample_buffer.samples()
@@ -189,7 +186,7 @@ impl CpalOutput
 
         // Wait for all the samples to be read.
         let (mutex, cvar) = &*self.is_stream_done;
-        let _ = cvar.wait(mutex.lock().unwrap());
+        let _lock = cvar.wait(mutex.lock().unwrap());
 
         self.stream.pause().unwrap();
     }
