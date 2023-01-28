@@ -10,7 +10,8 @@ crate-type = ["staticlib", "cdylib"]
 cpal = { git = "https://github.com/RustAudio/cpal" }
 flutter_rust_bridge = "1.57.0"
 reqwest = { version = "0.11.12", features = ["blocking"] }
-symphonia = { version = "0.5.2", features = ["all"] }
+# symphonia = { version = "0.5.2", features = ["all"] }
+symphonia = { path = "/home/erikas/ROOT/code/git/Symphonia/symphonia", features = ["all"] }
 rb = "0.4.1"
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 openssl-sys = { version = "0.9.77", features = ["vendored"] }

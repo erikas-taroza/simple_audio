@@ -15,12 +15,16 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 use std::io::{Read, Seek};
+use std::sync::atomic::AtomicBool;
 use std::thread;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
+
+// Used in cpal_output.rs to mute the stream when buffering.
+pub static IS_STREAM_BUFFERING:AtomicBool = AtomicBool::new(false);
 
 const CHUNK_SIZE:usize = 1024 * 128;
 const FETCH_OFFSET:usize = CHUNK_SIZE / 2;
@@ -187,6 +191,7 @@ impl Read for StreamableFile
 
         // Write any new bytes.
         let should_buffer = !self.downloaded.contains(&self.read_position);
+        IS_STREAM_BUFFERING.store(should_buffer, std::sync::atomic::Ordering::SeqCst);
         self.try_write_chunk(should_buffer);
 
         // These are the bytes that we want to read.
