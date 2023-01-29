@@ -1,3 +1,8 @@
+## 1.0.5
+- Add the ability to loop.
+- Update Rust dependencies.
+- Improve Rust codebase with clippy suggestions.
+
 ## 1.0.4
 - Media controllers can take images as bytes.
 - **Android:** Playback not working when reopening app

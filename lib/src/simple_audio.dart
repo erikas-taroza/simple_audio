@@ -223,6 +223,11 @@ class SimpleAudio
         return await _player.stop();
     }
 
+    Future<void> loopPlayback(bool shouldLoop) async
+    {
+        return await _player.loopPlayback(shouldLoop: shouldLoop);
+    }
+
     Future<void> setVolume(double volume) async
     {
         return await _player.setVolume(volume: volume);

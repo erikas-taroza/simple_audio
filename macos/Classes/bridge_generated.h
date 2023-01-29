@@ -69,6 +69,8 @@ void wire_pause__method__Player(int64_t port_, struct wire_Player *that);
 
 void wire_stop__method__Player(int64_t port_, struct wire_Player *that);
 
+void wire_loop_playback__method__Player(int64_t port_, struct wire_Player *that, bool should_loop);
+
 void wire_set_volume__method__Player(int64_t port_, struct wire_Player *that, float volume);
 
 void wire_seek__method__Player(int64_t port_, struct wire_Player *that, uint64_t seconds);
@@ -101,6 +103,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_play__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_pause__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_stop__method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_loop_playback__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_set_volume__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_seek__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_set_metadata__method__Player);

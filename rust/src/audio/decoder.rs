@@ -134,6 +134,12 @@ impl Decoder
                 // An error occurs when the stream
                 // has reached the end of the audio.
                 Err(_) => {
+                    if IS_LOOPING.load(std::sync::atomic::Ordering::SeqCst)
+                    {
+                        *SEEK_TS.write().unwrap() = Some(0);
+                        continue;
+                    }
+
                     has_reached_end = true;
                     break;
                 }
