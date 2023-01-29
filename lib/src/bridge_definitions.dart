@@ -59,6 +59,11 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kStopMethodPlayerConstMeta;
 
+  Future<void> loopPlaybackMethodPlayer(
+      {required Player that, required bool shouldLoop, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kLoopPlaybackMethodPlayerConstMeta;
+
   Future<void> setVolumeMethodPlayer(
       {required Player that, required double volume, dynamic hint});
 
@@ -148,6 +153,12 @@ class Player {
 
   Future<void> stop({dynamic hint}) => bridge.stopMethodPlayer(
         that: this,
+      );
+
+  Future<void> loopPlayback({required bool shouldLoop, dynamic hint}) =>
+      bridge.loopPlaybackMethodPlayer(
+        that: this,
+        shouldLoop: shouldLoop,
       );
 
   Future<void> setVolume({required double volume, dynamic hint}) =>

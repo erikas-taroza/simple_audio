@@ -242,6 +242,9 @@ impl Player
     pub fn stop(&self)
     { Self::internal_stop(); }
 
+    pub fn loop_playback(&self, should_loop:bool)
+    { IS_LOOPING.store(should_loop, std::sync::atomic::Ordering::SeqCst); }
+
     pub fn set_volume(&self, volume:f32)
     { *VOLUME.write().unwrap() = volume; }
 

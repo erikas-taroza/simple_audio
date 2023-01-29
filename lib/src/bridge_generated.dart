@@ -216,6 +216,26 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that"],
       );
 
+  Future<void> loopPlaybackMethodPlayer(
+      {required Player that, required bool shouldLoop, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    var arg1 = shouldLoop;
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_loop_playback__method__Player(port_, arg0, arg1),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kLoopPlaybackMethodPlayerConstMeta,
+      argValues: [that, shouldLoop],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kLoopPlaybackMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "loop_playback__method__Player",
+        argNames: ["that", "shouldLoop"],
+      );
+
   Future<void> setVolumeMethodPlayer(
       {required Player that, required double volume, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
@@ -714,6 +734,26 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
               ffi.Pointer<wire_Player>)>>('wire_stop__method__Player');
   late final _wire_stop__method__Player = _wire_stop__method__PlayerPtr
       .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
+  void wire_loop_playback__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+    bool should_loop,
+  ) {
+    return _wire_loop_playback__method__Player(
+      port_,
+      that,
+      should_loop,
+    );
+  }
+
+  late final _wire_loop_playback__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
+              ffi.Bool)>>('wire_loop_playback__method__Player');
+  late final _wire_loop_playback__method__Player =
+      _wire_loop_playback__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>, bool)>();
 
   void wire_set_volume__method__Player(
     int port_,

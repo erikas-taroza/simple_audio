@@ -172,6 +172,24 @@ fn wire_stop__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Player
         },
     )
 }
+fn wire_loop_playback__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+    should_loop: impl Wire2Api<bool> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "loop_playback__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            let api_should_loop = should_loop.wire2api();
+            move |task_callback| Ok(Player::loop_playback(&api_that, api_should_loop))
+        },
+    )
+}
 fn wire_set_volume__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,
