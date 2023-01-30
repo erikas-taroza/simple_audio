@@ -95,15 +95,17 @@ class SimpleAudio
 
     /// Initialize [SimpleAudio]. This should only be done once in the `main` method.
     /// 
-    /// **[mprisName]** The name of the MPRIS metadata handler. The name has to follow these requirements:
-    /// - Be less than or equal to 255 characters in length.
-    /// - Cannot start with a number.
-    /// - Can only contain these characters: "[A-Z][a-z][0-9]_"
-    /// 
-    /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
-    /// 
     /// **[showMediaNotification]** Whether or not to show the media notification when playing
     /// audio.
+    /// 
+    /// **[dbusName]** The bus name of the MPRIS metadata handler.
+    /// The format is in reverse-DNS style.
+    /// The name has to follow these requirements: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
+    /// 
+    /// If the D-Bus name is `com.erikas.SimpleAudio`, then `com.erikas` is your domain
+    /// and `SimpleAudio` is your app name.
+    /// 
+    /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
     /// 
     /// **[actions]** A list of actions that the media notification will use.
     /// If [showMediaNotification] is false, this value does not matter. Otherwise, you will
@@ -132,8 +134,8 @@ class SimpleAudio
     /// instead of [NotificationActions.rewind] and [NotificationActions.fastForward]
     /// when all 4 values are provided in [actions].
     static Future<void> init({
-        String mprisName = "SimpleAudio",
         bool showMediaNotification = true,
+        String dbusName = "com.erikas.SimpleAudio",
         List<NotificationActions> actions = NotificationActions.values,
         String androidNotificationIconPath = "mipmap/ic_launcher",
         List<int> androidCompactPlaybackActions = const [1, 2, 3],
@@ -148,7 +150,7 @@ class SimpleAudio
             actions: showMediaNotification ?
                 Int32List.fromList(actions.map((e) => e.index).toList())
                 : Int32List(0),
-            mprisName: mprisName,
+            dbusName: dbusName,
             hwnd: Platform.isWindows ? getHWND() : null
         );
 

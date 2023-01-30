@@ -9,7 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 abstract class SimpleAudio {
   Future<Player> newStaticMethodPlayer(
       {required Int32List actions,
-      required String mprisName,
+      required String dbusName,
       int? hwnd,
       dynamic hint});
 
@@ -108,11 +108,11 @@ class Player {
   static Future<Player> newPlayer(
           {required SimpleAudio bridge,
           required Int32List actions,
-          required String mprisName,
+          required String dbusName,
           int? hwnd,
           dynamic hint}) =>
       bridge.newStaticMethodPlayer(
-          actions: actions, mprisName: mprisName, hwnd: hwnd, hint: hint);
+          actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
 
   static Stream<int> playbackStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>

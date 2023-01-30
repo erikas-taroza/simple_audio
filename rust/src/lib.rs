@@ -40,7 +40,7 @@ impl Player
 {
     pub fn new(
         actions:Vec<i32>,
-        mpris_name:String,
+        dbus_name:String,
         hwnd:Option<i64>
     ) -> Player
     {
@@ -48,7 +48,7 @@ impl Player
             actions.iter().map(|i| {
                 Actions::from(*i)
             }).collect::<Vec<Actions>>(),
-            mpris_name,
+            dbus_name,
             hwnd,
             |e| {
                 match e

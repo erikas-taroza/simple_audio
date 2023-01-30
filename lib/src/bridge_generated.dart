@@ -25,18 +25,18 @@ class SimpleAudioImpl implements SimpleAudio {
   SimpleAudioImpl.raw(this._platform);
   Future<Player> newStaticMethodPlayer(
       {required Int32List actions,
-      required String mprisName,
+      required String dbusName,
       int? hwnd,
       dynamic hint}) {
     var arg0 = _platform.api2wire_int_32_list(actions);
-    var arg1 = _platform.api2wire_String(mprisName);
+    var arg1 = _platform.api2wire_String(dbusName);
     var arg2 = _platform.api2wire_opt_box_autoadd_i64(hwnd);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner
           .wire_new__static_method__Player(port_, arg0, arg1, arg2),
       parseSuccessData: (d) => _wire2api_player(d),
       constMeta: kNewStaticMethodPlayerConstMeta,
-      argValues: [actions, mprisName, hwnd],
+      argValues: [actions, dbusName, hwnd],
       hint: hint,
     ));
   }
@@ -44,7 +44,7 @@ class SimpleAudioImpl implements SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "new__static_method__Player",
-        argNames: ["actions", "mprisName", "hwnd"],
+        argNames: ["actions", "dbusName", "hwnd"],
       );
 
   Stream<int> playbackStateStreamStaticMethodPlayer({dynamic hint}) {
@@ -554,13 +554,13 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   void wire_new__static_method__Player(
     int port_,
     ffi.Pointer<wire_int_32_list> actions,
-    ffi.Pointer<wire_uint_8_list> mpris_name,
+    ffi.Pointer<wire_uint_8_list> dbus_name,
     ffi.Pointer<ffi.Int64> hwnd,
   ) {
     return _wire_new__static_method__Player(
       port_,
       actions,
-      mpris_name,
+      dbus_name,
       hwnd,
     );
   }
