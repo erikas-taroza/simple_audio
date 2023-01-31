@@ -24,7 +24,7 @@ pub mod types;
 
 /// Initialize a platform specific metadata handler.
 #[allow(unused_variables)]
-pub fn init<C>(actions:Vec<Actions>, mpris_name:String, hwnd:Option<i64>, callback:C)
+pub fn init<C>(actions:Vec<Actions>, dbus_name:String, hwnd:Option<i64>, callback:C)
 where
     C: Fn(Event) + Send + 'static
 {
@@ -33,7 +33,7 @@ where
     #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
         let mut mpris = mpris::HANDLER.write().unwrap();
-        *mpris = Some(mpris::Mpris::new(actions, mpris_name, callback));
+        *mpris = Some(mpris::Mpris::new(actions, dbus_name, callback));
     }
 
     #[cfg(target_os = "windows")]

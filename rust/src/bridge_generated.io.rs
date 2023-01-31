@@ -5,10 +5,10 @@ use super::*;
 pub extern "C" fn wire_new__static_method__Player(
     port_: i64,
     actions: *mut wire_int_32_list,
-    mpris_name: *mut wire_uint_8_list,
+    dbus_name: *mut wire_uint_8_list,
     hwnd: *mut i64,
 ) {
-    wire_new__static_method__Player_impl(port_, actions, mpris_name, hwnd)
+    wire_new__static_method__Player_impl(port_, actions, dbus_name, hwnd)
 }
 
 #[no_mangle]

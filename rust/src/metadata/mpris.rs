@@ -37,14 +37,14 @@ pub struct Mpris
 
 impl Mpris
 {
-    pub fn new<C>(actions:Vec<Actions>, mpris_name:String, callback:C) -> Self
+    pub fn new<C>(actions:Vec<Actions>, dbus_name:String, callback:C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
         let (tx, rx) = unbounded::<Command>();
         
         thread::spawn(move || {
-            Self::run(actions, mpris_name, rx, callback).unwrap();
+            Self::run(actions, dbus_name, rx, callback).unwrap();
         });
 
         Mpris { tx }
@@ -56,16 +56,18 @@ impl Mpris
     pub fn set_playback_state(&self, state:PlaybackState)
     { self.tx.send(Command::SetPlaybackState(state)).unwrap(); }
 
-    fn run<C>(actions:Vec<Actions>, mpris_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
+    fn run<C>(actions:Vec<Actions>, dbus_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
     where
         C: Fn(Event) + Send + 'static
     {
+        let bus_name = dbus_name.split('.').last().unwrap().to_string();
+
         let callback = Arc::new(Mutex::new(callback));
 
         let conn = Connection::new_session()?;
 
         conn.request_name(
-            format!("org.mpris.MediaPlayer2.{}", mpris_name.to_lowercase()), 
+            format!("org.mpris.MediaPlayer2.{bus_name}"), 
             false, 
             true, 
             false
@@ -78,7 +80,7 @@ impl Mpris
 
         let mp = cr.register("org.mpris.MediaPlayer2", move |e:&mut IfaceBuilder<()>| {
             e.property("Identity")
-                .get(move |_, &mut _| Ok(mpris_name.clone()));
+                .get(move |_, &mut _| Ok(bus_name.clone()));
             e.property("CanQuit")
                 .get(|_, &mut _| Ok(false))
                 .emits_changed_true();
