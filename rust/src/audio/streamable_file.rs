@@ -79,7 +79,7 @@ impl StreamableFile
         let end = (start + CHUNK_SIZE).min(file_size);
 
         let chunk = Client::new().get(url)
-            .header("Range", format!("bytes={start}-{end}"))
+            .header("Range", format!("bytes={start}-{}", end - 1))
             .send().unwrap().bytes().unwrap().to_vec();
         
         tx.send((start, chunk)).unwrap();
@@ -134,7 +134,7 @@ impl StreamableFile
         let closest_range = self.downloaded.get(&self.read_position);
 
         if closest_range.is_none() {
-            return (true, self.read_position.saturating_sub(4096));
+            return (true, self.read_position);
         }
 
         let closest_range = closest_range.unwrap();
@@ -197,8 +197,6 @@ impl Read for StreamableFile
         // These are the bytes that we want to read.
         let bytes = &self.buffer[self.read_position..read_max];
         buf[0..bytes.len()].copy_from_slice(bytes);
-
-        println!("{} {}", self.read_position, chunk_write_pos);
 
         self.read_position += bytes.len();
         Ok(bytes.len())
