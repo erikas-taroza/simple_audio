@@ -76,10 +76,10 @@ impl StreamableFile
     /// Returns the received bytes by sending them via `tx`.
     fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize)
     {
-        let end = (start + CHUNK_SIZE).min(file_size);
+        let end = (start + CHUNK_SIZE).min(file_size) - 1;
 
         let chunk = Client::new().get(url)
-            .header("Range", format!("bytes={start}-{}", end - 1))
+            .header("Range", format!("bytes={start}-{end}"))
             .send().unwrap().bytes().unwrap().to_vec();
         
         tx.send((start, chunk)).unwrap();
