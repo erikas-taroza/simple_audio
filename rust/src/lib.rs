@@ -287,14 +287,14 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://cf-media.sndcdn.com/BLzgGhN4v8el.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vQkx6Z0doTjR2OGVsLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjczNjc2NTE2fX19XX0_&Signature=VMg~IxzOVULRJoZTzyym60JlR285bAr-tjFgkDO9Rw7tlRQ5AXAZMs007TguAErQ~d-2SwA~PwWR4pcnVtZdu9tUpIdB8B7VLrE-tYoVx2k04hrhCtBZkBcGVaEsQgHRlhGBb~egau2KcwLauaGPHzAaTBEMIgO0sQFHQIXPcmtU4BYR~1gE-~ORzuHdWtMeAamYy0FGdI8Bit1vy-K6mwvTbGwJUWa2rBrR5IF5FQ3kZmz0eDtZwYQ29Cu9Tqswy8uNr2yN5l20tnK84Rckzdk6hgXV4Fx4SzfyTrIxcmZqjNIIOyhNxYxSYcliwUQeEirWvKDvdICIiQPeNS-arg__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true);
-        player.set_volume(0.2);
-        thread::sleep(Duration::from_secs(5));
+        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.ogg".to_string(), true);
+        player.set_volume(0.1);
+        thread::sleep(Duration::from_secs(10));
         println!("~~~~~~~~~~~~~~~~");
-        player.seek(50);
+        player.seek(90);
         thread::sleep(Duration::from_secs(10));
-        player.seek(0);
-        thread::sleep(Duration::from_secs(10));
+        player.seek(60);
+        thread::sleep(Duration::from_secs(187));
     }
 
     // The following tests are to check the responsiveness.
