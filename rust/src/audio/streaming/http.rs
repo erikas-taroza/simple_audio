@@ -16,7 +16,7 @@
 
 use std::io::{Read, Seek};
 use std::thread;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
@@ -67,20 +67,6 @@ impl HttpStream
 
 impl Streamable<Self> for HttpStream
 {
-    /// Gets the next chunk in the sequence.
-    /// 
-    /// Returns the received bytes by sending them via `tx`.
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize)
-    {
-        let end = (start + CHUNK_SIZE).min(file_size) - 1;
-
-        let chunk = Client::new().get(url)
-            .header("Range", format!("bytes={start}-{end}"))
-            .send().unwrap().bytes().unwrap().to_vec();
-        
-        tx.send((start, chunk)).unwrap();
-    }
-
     /// Polls all receivers.
     /// 
     /// If there is data to receive, then write it to the buffer.

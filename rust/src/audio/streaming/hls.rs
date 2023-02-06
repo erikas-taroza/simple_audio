@@ -16,7 +16,7 @@
 
 use std::io::{Read, Seek};
 use std::thread;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
@@ -24,9 +24,12 @@ use symphonia::core::io::MediaSource;
 
 use super::streamable::*;
 
+// NOTE: Most of the implementation is the same as HttpStream.
+
 pub struct HlsStream
 {
-    url:String,
+    /// A list of parts with their number, size, and URL.
+    urls:Vec<(usize, usize, String)>,
     buffer:Vec<u8>,
     read_position:usize,
     downloaded:RangeSet<usize>,
@@ -36,27 +39,38 @@ pub struct HlsStream
 
 impl HlsStream
 {
-    pub fn new(url:String) -> Self
+    pub fn new(file:String) -> Self
     {
-        // Get the size of the file we are streaming.
-        let res = Client::new().head(&url)
-            .send()
-            .unwrap();
+        let mut urls = Vec::new();
+        let mut total_size = 0;
 
-        let header = res
-            .headers().get("Content-Length")
-            .unwrap();
-
-        let size:usize = header
-            .to_str()
-            .unwrap()
-            .parse()
-            .unwrap();
-
-            HlsStream
+        for line in file.lines()
         {
-            url,
-            buffer: vec![0; size],
+            if !line.contains("http") { continue; }
+
+            // Get the size of the part.
+            let res = Client::new().head(line)
+                .send()
+                .unwrap();
+
+            let header = res
+                .headers().get("Content-Length")
+                .unwrap();
+
+            let size:usize = header
+                .to_str()
+                .unwrap()
+                .parse()
+                .unwrap();
+
+            total_size += size;
+            urls.push((urls.len(), size, line.to_string()));
+        }
+
+        HlsStream
+        {
+            urls,
+            buffer: vec![0; total_size],
             read_position: 0,
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
@@ -67,20 +81,6 @@ impl HlsStream
 
 impl Streamable<Self> for HlsStream
 {
-    /// Gets the next chunk in the sequence.
-    /// 
-    /// Returns the received bytes by sending them via `tx`.
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize)
-    {
-        let end = (start + CHUNK_SIZE).min(file_size) - 1;
-
-        let chunk = Client::new().get(url)
-            .header("Range", format!("bytes={start}-{end}"))
-            .send().unwrap().bytes().unwrap().to_vec();
-        
-        tx.send((start, chunk)).unwrap();
-    }
-
     /// Polls all receivers.
     /// 
     /// If there is data to receive, then write it to the buffer.
