@@ -85,7 +85,7 @@ impl CpalOutput
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
-        let ring_len = ((1000 * spec.rate as usize) / 1000) * channels;
+        let ring_len = ((200 * spec.rate as usize) / 1000) * channels;
         let ring_buffer:SpscRb<f32> = SpscRb::new(ring_len);
         // Create the buffers for the stream.
         let ring_buffer_reader = ring_buffer.consumer();
@@ -175,7 +175,7 @@ impl CpalOutput
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
-        { samples = &samples[written..]; println!("loop"); }
+        { samples = &samples[written..]; }
     }
 
     /// Clean up after playback is done.

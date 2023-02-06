@@ -27,7 +27,6 @@ use symphonia::core::io::MediaSource;
 pub static IS_STREAM_BUFFERING:AtomicBool = AtomicBool::new(false);
 
 const CHUNK_SIZE:usize = 1024 * 128;
-const FETCH_OFFSET:usize = CHUNK_SIZE / 2;
 
 pub struct StreamableFile
 {
@@ -129,7 +128,7 @@ impl StreamableFile
     /// 
     /// Returns `true` and the start index of the chunk
     /// if one should be downloaded.
-    fn should_get_chunk(&self, buf_len:usize) -> (bool, usize)
+    fn should_get_chunk(&self) -> (bool, usize)
     {
         let closest_range = self.downloaded.get(&self.read_position);
 
@@ -145,7 +144,13 @@ impl StreamableFile
         // it is unnecessary to request another chunk.
         let is_already_downloading = self.requested.contains(&(self.read_position + CHUNK_SIZE));
 
-        let should_get_chunk = self.read_position + buf_len >= closest_range.end - FETCH_OFFSET
+        // Basically, if the condition below is true,
+        // then a chunk needs to be downloaded to ensure
+        // that there are at least 2 chunks ahead of the read_position.
+        // This reduces buffering in the FLAC and OGG formats.
+        let prefetch_pos = self.read_position + (CHUNK_SIZE * 2);
+
+        let should_get_chunk = prefetch_pos >= closest_range.end
             && !is_already_downloading
             && closest_range.end != self.buffer.len();
         
@@ -169,7 +174,7 @@ impl Read for StreamableFile
 
         // If the position we are reading at is close
         // to the last downloaded chunk, then fetch more.
-        let (should_get_chunk, chunk_write_pos) = self.should_get_chunk(buf.len());
+        let (should_get_chunk, chunk_write_pos) = self.should_get_chunk();
         
         println!("Read: read_pos[{}] read_max[{read_max}] buf[{}] write_pos[{chunk_write_pos}] download[{should_get_chunk}]", self.read_position, buf.len());
         if should_get_chunk

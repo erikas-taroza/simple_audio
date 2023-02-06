@@ -287,7 +287,9 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.ogg".to_string(), true);
+        // You can change the file extension here for different formats ------v
+        // https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/audio-samples.html
+        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp4".to_string(), true);
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
         println!("~~~~~~~~~~~~~~~~");
