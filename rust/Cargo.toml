@@ -1,13 +1,13 @@
 [package]
 name = "simple_audio"
-version = "1.0.4"
+version = "1.0.5"
 edition = "2021"
 
 [lib]
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-cpal = { git = "https://github.com/RustAudio/cpal" }
+cpal = "0.15.0"
 flutter_rust_bridge = "1.57.0"
 reqwest = { version = "0.11.12", features = ["blocking"] }
 # symphonia = { version = "0.5.2", features = ["all"] }
