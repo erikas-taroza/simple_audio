@@ -28,7 +28,7 @@ pub static IS_STREAM_BUFFERING:AtomicBool = AtomicBool::new(false);
 
 const CHUNK_SIZE:usize = 1024 * 128;
 
-pub struct StreamableFile
+pub struct HttpStream
 {
     url:String,
     buffer:Vec<u8>,
@@ -38,7 +38,7 @@ pub struct StreamableFile
     receivers:Vec<(u128, Receiver<(usize, Vec<u8>)>)>
 }
 
-impl StreamableFile
+impl HttpStream
 {
     pub fn new(url:String) -> Self
     {
@@ -57,7 +57,7 @@ impl StreamableFile
             .parse()
             .unwrap();
 
-        StreamableFile
+        HttpStream
         {
             url,
             buffer: vec![0; size],
@@ -156,7 +156,7 @@ impl StreamableFile
     }
 }
 
-impl Read for StreamableFile
+impl Read for HttpStream
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
@@ -206,7 +206,7 @@ impl Read for StreamableFile
     }
 }
 
-impl Seek for StreamableFile
+impl Seek for HttpStream
 {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64>
     {
@@ -245,10 +245,10 @@ impl Seek for StreamableFile
     }
 }
 
-unsafe impl Send for StreamableFile {}
-unsafe impl Sync for StreamableFile {}
+unsafe impl Send for HttpStream {}
+unsafe impl Sync for HttpStream {}
 
-impl MediaSource for StreamableFile
+impl MediaSource for HttpStream
 {
     fn is_seekable(&self) -> bool {
         true

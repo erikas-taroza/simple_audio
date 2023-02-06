@@ -21,7 +21,7 @@ mod metadata;
 
 use std::{fs::File, io::Cursor, thread};
 
-use audio::{decoder::Decoder, controls::*, streamable_file::StreamableFile};
+use audio::{decoder::Decoder, controls::*, streaming::http::HttpStream};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
@@ -126,7 +126,7 @@ impl Player
             if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
             // Everything but m3u/m3u8
             // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
-            else { Box::new(StreamableFile::new(path)) }
+            else { Box::new(HttpStream::new(path)) }
         } else { Box::new(File::open(path).unwrap()) };
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
