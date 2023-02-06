@@ -20,7 +20,7 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}};
+use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streamable_file::IS_STREAM_BUFFERING};
 
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number
@@ -98,15 +98,22 @@ impl CpalOutput
         let stream = device.build_output_stream(
             &config,
             move |data:&mut [f32], _:&cpal::OutputCallbackInfo| {
+                let buffering = IS_STREAM_BUFFERING.load(std::sync::atomic::Ordering::SeqCst);
+
                 // "Pause" the stream.
                 // What this really does is mute the stream.
                 // With only a return statement, the current sample still plays.
                 // CPAL states that `stream.pause()` may not work for all devices.
                 // `stream.pause()` is the ideal way to play/pause.
-                if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
-                    && cfg!(target_os = "windows")
+                if (!IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+                    && cfg!(target_os = "windows")) || buffering
                 {
                     data.iter_mut().for_each(|s| *s = 0.0);
+                    
+                    if buffering {
+                        let _ = ring_buffer_reader.skip_pending();
+                    }
+
                     return;
                 }
 

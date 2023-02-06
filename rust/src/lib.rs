@@ -21,7 +21,7 @@ mod metadata;
 
 use std::{fs::File, io::Cursor, thread};
 
-use audio::{decoder::Decoder, controls::*};
+use audio::{decoder::Decoder, controls::*, streamable_file::StreamableFile};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
@@ -125,7 +125,8 @@ impl Player
         let source:Box<dyn MediaSource> = if path.contains("http") {
             if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
             // Everything but m3u/m3u8
-            else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
+            // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
+            else { Box::new(StreamableFile::new(path)) }
         } else { Box::new(File::open(path).unwrap()) };
 
         IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
@@ -137,7 +138,7 @@ impl Player
         }
 
         thread::spawn(move || {
-            Decoder::default().open_stream(source);
+            Decoder::default().decode(source);
         });
     }
 
@@ -286,8 +287,16 @@ mod tests
     fn open_network_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg".to_string(), true);
-        thread::sleep(Duration::from_secs(7));
+        // You can change the file extension here for different formats ------v
+        // https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/audio-samples.html
+        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp4".to_string(), true);
+        player.set_volume(0.1);
+        thread::sleep(Duration::from_secs(10));
+        println!("~~~~~~~~~~~~~~~~");
+        player.seek(90);
+        thread::sleep(Duration::from_secs(10));
+        player.seek(60);
+        thread::sleep(Duration::from_secs(187));
     }
 
     // The following tests are to check the responsiveness.

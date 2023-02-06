@@ -16,5 +16,6 @@
 
 pub mod decoder;
 pub mod controls;
+pub mod streamable_file;
 mod cpal_output;
 mod dsp;
