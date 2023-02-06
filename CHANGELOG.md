@@ -1,3 +1,6 @@
+## 1.0.6
+- Streaming with HTTP Range header for network files.
+
 ## 1.0.5
 - Add the ability to loop.
 - Update Rust dependencies.
