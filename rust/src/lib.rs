@@ -21,7 +21,7 @@ mod metadata;
 
 use std::{fs::File, io::Cursor, thread};
 
-use audio::{decoder::Decoder, controls::*, streaming::http::HttpStream};
+use audio::{decoder::Decoder, controls::*, streaming::{http::HttpStream, hls::HlsStream}};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
@@ -123,9 +123,9 @@ impl Player
     pub fn open(&self, path:String, autoplay:bool)
     {
         let source:Box<dyn MediaSource> = if path.contains("http") {
-            if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
+            // if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
+            if path.contains("m3u") { Box::new(HlsStream::new(path)) }
             // Everything but m3u/m3u8
-            // else { Box::new(Cursor::new(Self::get_bytes_from_network(path))) }
             else { Box::new(HttpStream::new(path)) }
         } else { Box::new(File::open(path).unwrap()) };
 
@@ -290,6 +290,20 @@ mod tests
         // You can change the file extension here for different formats ------v
         // https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/audio-samples.html
         player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp4".to_string(), true);
+        player.set_volume(0.1);
+        thread::sleep(Duration::from_secs(10));
+        println!("~~~~~~~~~~~~~~~~");
+        player.seek(90);
+        thread::sleep(Duration::from_secs(10));
+        player.seek(60);
+        thread::sleep(Duration::from_secs(187));
+    }
+
+    #[test]
+    fn open_hls_and_play()
+    {
+        let player = crate::Player::default();
+        player.open("https://cf-hls-media.sndcdn.com/playlist/x7uSGJp4rku7.128.mp3/playlist.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLWhscy1tZWRpYS5zbmRjZG4uY29tL3BsYXlsaXN0L3g3dVNHSnA0cmt1Ny4xMjgubXAzL3BsYXlsaXN0Lm0zdTgqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjc1Njc0NDY2fX19XX0_&Signature=COdS6Qvk7rtCzl~zAj30D-BQU7br6bz2-gd~~E6rFge038ccjFAS9ZwtNFi1EhRoXEmSLcM-GZCy3bQieq5-qsjF4vR699cxnFJNIhKUiTbc~SRKhbW0U12W~-aNjyhTRoBCjj92ymLurUUA6k9FGY87oeL5Cmcd-ZbgHi-gzuCmCsp9cBwO5mjTyxks5TkPn8-S0cBMuBzJloOsarr~IxcqVoYv7yIx8rVwN6n8K75KPGhCAwakkfKkDBxLsPK0wQ25wFDeEtWviOu~DbPsfJUlxSGG6Y7DyimpDEOok6j-pGU9urOdhoVsY1NFblN-BPlKPLkgMVq-KmgSRB9A6g__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true);
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
         println!("~~~~~~~~~~~~~~~~");

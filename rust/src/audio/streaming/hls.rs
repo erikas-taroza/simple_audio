@@ -16,7 +16,7 @@
 
 use std::io::{Read, Seek};
 use std::thread;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
@@ -28,8 +28,8 @@ use super::streamable::*;
 
 pub struct HlsStream
 {
-    /// A list of parts with their number, size, and URL.
-    urls:Vec<(usize, usize, String)>,
+    /// A list of parts with their size and URL.
+    urls:Vec<(usize, String)>,
     buffer:Vec<u8>,
     read_position:usize,
     downloaded:RangeSet<usize>,
@@ -39,10 +39,13 @@ pub struct HlsStream
 
 impl HlsStream
 {
-    pub fn new(file:String) -> Self
+    pub fn new(url:String) -> Self
     {
         let mut urls = Vec::new();
         let mut total_size = 0;
+
+        let file = Client::new().get(url)
+            .send().unwrap().text().unwrap();
 
         for line in file.lines()
         {
@@ -64,7 +67,7 @@ impl HlsStream
                 .unwrap();
 
             total_size += size;
-            urls.push((urls.len(), size, line.to_string()));
+            urls.push((size, line.to_string()));
         }
 
         HlsStream
@@ -81,6 +84,17 @@ impl HlsStream
 
 impl Streamable<Self> for HlsStream
 {
+    /// Gets the next chunk in the sequence.
+    /// 
+    /// Returns the received bytes by sending them via `tx`.
+    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, _:usize)
+    {
+        let chunk = Client::new().get(url)
+            .send().unwrap().bytes().unwrap().to_vec();
+        
+        tx.send((start, chunk)).unwrap();
+    }
+
     /// Polls all receivers.
     /// 
     /// If there is data to receive, then write it to the buffer.
@@ -176,9 +190,22 @@ impl Read for HlsStream
         // println!("Read: read_pos[{}] read_max[{read_max}] buf[{}] write_pos[{chunk_write_pos}] download[{should_get_chunk}]", self.read_position, buf.len());
         if should_get_chunk
         {
-            self.requested.insert(chunk_write_pos..chunk_write_pos + CHUNK_SIZE + 1);
+            // Find the correct part by adding all the byte lengths until
+            // the total is more than the read_position.
+            let mut part:(usize, String) = self.urls.first().unwrap().clone();
+            let mut pos = 0;
+            for (size, url) in &self.urls
+            {
+                pos += size;
+                if self.read_position < pos {
+                    part = (*size, url.to_string());
+                    break;
+                }
+            };
 
-            let url = self.url.clone();
+            self.requested.insert(chunk_write_pos..chunk_write_pos + part.0 + 1);
+
+            let url = part.1.clone();
             let file_size = self.buffer.len();
             let (tx, rx) = channel();
 
