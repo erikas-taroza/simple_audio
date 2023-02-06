@@ -16,3 +16,4 @@
 
 pub mod http;
 pub mod hls;
+pub mod streamable;

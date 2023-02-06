@@ -15,7 +15,6 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 use std::io::{Read, Seek};
-use std::sync::atomic::AtomicBool;
 use std::thread;
 use std::sync::mpsc::{channel, Receiver, Sender};
 
@@ -23,10 +22,7 @@ use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-// Used in cpal_output.rs to mute the stream when buffering.
-pub static IS_STREAM_BUFFERING:AtomicBool = AtomicBool::new(false);
-
-const CHUNK_SIZE:usize = 1024 * 128;
+use super::streamable::*;
 
 pub struct HttpStream
 {
@@ -67,7 +63,10 @@ impl HttpStream
             receivers: Vec::new()
         }
     }
+}
 
+impl Streamable<Self> for HttpStream
+{
     /// Gets the next chunk in the sequence.
     /// 
     /// Returns the received bytes by sending them via `tx`.
