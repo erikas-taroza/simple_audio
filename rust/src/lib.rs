@@ -19,13 +19,12 @@ mod utils;
 mod audio;
 mod metadata;
 
-use std::{fs::File, io::Cursor, thread};
+use std::{fs::File, thread};
 
 use audio::{decoder::Decoder, controls::*, streaming::{http::HttpStream, hls::HlsStream}};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
-use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::{playback_state_stream::*, progress_state_stream::*, metadata_callback_stream::*};
@@ -123,9 +122,7 @@ impl Player
     pub fn open(&self, path:String, autoplay:bool)
     {
         let source:Box<dyn MediaSource> = if path.contains("http") {
-            // if path.contains("m3u") { Box::new(Self::open_m3u(path)) }
             if path.contains("m3u") { Box::new(HlsStream::new(path)) }
-            // Everything but m3u/m3u8
             else { Box::new(HttpStream::new(path)) }
         } else { Box::new(File::open(path).unwrap()) };
 
@@ -140,42 +137,6 @@ impl Player
         thread::spawn(move || {
             Decoder::default().decode(source);
         });
-    }
-
-    fn get_bytes_from_network(url:String) -> Vec<u8>
-    {
-        let response = Client::new().get(url.clone())
-            .header("Range", "bytes=0-")
-            .send()
-            .unwrap_or_else(|_| panic!("ERR: Could not open {url}"));
-            
-        response.bytes().unwrap().to_vec()
-    }
-
-    /// This doesn't support all m3u files. It only supports files that have parts
-    /// of a whole song in mp3 format. For example:
-    /// - https://some-domain.com/part1.mp3
-    /// - https://some-domain.com/part2.mp3
-    /// - https://some-domain.com/part3.mp3
-    /// 
-    /// Which then gets combined into a single byte array.
-    fn open_m3u(url:String) -> Cursor<Vec<u8>>
-    {
-        let mut total_data = Vec::new();
-
-        let m3u_content = Client::new().get(url.clone())
-            .header("Range", "bytes=0-")
-            .send()
-            .unwrap_or_else(|_| panic!("ERR: Could not open {url}"))
-            .text().expect("ERR: Could not read content of M3U file.");
-
-        for line in m3u_content.split('\n').collect::<Vec<&str>>()
-        {
-            if !line.contains("http") { continue; }
-            total_data.append(&mut Self::get_bytes_from_network(line.to_string()));
-        }
-
-        Cursor::new(total_data)
     }
 
     /// Allows for access in other places
@@ -292,7 +253,6 @@ mod tests
         player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp4".to_string(), true);
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
-        println!("~~~~~~~~~~~~~~~~");
         player.seek(90);
         thread::sleep(Duration::from_secs(10));
         player.seek(60);
@@ -303,10 +263,9 @@ mod tests
     fn open_hls_and_play()
     {
         let player = crate::Player::default();
-        player.open("https://cf-hls-media.sndcdn.com/playlist/x7uSGJp4rku7.128.mp3/playlist.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLWhscy1tZWRpYS5zbmRjZG4uY29tL3BsYXlsaXN0L3g3dVNHSnA0cmt1Ny4xMjgubXAzL3BsYXlsaXN0Lm0zdTgqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjc1Njc0NDY2fX19XX0_&Signature=COdS6Qvk7rtCzl~zAj30D-BQU7br6bz2-gd~~E6rFge038ccjFAS9ZwtNFi1EhRoXEmSLcM-GZCy3bQieq5-qsjF4vR699cxnFJNIhKUiTbc~SRKhbW0U12W~-aNjyhTRoBCjj92ymLurUUA6k9FGY87oeL5Cmcd-ZbgHi-gzuCmCsp9cBwO5mjTyxks5TkPn8-S0cBMuBzJloOsarr~IxcqVoYv7yIx8rVwN6n8K75KPGhCAwakkfKkDBxLsPK0wQ25wFDeEtWviOu~DbPsfJUlxSGG6Y7DyimpDEOok6j-pGU9urOdhoVsY1NFblN-BPlKPLkgMVq-KmgSRB9A6g__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true);
+        player.open("https://cf-hls-media.sndcdn.com/playlist/x7uSGJp4rku7.128.mp3/playlist.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLWhscy1tZWRpYS5zbmRjZG4uY29tL3BsYXlsaXN0L3g3dVNHSnA0cmt1Ny4xMjgubXAzL3BsYXlsaXN0Lm0zdTgqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjc1ODA1NTM2fX19XX0_&Signature=Cd6o8KT6AEoLaIHok~438sourFeoHywCDdG09MS38qxmWLsKyJU-eFHOdh8jccvfPaWfjYkEEqfnpp6EMINXP3f99GAwWFPGMrp43lqz2JAL5MBUAc1plLLm1KV~t5Vy5ON6M1X~Fj6nFV7vdD7mGR84lfeafFmXBP4U4oZATI9GoPrUkEgVtCViDg6kBMVKk77e144LFwzZtkiSHj-S7umU5Qf9r2lDCqYaHVVoWSMtJBWMXoKQZCjdR5e6pqINcRQA-348wX8C9bonQGeoCZ3xRQWPq0ZtznmDKdZ-p91YJL8o4LNSPOMreu-ELsXhoftd7iKpZoG7~YwX2Oxg5A__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true);
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
-        println!("~~~~~~~~~~~~~~~~");
         player.seek(90);
         thread::sleep(Duration::from_secs(10));
         player.seek(60);
