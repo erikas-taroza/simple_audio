@@ -111,13 +111,6 @@ impl Streamable<Self> for HlsStream
                 Some((position, chunk)) => {
                     let end = position + chunk.len();
 
-                    // During testing, the buffer wasn't sized correctly.
-                    // In case there is more valid data than the buffer
-                    // can hold, then expand it to prevent errors.
-                    if end > self.buffer.len() {
-                        self.buffer.append(&mut vec![0; end - self.buffer.len()]);
-                    }
-
                     if position != end {
                         self.buffer[position..end].copy_from_slice(chunk.as_slice());
                         self.downloaded.insert(position..end);
@@ -167,23 +160,35 @@ impl Read for HlsStream
         {
             // Find the correct part by checking if its range contains the
             // `chunk_write_pos`.
-            let (range, url) = self.urls.iter()
-                .find(|(range, _)| range.contains(&chunk_write_pos))
-                .unwrap();
+            let part = self.urls.iter()
+                .find(|(range, _)| range.contains(&chunk_write_pos));
 
-            self.requested.insert(chunk_write_pos..chunk_write_pos + range.clone().count() + 1);
+            if let Some((range, url)) = part
+            {
+                self.requested.insert(chunk_write_pos..chunk_write_pos + range.clone().count() + 1);
 
-            let url = url.clone();
-            let file_size = self.buffer.len();
-            let (tx, rx) = channel();
+                let url = url.clone();
+                let file_size = self.buffer.len();
+                let (tx, rx) = channel();
 
-            let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
-                .unwrap().as_millis();
-            self.receivers.push((id, rx));
+                let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+                    .unwrap().as_millis();
+                self.receivers.push((id, rx));
 
-            thread::spawn(move || {
-                Self::read_chunk(tx, url, chunk_write_pos, file_size);
-            });
+                thread::spawn(move || {
+                    Self::read_chunk(tx, url, chunk_write_pos, file_size);
+                });
+
+                // Because the sizes of the parts vary, `should_get_chunk` may
+                // still return true (it checks based on `CHUNK_SIZE`).
+                // This would cause an issue where the beginning of the audio
+                // will be written again, but a little later causing a replay.
+                // To prevent this, remove the downloaded
+                // part so that the `find()` call above returns None.
+                let index = self.urls.iter()
+                    .position(|x| x == (&part).unwrap()).unwrap();
+                self.urls.remove(index);
+            }
         }
 
         let should_buffer = !self.downloaded.contains(&self.read_position);
