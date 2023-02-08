@@ -1,5 +1,6 @@
 ## 1.0.6
 - Streaming with HTTP Range header for network files.
+- Stream HLS files by downloading the given parts on demand.
 
 ## 1.0.5
 - Add the ability to loop.
