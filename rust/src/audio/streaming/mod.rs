@@ -17,3 +17,11 @@
 pub mod http;
 pub mod hls;
 pub mod streamable;
+
+/// A type that holds an ID and a `std::sync::mpsc::Receiver`.
+/// Used for multithreaded download of audio data.
+struct Receiver
+{
+    id: u128,
+    receiver: std::sync::mpsc::Receiver<(usize, Vec<u8>)>
+}

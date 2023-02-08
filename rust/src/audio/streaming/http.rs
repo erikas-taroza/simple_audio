@@ -16,13 +16,13 @@
 
 use std::io::{Read, Seek};
 use std::thread;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Sender};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use super::streamable::*;
+use super::{streamable::*, Receiver};
 
 pub struct HttpStream
 {
@@ -31,7 +31,7 @@ pub struct HttpStream
     read_position:usize,
     downloaded:RangeSet<usize>,
     requested:RangeSet<usize>,
-    receivers:Vec<(u128, Receiver<(usize, Vec<u8>)>)>
+    receivers:Vec<Receiver>
 }
 
 impl HttpStream
@@ -90,13 +90,13 @@ impl Streamable<Self> for HttpStream
     {
         let mut completed_downloads = Vec::new();
 
-        for (id, rx) in &self.receivers
+        for Receiver { id, receiver } in &self.receivers
         {
             // Block on the first chunk or when buffering.
             // Buffering fixes the issue with seeking on MP3 (no blocking on data).
             let result = if self.downloaded.is_empty() || should_buffer {
-                rx.recv().ok()
-            } else { rx.try_recv().ok() };
+                receiver.recv().ok()
+            } else { receiver.try_recv().ok() };
 
             match result
             {
@@ -117,7 +117,7 @@ impl Streamable<Self> for HttpStream
         }
 
         // Remove completed receivers.
-        self.receivers.retain(|(id, _)| !completed_downloads.contains(&id));
+        self.receivers.retain(|receiver| !completed_downloads.contains(&receiver.id));
     }
 
     /// Determines if a chunk should be downloaded by getting
@@ -180,11 +180,11 @@ impl Read for HttpStream
 
             let url = self.url.clone();
             let file_size = self.buffer.len();
-            let (tx, rx) = channel();
+            let (tx, receiver) = channel();
 
             let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
                 .unwrap().as_millis();
-            self.receivers.push((id, rx));
+            self.receivers.push(Receiver { id, receiver });
 
             thread::spawn(move || {
                 Self::read_chunk(tx, url, chunk_write_pos, file_size);
