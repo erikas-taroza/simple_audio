@@ -165,9 +165,10 @@ impl Read for HlsStream
 
             if let Some((range, url)) = part
             {
-                self.requested.insert(chunk_write_pos..chunk_write_pos + range.clone().count() + 1);
+                self.requested.insert(range.clone());
 
                 let url = url.clone();
+                let start = range.start;
                 let file_size = self.buffer.len();
                 let (tx, rx) = channel();
 
@@ -176,7 +177,7 @@ impl Read for HlsStream
                 self.receivers.push((id, rx));
 
                 thread::spawn(move || {
-                    Self::read_chunk(tx, url, chunk_write_pos, file_size);
+                    Self::read_chunk(tx, url, start, file_size);
                 });
 
                 // Because the sizes of the parts vary, `should_get_chunk` may
