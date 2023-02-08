@@ -14,8 +14,17 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-pub mod decoder;
-pub mod controls;
-pub mod streaming;
-mod cpal_output;
-mod dsp;
+use std::{io::{Read, Seek}, sync::{atomic::AtomicBool, mpsc::Sender}};
+
+use symphonia::core::io::MediaSource;
+
+// Used in cpal_output.rs to mute the stream when buffering.
+pub static IS_STREAM_BUFFERING:AtomicBool = AtomicBool::new(false);
+pub const CHUNK_SIZE:usize = 1024 * 128;
+
+pub trait Streamable<T: Read + Seek + Send + Sync + MediaSource>
+{
+    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize);
+    fn try_write_chunk(&mut self, should_buffer:bool);
+    fn should_get_chunk(&self) -> (bool, usize);
+}

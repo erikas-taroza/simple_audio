@@ -15,30 +15,26 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 use std::io::{Read, Seek};
-use std::sync::atomic::AtomicBool;
 use std::thread;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Sender};
 
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-// Used in cpal_output.rs to mute the stream when buffering.
-pub static IS_STREAM_BUFFERING:AtomicBool = AtomicBool::new(false);
+use super::{streamable::*, Receiver};
 
-const CHUNK_SIZE:usize = 1024 * 128;
-
-pub struct StreamableFile
+pub struct HttpStream
 {
     url:String,
     buffer:Vec<u8>,
     read_position:usize,
     downloaded:RangeSet<usize>,
     requested:RangeSet<usize>,
-    receivers:Vec<(u128, Receiver<(usize, Vec<u8>)>)>
+    receivers:Vec<Receiver>
 }
 
-impl StreamableFile
+impl HttpStream
 {
     pub fn new(url:String) -> Self
     {
@@ -57,7 +53,7 @@ impl StreamableFile
             .parse()
             .unwrap();
 
-        StreamableFile
+        HttpStream
         {
             url,
             buffer: vec![0; size],
@@ -67,7 +63,10 @@ impl StreamableFile
             receivers: Vec::new()
         }
     }
+}
 
+impl Streamable<Self> for HttpStream
+{
     /// Gets the next chunk in the sequence.
     /// 
     /// Returns the received bytes by sending them via `tx`.
@@ -91,13 +90,13 @@ impl StreamableFile
     {
         let mut completed_downloads = Vec::new();
 
-        for (id, rx) in &self.receivers
+        for Receiver { id, receiver } in &self.receivers
         {
             // Block on the first chunk or when buffering.
             // Buffering fixes the issue with seeking on MP3 (no blocking on data).
             let result = if self.downloaded.is_empty() || should_buffer {
-                rx.recv().ok()
-            } else { rx.try_recv().ok() };
+                receiver.recv().ok()
+            } else { receiver.try_recv().ok() };
 
             match result
             {
@@ -118,7 +117,7 @@ impl StreamableFile
         }
 
         // Remove completed receivers.
-        self.receivers.retain(|(id, _)| !completed_downloads.contains(&id));
+        self.receivers.retain(|receiver| !completed_downloads.contains(&receiver.id));
     }
 
     /// Determines if a chunk should be downloaded by getting
@@ -156,7 +155,7 @@ impl StreamableFile
     }
 }
 
-impl Read for StreamableFile
+impl Read for HttpStream
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
@@ -181,11 +180,11 @@ impl Read for StreamableFile
 
             let url = self.url.clone();
             let file_size = self.buffer.len();
-            let (tx, rx) = channel();
+            let (tx, receiver) = channel();
 
             let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
                 .unwrap().as_millis();
-            self.receivers.push((id, rx));
+            self.receivers.push(Receiver { id, receiver });
 
             thread::spawn(move || {
                 Self::read_chunk(tx, url, chunk_write_pos, file_size);
@@ -206,7 +205,7 @@ impl Read for StreamableFile
     }
 }
 
-impl Seek for StreamableFile
+impl Seek for HttpStream
 {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64>
     {
@@ -245,10 +244,10 @@ impl Seek for StreamableFile
     }
 }
 
-unsafe impl Send for StreamableFile {}
-unsafe impl Sync for StreamableFile {}
+unsafe impl Send for HttpStream {}
+unsafe impl Sync for HttpStream {}
 
-impl MediaSource for StreamableFile
+impl MediaSource for HttpStream
 {
     fn is_seekable(&self) -> bool {
         true

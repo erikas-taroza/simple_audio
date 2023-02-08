@@ -20,7 +20,7 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streamable_file::IS_STREAM_BUFFERING};
+use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streaming::streamable::IS_STREAM_BUFFERING};
 
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number

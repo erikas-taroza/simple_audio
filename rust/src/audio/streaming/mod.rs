@@ -14,8 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-pub mod decoder;
-pub mod controls;
-pub mod streaming;
-mod cpal_output;
-mod dsp;
+pub mod http;
+pub mod hls;
+pub mod streamable;
+
+/// A type that holds an ID and a `std::sync::mpsc::Receiver`.
+/// Used for multithreaded download of audio data.
+struct Receiver
+{
+    id: u128,
+    receiver: std::sync::mpsc::Receiver<(usize, Vec<u8>)>
+}
