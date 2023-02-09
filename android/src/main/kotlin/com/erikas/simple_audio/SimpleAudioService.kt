@@ -42,7 +42,7 @@ private const val NOTIFICATION_ID:Int = 777
 class SimpleAudioService : MediaBrowserServiceCompat()
 {
     private var mediaSession:MediaSessionCompat? = null
-    private lateinit var playbackState:PlaybackStateCompat.Builder
+    private var playbackState:PlaybackStateCompat.Builder? = null
 
     // Set in the init callback in SimpleAudioPlugin.kt
     var iconPath:String = "mipmap/ic_launcher"
@@ -169,7 +169,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
             val metadataBuilder = MediaMetadataCompat.Builder()
 
-            setPlaybackState(playbackState.build())
+            setPlaybackState(playbackState?.build())
             setMetadata(metadataBuilder.build())
             setCallback(SimpleAudioServiceCallback())
             setSessionToken(sessionToken)
@@ -197,7 +197,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         }
 
         // Start this service as a foreground service by using the notification.
-        startForeground(NOTIFICATION_ID, buildNotification())
+        //startForeground(NOTIFICATION_ID, buildNotification())
     }
 
     fun kill()
@@ -205,7 +205,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         mediaSession?.isActive = false
         mediaSession?.release()
         mediaSession = null
-        stopForeground(true)
+        //stopForeground(true)
+        getNotificationManager().cancel(NOTIFICATION_ID)
         stopSelf()
     }
 
@@ -245,7 +246,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             if(duration != null) putLong(METADATA_KEY_DURATION, duration.toLong() * 1000)
         }
 
-        mediaSession!!.setMetadata(metadataBuilder.build())
+        mediaSession?.setMetadata(metadataBuilder.build())
         getNotificationManager().notify(NOTIFICATION_ID, buildNotification())
     }
 
@@ -271,8 +272,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             }
         }
 
-        playbackState.setState(translatedState, (position?.toLong() ?: 0) * 1000, 1.0f)
-        mediaSession!!.setPlaybackState(playbackState.build())
+        playbackState?.setState(translatedState, (position?.toLong() ?: 0) * 1000, 1.0f)
+        mediaSession?.setPlaybackState(playbackState?.build())
         getNotificationManager().notify(NOTIFICATION_ID, buildNotification())
     }
 }

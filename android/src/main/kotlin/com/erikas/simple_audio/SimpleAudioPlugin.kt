@@ -53,13 +53,6 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
     {
-        // Android doesn't truly stop the foreground service.
-        // Calling stop makes it so that the user cannot resume
-        // playback. Pause the stream instead.
-        channel.invokeMethod("pause", null)
-        // For some reason, calling pause sometimes doesn't work
-        // without this delay. It works when calling stop.
-        Thread.sleep(50)
         simpleAudioService?.kill()
         simpleAudioService = null
 
