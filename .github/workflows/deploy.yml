@@ -1,9 +1,9 @@
 name: Build & Deploy Rust Libraries
 
 on:
-  push:
-    branches:
-      - master
+#   push:
+#     branches:
+#       - master
   workflow_dispatch:
       
 jobs:
