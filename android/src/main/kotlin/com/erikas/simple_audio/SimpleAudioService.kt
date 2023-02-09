@@ -73,6 +73,11 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         simpleAudioService = this
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        this.kill()
+    }
+
     private fun getNotificationManager():NotificationManager
     { return getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
 
@@ -197,7 +202,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         }
 
         // Start this service as a foreground service by using the notification.
-        //startForeground(NOTIFICATION_ID, buildNotification())
+        startForeground(NOTIFICATION_ID, buildNotification())
     }
 
     fun kill()
@@ -205,8 +210,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         mediaSession?.isActive = false
         mediaSession?.release()
         mediaSession = null
-        //stopForeground(true)
-        getNotificationManager().cancel(NOTIFICATION_ID)
+        stopForeground(true)
         stopSelf()
     }
 

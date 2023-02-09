@@ -83,7 +83,9 @@ You will need to edit 2 files located in the ``android/app/src/main`` directory.
   
   <!-- This is required if you want to be able to see the notification. -->
   <service
-      android:name="com.erikas.simple_audio.SimpleAudioService">
+      android:name="com.erikas.simple_audio.SimpleAudioService"
+      android:stopWithTask="true"
+      android:foregroundServiceType="mediaPlayback">
   </service>
 
   <!-- This is required to interact with the notification buttons. -->
