@@ -37,6 +37,17 @@ var notificationClickedIntent:Intent = Intent()
 /// when the Flutter Engine is detached from the Activity
 lateinit var channel:MethodChannel
 
+/**
+ * Called in the main activity's onStop().
+ * This stops the foreground service allowing the app
+ * to shutdown properly.
+*/
+fun stopSimpleAudioService()
+{
+    simpleAudioService?.kill()
+    simpleAudioService = null
+}
+
 /** SimpleAudioPlugin */
 class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 {
@@ -53,9 +64,6 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
     {
-        simpleAudioService?.kill()
-        simpleAudioService = null
-
         channel.setMethodCallHandler(null)
     }
 

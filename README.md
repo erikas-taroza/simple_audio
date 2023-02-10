@@ -84,7 +84,6 @@ You will need to edit 2 files located in the ``android/app/src/main`` directory.
   <!-- This is required if you want to be able to see the notification. -->
   <service
       android:name="com.erikas.simple_audio.SimpleAudioService"
-      android:stopWithTask="true"
       android:foregroundServiceType="mediaPlayback">
   </service>
 
@@ -104,6 +103,7 @@ import android.content.Intent
 import android.os.Bundle
 import com.erikas.simple_audio.SimpleAudioService
 import com.erikas.simple_audio.notificationClickedIntent
+import com.erikas.simple_audio.stopSimpleAudioService
 
 class MainActivity: FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?)
@@ -116,6 +116,13 @@ class MainActivity: FlutterActivity() {
         // This line starts the SimpleAudioService which starts a foreground service
         // and creates a new media session.
         startService(Intent(applicationContext, SimpleAudioService::class.java))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Stops the foreground service allowing the
+        // app to shutdown properly. 
+        stopSimpleAudioService()
     }
 }
 

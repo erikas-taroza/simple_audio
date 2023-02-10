@@ -16,10 +16,7 @@
 
 package com.erikas.simple_audio
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -71,11 +68,6 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     {
         super.onCreate()
         simpleAudioService = this
-    }
-
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
-        this.kill()
     }
 
     private fun getNotificationManager():NotificationManager
