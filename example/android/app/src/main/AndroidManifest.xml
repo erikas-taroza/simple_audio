@@ -40,6 +40,9 @@
         <service
             android:name="com.erikas.simple_audio.SimpleAudioService"
             android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
         </service>
 
         <!-- This is required to interact with the notification buttons. -->

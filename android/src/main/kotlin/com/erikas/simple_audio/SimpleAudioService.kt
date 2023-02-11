@@ -24,6 +24,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
@@ -68,6 +69,20 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     {
         super.onCreate()
         simpleAudioService = this
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        kill()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        simpleAudioService = null
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 
     private fun getNotificationManager():NotificationManager
