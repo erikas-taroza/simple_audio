@@ -72,7 +72,7 @@ Some platform specific things have to be set up in order for this plugin to func
 No setup is needed for these platforms.
 
 ### Android
-You will need to edit 2 files located in the ``android/app/src/main`` directory.
+You will need to edit the Android manifest located in the ``android/app/src/main`` directory.
 
 #### AndroidManifest.xml
 ```xml
@@ -96,31 +96,6 @@ You will need to edit 2 files located in the ``android/app/src/main`` directory.
   </receiver>
   
 </application>
-```
-
-#### MainActivity.kt
-```kt
-// ...
-// Add these imports.
-import android.content.Intent
-import android.os.Bundle
-import com.erikas.simple_audio.SimpleAudioService
-import com.erikas.simple_audio.notificationClickedIntent
-
-class MainActivity: FlutterActivity() {
-    override fun onCreate(savedInstanceState: Bundle?)
-    {
-        super.onCreate(savedInstanceState)
-
-        // This line is optional. What it does is open your app when the notification
-        // is clicked.
-        notificationClickedIntent = Intent(applicationContext, MainActivity::class.java)
-        // This line starts the SimpleAudioService which starts a foreground service
-        // and creates a new media session.
-        startService(Intent(applicationContext, SimpleAudioService::class.java))
-    }
-}
-
 ```
 
 ### iOS

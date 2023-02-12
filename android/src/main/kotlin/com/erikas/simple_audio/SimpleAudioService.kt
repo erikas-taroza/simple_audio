@@ -24,7 +24,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
@@ -41,11 +40,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 {
     private var mediaSession:MediaSessionCompat? = null
     private var playbackState:PlaybackStateCompat.Builder? = null
-
-    // Set in the init callback in SimpleAudioPlugin.kt
-    var iconPath:String = "mipmap/ic_launcher"
-    var playbackActions:List<PlaybackActions> = PlaybackActions.values().toList()
-    var compactPlaybackActions:List<Int> = listOf()
+    private var iconPath:String = "mipmap/ic_launcher"
+    private var playbackActions:List<PlaybackActions> = PlaybackActions.values().toList()
+    private var compactPlaybackActions:List<Int> = listOf()
 
     var isPlaying:Boolean = false
 
@@ -64,11 +61,22 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         result.sendResult(null)
     }
 
-    // This is called when the service is created in the user's MainActivity.kt
-    override fun onCreate()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int
     {
-        super.onCreate()
         simpleAudioService = this
+
+        if(intent?.extras != null)
+        {
+            @Suppress("UNCHECKED_CAST")
+            init(
+                intent.getStringExtra("iconPath")!!,
+                intent.getSerializableExtra("playbackActions")!! as List<PlaybackActions>,
+                intent.getIntArrayExtra("compactPlaybackActions")!!.toList(),
+                intent.getParcelableExtra("notificationClickedIntent")!!
+            )
+        }
+
+        return START_NOT_STICKY
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -78,15 +86,82 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaSession?.isActive = false
+        mediaSession?.release()
+        mediaSession = null
         simpleAudioService = null
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
     }
 
     private fun getNotificationManager():NotificationManager
     { return getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
+
+    private fun init(
+        iconPath:String,
+        playbackActions:List<PlaybackActions>,
+        compactPlaybackActions:List<Int>,
+        notificationClickedIntent:Intent
+    )
+    {
+        if(mediaSession != null) return
+
+        this.iconPath = iconPath
+        this.playbackActions = playbackActions
+        this.compactPlaybackActions = compactPlaybackActions
+
+        // Create the media session which defines the
+        // controls and registers the callbacks.
+        mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
+            var actions:Long = 0
+            for(action in playbackActions)
+            { actions = actions.or(action.data.sessionAction) }
+
+            playbackState = PlaybackStateCompat.Builder()
+                .setActions(actions
+                        // Defaults (ACTION_PLAY_PAUSE is added above via playbackActions)
+                        or PlaybackStateCompat.ACTION_SEEK_TO
+                        or PlaybackStateCompat.ACTION_PLAY
+                        or PlaybackStateCompat.ACTION_PAUSE
+                )
+                .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
+
+            val metadataBuilder = MediaMetadataCompat.Builder()
+
+            setPlaybackState(playbackState?.build())
+            setMetadata(metadataBuilder.build())
+            setCallback(SimpleAudioServiceCallback())
+            setSessionToken(sessionToken)
+
+            // This makes it so that when the notification is clicked,
+            // the app will be opened. This is used when building the
+            // notification.
+            var flags = PendingIntent.FLAG_UPDATE_CURRENT
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags = flags.or(PendingIntent.FLAG_IMMUTABLE)
+
+            setSessionActivity(PendingIntent.getActivity(
+                applicationContext,
+                0,
+                notificationClickedIntent,
+                flags
+            ))
+        }
+
+        // A channel needs to be registered. Otherwise, the notification will not display
+        // and an error will be thrown.
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_LOW)
+            getNotificationManager().createNotificationChannel(channel)
+        }
+
+        // Start this service as a foreground service by using the notification.
+        startForeground(NOTIFICATION_ID, buildNotification())
+    }
+
+    fun kill()
+    {
+        stopForeground(true)
+        stopSelf()
+    }
 
     private fun buildNotification():Notification
     {
@@ -157,68 +232,6 @@ class SimpleAudioService : MediaBrowserServiceCompat()
                 .setMediaSession(mediaSession!!.sessionToken)
                 .setShowActionsInCompactView(*compactPlaybackActions.toIntArray()))
         }.build()
-    }
-
-    fun init()
-    {
-        if(mediaSession != null) return
-
-        // Create the media session which defines the
-        // controls and registers the callbacks.
-        mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
-            var actions:Long = 0
-            for(action in playbackActions)
-            { actions = actions.or(action.data.sessionAction) }
-
-            playbackState = PlaybackStateCompat.Builder()
-                .setActions(actions
-                        // Defaults (ACTION_PLAY_PAUSE is added above via playbackActions)
-                        or PlaybackStateCompat.ACTION_SEEK_TO
-                        or PlaybackStateCompat.ACTION_PLAY
-                        or PlaybackStateCompat.ACTION_PAUSE
-                )
-                .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
-
-            val metadataBuilder = MediaMetadataCompat.Builder()
-
-            setPlaybackState(playbackState?.build())
-            setMetadata(metadataBuilder.build())
-            setCallback(SimpleAudioServiceCallback())
-            setSessionToken(sessionToken)
-
-            // This makes it so that when the notification is clicked,
-            // the app will be opened. This is used when building the
-            // notification.
-            var flags = PendingIntent.FLAG_UPDATE_CURRENT
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags = flags.or(PendingIntent.FLAG_IMMUTABLE)
-
-            setSessionActivity(PendingIntent.getActivity(
-                applicationContext,
-                0,
-                notificationClickedIntent,
-                flags
-            ))
-        }
-
-        // A channel needs to be registered. Otherwise, the notification will not display
-        // and an error will be thrown.
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            val channel = NotificationChannel(CHANNEL_ID, "SimpleAudio", NotificationManager.IMPORTANCE_LOW)
-            getNotificationManager().createNotificationChannel(channel)
-        }
-
-        // Start this service as a foreground service by using the notification.
-        startForeground(NOTIFICATION_ID, buildNotification())
-    }
-
-    fun kill()
-    {
-        mediaSession?.isActive = false
-        mediaSession?.release()
-        mediaSession = null
-        stopForeground(true)
-        stopSelf()
     }
 
     fun setMetadata(

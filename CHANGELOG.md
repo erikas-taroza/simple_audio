@@ -1,3 +1,6 @@
+## 1.0.7
+- Remove some Android setup requirements.
+
 ## 1.0.6
 - Streaming with HTTP Range header for network files.
 - Stream HLS files by downloading the given parts on demand.
