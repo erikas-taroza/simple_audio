@@ -32,6 +32,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 import java.net.URL
+import kotlin.system.exitProcess
 
 private const val CHANNEL_ID:String = "SimpleAudio::Notification"
 private const val NOTIFICATION_ID:Int = 777
@@ -89,7 +90,16 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         mediaSession?.isActive = false
         mediaSession?.release()
         mediaSession = null
+
+        getNotificationManager().cancel(NOTIFICATION_ID)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) getNotificationManager().deleteNotificationChannel(CHANNEL_ID)
+
         simpleAudioService = null
+        // When this service is killed (by onTaskRemoved),
+        // exit the process to prevent the foreground service from staying longer.
+        // stopSelf/stopForeground don't work properly, so this is the only way.
+        // Foreground service packages on Flutter do the same.
+        exitProcess(0)
     }
 
     private fun getNotificationManager():NotificationManager

@@ -32,7 +32,7 @@ const val ACTION_REWIND = ACTION_HEADER + "rewind"
  * Handles broadcast messages from notification button presses.
  * The buttons are configured in SimpleAudioService.kt
  */
-class SimpleAudioReceiver:BroadcastReceiver()
+class SimpleAudioReceiver : BroadcastReceiver()
 {
     override fun onReceive(context: Context?, intent: Intent?)
     {
