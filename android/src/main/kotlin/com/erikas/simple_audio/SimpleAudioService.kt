@@ -124,10 +124,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
                 )
                 .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
 
-            val metadataBuilder = MediaMetadataCompat.Builder()
-
             setPlaybackState(playbackState?.build())
-            setMetadata(metadataBuilder.build())
+            setMetadata(MediaMetadataCompat.Builder().build())
             setCallback(SimpleAudioServiceCallback())
             setSessionToken(sessionToken)
 

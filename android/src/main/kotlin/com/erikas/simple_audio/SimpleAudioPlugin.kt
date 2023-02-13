@@ -37,7 +37,7 @@ var simpleAudioService:SimpleAudioService? = null
 ///
 /// This local reference serves to register the plugin with the Flutter Engine and unregister it
 /// when the Flutter Engine is detached from the Activity
-lateinit var channel:MethodChannel
+var channel:MethodChannel? = null
 
 /** SimpleAudioPlugin */
 class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
@@ -48,7 +48,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding)
     {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
-        channel.setMethodCallHandler(this)
+        channel?.setMethodCallHandler(this)
 
         // Allows for HTTP requests to be made to get images
         // for the media notification.
@@ -60,7 +60,8 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
     {
-        channel.setMethodCallHandler(null)
+        channel?.setMethodCallHandler(null)
+        channel = null
         appContext = null
         appActivity = null
     }

@@ -31,7 +31,7 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
             return
         }
 
-        channel.invokeMethod("play", null)
+        channel?.invokeMethod("play", null)
         super.onPlay()
     }
 
@@ -42,7 +42,7 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
             return
         }
 
-        channel.invokeMethod("pause", null)
+        channel?.invokeMethod("pause", null)
         super.onPause()
     }
 
@@ -52,27 +52,27 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
     }
 
     override fun onSkipToNext() {
-        channel.invokeMethod("next", null)
+        channel?.invokeMethod("next", null)
         super.onSkipToNext()
     }
 
     override fun onSkipToPrevious() {
-        channel.invokeMethod("previous", null)
+        channel?.invokeMethod("previous", null)
         super.onSkipToPrevious()
     }
 
     override fun onFastForward() {
-        channel.invokeMethod("seekRelative", true)
+        channel?.invokeMethod("seekRelative", true)
         super.onFastForward()
     }
 
     override fun onRewind() {
-        channel.invokeMethod("seekRelative", false)
+        channel?.invokeMethod("seekRelative", false)
         super.onRewind()
     }
 
     override fun onSeekTo(pos:Long) {
-        channel.invokeMethod("seek", pos / 1000)
+        channel?.invokeMethod("seek", pos / 1000)
         super.onSeekTo(pos)
     }
 }
