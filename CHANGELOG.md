@@ -1,5 +1,8 @@
 ## 1.0.7
 - Remove some Android setup requirements.
+- Fix foreground service keeping Android app alive.
+    - The fix uses `endProcess` which is like force stopping the app.
+        If you have a better solution to this, submit an issue or PR.
 
 ## 1.0.6
 - Streaming with HTTP Range header for network files.

@@ -39,7 +39,7 @@ PODS:
   - SDWebImage (5.13.4):
     - SDWebImage/Core (= 5.13.4)
   - SDWebImage/Core (5.13.4)
-  - simple_audio (1.0.6):
+  - simple_audio (1.0.7):
     - Flutter
   - SwiftyGif (5.4.3)
 

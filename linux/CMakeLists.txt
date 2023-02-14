@@ -39,7 +39,7 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE flutter)
 target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
 
 # Download the binary from GitHub.
-set(Version "1.0.6")
+set(Version "1.0.7")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio.so")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
