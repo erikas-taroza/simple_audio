@@ -84,7 +84,8 @@ You will need to edit the Android manifest located in the ``android/app/src/main
   <!-- This is required if you want to be able to see the notification. -->
   <service
       android:name="com.erikas.simple_audio.SimpleAudioService"
-      android:foregroundServiceType="mediaPlayback">
+      android:foregroundServiceType="mediaPlayback"
+      android:exported="false">
       <intent-filter>
           <action android:name="android.media.browse.MediaBrowserService" />
       </intent-filter>

@@ -123,16 +123,36 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
             var actions:Long = 0
             for(action in playbackActions)
-            { actions = actions.or(action.data.sessionAction) }
+            { actions = actions or action.data.sessionAction }
 
             playbackState = PlaybackStateCompat.Builder()
                 .setActions(actions
-                        // Defaults (ACTION_PLAY_PAUSE is added above via playbackActions)
+                        or PlaybackStateCompat.ACTION_PLAY_PAUSE
                         or PlaybackStateCompat.ACTION_SEEK_TO
                         or PlaybackStateCompat.ACTION_PLAY
                         or PlaybackStateCompat.ACTION_PAUSE
                 )
                 .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
+
+            // If the user is targeting Android 13, then add the
+            // remaining notification buttons, if any.
+            // SEE: https://developer.android.com/about/versions/13/behavior-changes-13#playback-controls
+            if(packageManager.getApplicationInfo(packageName, 0).targetSdkVersion >= 33)
+            {
+                for(action in playbackActions)
+                {
+                    // These are already handled by Android 13.
+                    if(action == PlaybackActions.PlayPause
+                        || action == PlaybackActions.SkipPrev
+                        || action == PlaybackActions.SkipNext) continue
+
+                    playbackState?.addCustomAction(
+                        action.data.notificationAction,
+                        action.data.name,
+                        action.data.icon
+                    )
+                }
+            }
 
             setPlaybackState(playbackState?.build())
             setMetadata(MediaMetadataCompat.Builder().build())

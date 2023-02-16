@@ -16,6 +16,7 @@
 
 package com.erikas.simple_audio
 
+import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 
 /**
@@ -74,5 +75,17 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
     override fun onSeekTo(pos:Long) {
         channel?.invokeMethod("seek", pos / 1000)
         super.onSeekTo(pos)
+    }
+
+    override fun onCustomAction(action: String?, extras: Bundle?)
+    {
+        when(action)
+        {
+            PlaybackActions.FastForward.data.notificationAction -> onFastForward()
+            PlaybackActions.Rewind.data.notificationAction -> onRewind()
+            else -> {}
+        }
+
+        super.onCustomAction(action, extras)
     }
 }
