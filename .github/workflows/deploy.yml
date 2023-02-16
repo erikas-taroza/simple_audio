@@ -17,6 +17,7 @@ jobs:
 
       - name: Install Rust -sys dependencies
         run: |
+          sudo apt install build-essential
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev pkg-config
           
