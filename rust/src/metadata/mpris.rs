@@ -85,11 +85,21 @@ impl Mpris
                 .get(|_, &mut _| Ok(false))
                 .emits_changed_true();
             e.property("CanRaise")
-                .get(|_, &mut _| Ok(false))
+                .get(|_, &mut _| Ok(true))
                 .emits_changed_true();
             e.property("HasTracklist")
                 .get(|_, &mut _| Ok(false))
                 .emits_changed_true();
+
+            // Open the app when the MPRIS notification is clicked.
+            e.method("Raise", (), (), move |_, _, _:()| {
+                let process = std::env::current_exe().unwrap();
+
+                let _ = std::process::Command::new(process)
+                    .spawn();
+
+                Ok(())
+            });
         });
 
         let mpp = cr.register("org.mpris.MediaPlayer2.Player", |e:&mut IfaceBuilder<()>|{

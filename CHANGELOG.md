@@ -1,3 +1,8 @@
+## 1.1.0
+- Linux: CI builds on older Ubuntu version to support older `glibc` versions.
+- Linux: MPRIS notification now opens the app when clicked.
+- Android: Support [Android 13's new media style notification](https://developer.android.com/about/versions/13/behavior-changes-13#playback-controls)
+
 ## 1.0.7
 - Remove some Android setup requirements.
 - Fix foreground service keeping Android app alive.
