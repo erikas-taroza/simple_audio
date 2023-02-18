@@ -170,8 +170,8 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        // let mut normalizer = Normalizer::new();
-        // samples = normalizer.normalize(samples);
+        // let normalized = Normalizer::normalize(samples);
+        // samples = normalized.as_slice();
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)

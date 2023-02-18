@@ -250,7 +250,7 @@ mod tests
         let player = crate::Player::default();
         // You can change the file extension here for different formats ------v
         // https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/audio-samples.html
-        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp4".to_string(), true);
+        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string(), true);
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
         player.seek(90);

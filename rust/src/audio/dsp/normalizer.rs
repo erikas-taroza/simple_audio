@@ -14,37 +14,21 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-const NORMALIZE_TO:f32 = 1.0;
+const NORMALIZE_TO:f32 = 0.1;
 
-pub struct Normalizer
-{
-    buffer:Vec<f32>
-}
+pub struct Normalizer;
 
 impl Normalizer
 {
-    pub fn new() -> Self
+    pub fn normalize(input:&[f32]) -> Vec<f32>
     {
-        Normalizer { buffer: Vec::new() }
-    }
-
-    pub fn normalize(&mut self, input:&[f32]) -> &[f32]
-    {
-        self.buffer = input.to_vec();
-
-        let mut peaks:Vec<f32> = Vec::new();
-        for window in self.buffer.chunks_exact(input.len() / 10)
-        {
-            let peak = Self::calc_peak(window);
-            peaks.push(peak.abs());
-        }
-
-        let rms = Self::calc_rms(&peaks);
+        let rms = Self::calc_rms(&input);
         let gain = NORMALIZE_TO / rms;
 
-        self.buffer = input.iter().map(|sample| sample * gain).collect();
+        let mut input = input.to_vec();
 
-        &self.buffer
+        input.iter_mut().for_each(|sample| *sample *= gain);
+        input
     }
 
     fn calc_rms(input:&[f32]) -> f32
@@ -52,12 +36,5 @@ impl Normalizer
         let mut sum = 0.0;
         input.iter().for_each(|sample| sum += sample.powi(2));
         (sum / input.len() as f32).sqrt()
-    }
-
-    fn calc_peak(input:&[f32]) -> f32
-    {
-        input.iter().copied()
-            .map(|sample| sample.abs())
-            .reduce(f32::max).unwrap_or(1.0)
     }
 }
