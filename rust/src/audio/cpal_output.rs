@@ -37,7 +37,8 @@ pub struct CpalOutput
     ring_buffer_writer:Producer<f32>,
     sample_buffer:SampleBuffer<f32>,
     resampler:Option<Resampler<f32>>,
-    is_stream_done:Arc<(Mutex<bool>, Condvar)>
+    is_stream_done:Arc<(Mutex<bool>, Condvar)>,
+    normalizer:Normalizer
 }
 
 impl CpalOutput
@@ -152,7 +153,8 @@ impl CpalOutput
             ring_buffer_writer,
             sample_buffer,
             resampler,
-            is_stream_done
+            is_stream_done,
+            normalizer: Normalizer::default()
         }
     }
 
@@ -170,7 +172,7 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        // let normalized = Normalizer::normalize(samples);
+        // let normalized = self.normalizer.normalize(samples);
         // samples = normalized.as_slice();
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.

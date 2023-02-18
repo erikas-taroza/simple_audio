@@ -16,14 +16,22 @@
 
 const NORMALIZE_TO:f32 = 0.1;
 
-pub struct Normalizer;
+#[derive(Default)]
+pub struct Normalizer
+{
+    rms:Vec<f32>
+}
 
 impl Normalizer
 {
-    pub fn normalize(input:&[f32]) -> Vec<f32>
+    pub fn normalize(&mut self, input:&[f32]) -> Vec<f32>
     {
         let rms = Self::calc_rms(&input);
-        let gain = NORMALIZE_TO / rms;
+        self.rms.push(rms);
+        let total:f32 = self.rms.iter().fold(0f32, |acc, x| acc + x);
+        let average_rms = total / self.rms.len() as f32;
+
+        let gain = NORMALIZE_TO / average_rms;
 
         let mut input = input.to_vec();
 
