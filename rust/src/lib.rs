@@ -238,10 +238,9 @@ mod tests
     fn open_and_play()
     {
         let player = crate::Player::default();
-        player.set_volume(0.5);
-        player.open("/home/erikas/Music/1.mp3".to_string(), true);
-        player.seek(30);
-        thread::sleep(Duration::from_secs(10));
+        player.set_volume(0.1);
+        player.open("/home/erikas/Downloads/1.mp3".to_string(), true);
+        thread::sleep(Duration::from_secs(100));
     }
 
     #[test]

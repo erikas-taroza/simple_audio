@@ -14,35 +14,53 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-const NORMALIZE_TO:f32 = 0.1;
+use ebur128::*;
 
-#[derive(Default)]
+/// The target LUFS value.
+const NORMALIZE_TO:f32 = -15.0;
+
 pub struct Normalizer
 {
-    rms:Vec<f32>
+    ebur128:EbuR128
 }
 
 impl Normalizer
 {
+    pub fn new(channels:usize, sample_rate:u32) -> Self
+    {
+        let ebur128 = EbuR128::new(
+            channels as u32,
+            sample_rate,
+            Mode::I.union(Mode::M)
+        ).unwrap();
+
+        Normalizer { ebur128 }
+    }
+
     pub fn normalize(&mut self, input:&[f32]) -> Vec<f32>
     {
-        let rms = Self::calc_rms(&input);
-        self.rms.push(rms);
-        let total:f32 = self.rms.iter().fold(0f32, |acc, x| acc + x);
-        let average_rms = total / self.rms.len() as f32;
+        // Completely quiet inputs cause a crackling sound to be made.
+        if !input.iter().any(|x| *x != 0.0) { return Vec::new();}
 
-        let gain = NORMALIZE_TO / average_rms;
+        let _ = self.ebur128.add_frames_f32(input);
+
+        let global_loudness = self.ebur128.loudness_global().unwrap();
+
+        // There may not be enough data to calculate a global loudness value.
+        let loudness = if global_loudness.is_finite() {
+            global_loudness
+        }
+        else  {
+            self.ebur128.loudness_momentary().unwrap()
+        };
+        
+        let gain = (loudness as f32 / NORMALIZE_TO).clamp(0.35, 1.0);
+
+        println!("{loudness} {gain} {:?}", self.ebur128.relative_threshold());
 
         let mut input = input.to_vec();
 
         input.iter_mut().for_each(|sample| *sample *= gain);
         input
-    }
-
-    fn calc_rms(input:&[f32]) -> f32
-    {
-        let mut sum = 0.0;
-        input.iter().for_each(|sample| sum += sample.powi(2));
-        (sum / input.len() as f32).sqrt()
     }
 }

@@ -144,6 +144,8 @@ impl CpalOutput
         let stream = stream.unwrap();
         stream.play().expect("ERR: Failed to play the stream.");
 
+        let sample_rate = config.sample_rate.0;
+
         CpalOutput
         {
             _device: device,
@@ -154,7 +156,7 @@ impl CpalOutput
             sample_buffer,
             resampler,
             is_stream_done,
-            normalizer: Normalizer::default()
+            normalizer: Normalizer::new(spec.channels.count(), sample_rate)
         }
     }
 
@@ -172,8 +174,8 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        // let normalized = self.normalizer.normalize(samples);
-        // samples = normalized.as_slice();
+        let normalized = self.normalizer.normalize(samples);
+        samples = normalized.as_slice();
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
