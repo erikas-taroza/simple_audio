@@ -63,6 +63,9 @@ player.setMetadata(Metadata(
   album: "My Album",
   artUri: "https://my-files.com/image.jpg"
 ));
+
+// Normalize the volume of the audio.
+player.normalizeVolume(true);
 ```
 
 ## Setup

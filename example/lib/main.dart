@@ -32,11 +32,12 @@ class _MyAppState extends State<MyApp>
     bool get isMuted => volume == 0;
     double trueVolume = 1;
     double volume = 1;
+    bool normalize = false;
     
     double position = 0;
     double duration = 0;
 
-    String path = r"https://ia800503.us.archive.org/8/items/futuresoundfx-98/futuresoundfx-1.mp3?cnt=0";
+    String path = r"https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3";
 
     String convertSecondsToReadableString(int seconds)
     {
@@ -196,6 +197,20 @@ class _MyAppState extends State<MyApp>
                                             }
                                         ),
                                     ),
+                                ],
+                            ),
+
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    Checkbox(
+                                        value: normalize,
+                                        onChanged: (value) {
+                                            setState(() => normalize = value!);
+                                            player.normalizeVolume(normalize);
+                                        },
+                                    ),
+                                    const Text("Normalize Volume")
                                 ],
                             ),
                             
