@@ -28,7 +28,7 @@ late final Player _player;
 
 class SimpleAudio
 {
-    static MethodChannel methodChannel = const MethodChannel("simple_audio");
+    static const MethodChannel _methodChannel = MethodChannel("simple_audio");
 
     // Maybe subscribe to this stream for native media notifications.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
@@ -58,7 +58,7 @@ class SimpleAudio
             else { onNextCallback?.call(); }
         });
         
-        methodChannel.setMethodCallHandler((call) async {
+        _methodChannel.setMethodCallHandler((call) async {
             switch(call.method)
             {
                 case "play":
@@ -164,7 +164,7 @@ class SimpleAudio
 
         if(Platform.isAndroid)
         {
-            methodChannel.invokeMethod("init", {
+            _methodChannel.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "actions": actions.map((e) => e.index).toList(),
                 "compactActions": androidCompactPlaybackActions,
@@ -173,7 +173,7 @@ class SimpleAudio
         }
         else if(Platform.isIOS || Platform.isMacOS)
         {
-            methodChannel.invokeMethod("init", {
+            _methodChannel.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "actions": actions.map((e) => e.index).toList(),
                 "preferSkipButtons": applePreferSkipButtons
@@ -187,7 +187,7 @@ class SimpleAudio
 
         if(_usingNative && autoplay)
         {
-            methodChannel.invokeMethod("setPlaybackState", {
+            _methodChannel.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.play.index,
                 "position": 0
             });
@@ -198,7 +198,7 @@ class SimpleAudio
     {
         if(_usingNative)
         {
-            methodChannel.invokeMethod("setPlaybackState", {
+            _methodChannel.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.play.index,
                 "position": (await _progress).position
             });
@@ -211,7 +211,7 @@ class SimpleAudio
     {
         if(_usingNative)
         {
-            methodChannel.invokeMethod("setPlaybackState", {
+            _methodChannel.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.pause.index,
                 "position": (await _progress).position
             });
@@ -224,7 +224,7 @@ class SimpleAudio
     {
         if(_usingNative)
         {
-            methodChannel.invokeMethod("setPlaybackState", {
+            _methodChannel.invokeMethod("setPlaybackState", {
                 "state": -1,
                 "position": 0
             });
@@ -247,7 +247,7 @@ class SimpleAudio
     {
         if(_usingNative)
         {
-            methodChannel.invokeMethod("setPlaybackState", {
+            _methodChannel.invokeMethod("setPlaybackState", {
                 "state": (await isPlaying ? PlaybackState.play : PlaybackState.pause).index,
                 "position": seconds
             });
@@ -312,7 +312,7 @@ class SimpleAudio
                     continue;
                 }
 
-                await methodChannel.invokeMethod("setMetadata", {
+                await _methodChannel.invokeMethod("setMetadata", {
                     "title": metadata.title,
                     "artist": metadata.artist,
                     "album": metadata.album,
