@@ -21,7 +21,8 @@ const NORMALIZE_TO:f32 = -15.0;
 
 pub struct Normalizer
 {
-    ebur128:EbuR128
+    ebur128:EbuR128,
+    buffer:Vec<f32>
 }
 
 impl Normalizer
@@ -34,13 +35,13 @@ impl Normalizer
             Mode::I.union(Mode::M)
         ).unwrap();
 
-        Normalizer { ebur128 }
+        Normalizer { ebur128, buffer: Vec::new() }
     }
 
-    pub fn normalize(&mut self, input:&[f32]) -> Vec<f32>
+    pub fn normalize(&mut self, input:&[f32]) -> &[f32]
     {
         // Completely quiet inputs cause a crackling sound to be made.
-        if !input.iter().any(|x| *x != 0.0) { return Vec::new();}
+        if !input.iter().any(|x| *x != 0.0) { return &[];}
 
         let _ = self.ebur128.add_frames_f32(input);
 
@@ -58,9 +59,10 @@ impl Normalizer
 
         println!("{loudness} {gain} {:?}", self.ebur128.relative_threshold());
 
-        let mut input = input.to_vec();
+        self.buffer.clear();
+        self.buffer.extend_from_slice(input);
 
-        input.iter_mut().for_each(|sample| *sample *= gain);
-        input
+        self.buffer.iter_mut().for_each(|sample| *sample *= gain);
+        &self.buffer
     }
 }

@@ -296,6 +296,26 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that", "metadata"],
       );
 
+  Future<void> normalizeVolumeMethodPlayer(
+      {required Player that, required bool shouldNormalize, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    var arg1 = shouldNormalize;
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_normalize_volume__method__Player(port_, arg0, arg1),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kNormalizeVolumeMethodPlayerConstMeta,
+      argValues: [that, shouldNormalize],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "normalize_volume__method__Player",
+        argNames: ["that", "shouldNormalize"],
+      );
+
   void dispose() {
     _platform.dispose();
   }
@@ -816,6 +836,26 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           void Function(
               int, ffi.Pointer<wire_Player>, ffi.Pointer<wire_Metadata>)>();
 
+  void wire_normalize_volume__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+    bool should_normalize,
+  ) {
+    return _wire_normalize_volume__method__Player(
+      port_,
+      that,
+      should_normalize,
+    );
+  }
+
+  late final _wire_normalize_volume__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
+              ffi.Bool)>>('wire_normalize_volume__method__Player');
+  late final _wire_normalize_volume__method__Player =
+      _wire_normalize_volume__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>, bool)>();
+
   ffi.Pointer<ffi.Int64> new_box_autoadd_i64_0(
     int value,
   ) {
@@ -932,3 +972,5 @@ typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<ffi.Bool Function(DartPort, ffi.Pointer<ffi.Void>)>>;
 typedef DartPort = ffi.Int64;
 typedef uintptr_t = ffi.UnsignedLong;
+
+const int CHUNK_SIZE = 131072;

@@ -89,6 +89,15 @@ pub extern "C" fn wire_set_metadata__method__Player(
     wire_set_metadata__method__Player_impl(port_, that, metadata)
 }
 
+#[no_mangle]
+pub extern "C" fn wire_normalize_volume__method__Player(
+    port_: i64,
+    that: *mut wire_Player,
+    should_normalize: bool,
+) {
+    wire_normalize_volume__method__Player_impl(port_, that, should_normalize)
+}
+
 // Section: allocate functions
 
 #[no_mangle]

@@ -214,6 +214,9 @@ impl Player
 
     pub fn set_metadata(&self, metadata:Metadata)
     { crate::metadata::set_metadata(metadata); }
+
+    pub fn normalize_volume(&self, should_normalize:bool)
+    { IS_NORMALIZING.store(should_normalize, std::sync::atomic::Ordering::SeqCst); }
 }
 
 impl Default for Player

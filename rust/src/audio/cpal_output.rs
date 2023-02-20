@@ -174,8 +174,9 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        let normalized = self.normalizer.normalize(samples);
-        samples = normalized.as_slice();
+        if IS_NORMALIZING.load(std::sync::atomic::Ordering::SeqCst) {
+            samples = self.normalizer.normalize(samples);
+        }
 
         // Write the interleaved samples to the ring buffer which is output by CPAL.
         while let Some(written) = self.ring_buffer_writer.write_blocking(samples)

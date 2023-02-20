@@ -78,6 +78,11 @@ abstract class SimpleAudio {
       {required Player that, required Metadata metadata, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kSetMetadataMethodPlayerConstMeta;
+
+  Future<void> normalizeVolumeMethodPlayer(
+      {required Player that, required bool shouldNormalize, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta;
 }
 
 class Metadata {
@@ -177,6 +182,12 @@ class Player {
       bridge.setMetadataMethodPlayer(
         that: this,
         metadata: metadata,
+      );
+
+  Future<void> normalizeVolume({required bool shouldNormalize, dynamic hint}) =>
+      bridge.normalizeVolumeMethodPlayer(
+        that: this,
+        shouldNormalize: shouldNormalize,
       );
 }
 

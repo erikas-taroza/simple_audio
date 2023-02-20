@@ -244,6 +244,24 @@ fn wire_set_metadata__method__Player_impl(
         },
     )
 }
+fn wire_normalize_volume__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+    should_normalize: impl Wire2Api<bool> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "normalize_volume__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            let api_should_normalize = should_normalize.wire2api();
+            move |task_callback| Ok(Player::normalize_volume(&api_that, api_should_normalize))
+        },
+    )
+}
 // Section: wrapper structs
 
 // Section: static checks

@@ -98,6 +98,11 @@ class SimpleAudio
     /// **[showMediaNotification]** Whether or not to show the media notification when playing
     /// audio.
     /// 
+    /// **[shouldNormalizeVolume]** Whether or not to normalize the volume
+    /// of the playback. You can also change this by calling [normalizeVolume]
+    /// when you desire. The normalization uses the `EbuR128` standard and
+    /// it normalizes to `-15 LUFS`.
+    /// 
     /// **[dbusName]** The bus name of the MPRIS metadata handler.
     /// The format is in reverse-DNS style.
     /// The name has to follow these requirements: https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
@@ -135,6 +140,7 @@ class SimpleAudio
     /// when all 4 values are provided in [actions].
     static Future<void> init({
         bool showMediaNotification = true,
+        bool shouldNormalizeVolume = false,
         String dbusName = "com.erikas.SimpleAudio",
         List<NotificationActions> actions = NotificationActions.values,
         String androidNotificationIconPath = "mipmap/ic_launcher",
@@ -153,6 +159,8 @@ class SimpleAudio
             dbusName: dbusName,
             hwnd: Platform.isWindows ? getHWND() : null
         );
+
+        _player.normalizeVolume(shouldNormalize: shouldNormalizeVolume);
 
         if(Platform.isAndroid)
         {
@@ -315,6 +323,14 @@ class SimpleAudio
             }
             _();
         }
+    }
+
+    /// Whether or not to normalize the volume
+    /// of the playback. The normalization uses the `EbuR128` standard and
+    /// it normalizes to `-15 LUFS`.
+    Future<void> normalizeVolume(bool shouldNormalize) async
+    {
+        return await _player.normalizeVolume(shouldNormalize: shouldNormalize);
     }
 }
 
