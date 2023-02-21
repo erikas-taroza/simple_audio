@@ -17,7 +17,7 @@
 use ebur128::*;
 
 /// The target LUFS value.
-const NORMALIZE_TO:f32 = -15.0;
+const NORMALIZE_TO:f64 = -15.0;
 
 pub struct Normalizer
 {
@@ -51,13 +51,11 @@ impl Normalizer
         let loudness = if global_loudness.is_finite() {
             global_loudness
         }
-        else  {
+        else {
             self.ebur128.loudness_momentary().unwrap()
         };
         
-        let gain = (loudness as f32 / NORMALIZE_TO).clamp(0.35, 1.0);
-
-        println!("{loudness} {gain} {:?}", self.ebur128.relative_threshold());
+        let gain = (loudness / NORMALIZE_TO).clamp(0.35, 1.0) as f32;
 
         self.buffer.clear();
         self.buffer.extend_from_slice(input);
