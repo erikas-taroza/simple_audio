@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-export 'bridge_definitions.dart' show ProgressState, Metadata;
+export 'types.dart' hide progressStateFromInner, metadataFromInner;
+import 'types.dart' as types;
+import 'types.dart' hide ProgressState, Metadata;
 
 import 'dart:io';
 
@@ -31,16 +33,28 @@ class SimpleAudio
     static const MethodChannel _methodChannel = MethodChannel("simple_audio");
 
     // Maybe subscribe to this stream for native media notifications.
+    /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
-        .map((event) => PlaybackState.values[event]).asBroadcastStream(); // Map the int event to a dart enum.
-    late Stream<ProgressState> progressStateStream = Player.progressStateStream(bridge: api).asBroadcastStream();
+        // Map the int event to a dart enum.
+        .map((event) => PlaybackState.values[event])
+        .asBroadcastStream();
 
+    /// A stream that returns a [ProgressState] when the progress of the player
+    /// or duration of the file is changed.
+    late Stream<types.ProgressState> progressStateStream = Player.progressStateStream(bridge: api)
+        // Convert the inner ProgressState to the public ProgressState (public provides docs)
+        .map((event) => types.progressStateFromInner(event))
+        .asBroadcastStream();
+
+    /// Returns `true` if the player is playing.
     Future<bool> get isPlaying => _player.isPlaying();
     Future<ProgressState> get _progress => _player.getProgress();
 
     bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
+    /// The callback for when the [NotificationActions.skipPrev] action is called.
     void Function()? onPreviousCallback;
+    /// The callback for when the [NotificationActions.skipNext] action is called.
     void Function()? onNextCallback;
 
     /// **[onPreviousCallback]** Callback for when the user wants to skip to the previous media
@@ -181,6 +195,12 @@ class SimpleAudio
         }
     }
 
+    /// Open a new file for playback.
+    /// 
+    /// **[path]**: The path of the file. For example, `https://my-domain.com/file.mp3`
+    /// or `/path/to/file.mp3`.
+    /// 
+    /// **[autoplay]** Whether or not to immediately start playing the file when opened.
     Future<void> open(String path, {bool autoplay = true}) async
     {
         await _player.open(path: path, autoplay: autoplay);
@@ -194,6 +214,8 @@ class SimpleAudio
         }
     }
 
+    /// Plays the opened file. If the player was paused,
+    /// this resumes it.
     Future<void> play() async
     {
         if(_usingNative)
@@ -207,6 +229,7 @@ class SimpleAudio
         return await _player.play();
     }
 
+    /// Pauses playback of the opened file.
     Future<void> pause() async
     {
         if(_usingNative)
@@ -220,6 +243,8 @@ class SimpleAudio
         return await _player.pause();
     }
 
+    /// Stops playback of the opened file. Another file will have
+    /// to be opened to start playback.
     Future<void> stop() async
     {
         if(_usingNative)
@@ -233,16 +258,24 @@ class SimpleAudio
         return await _player.stop();
     }
 
+    /// Set the player in a looping mode where
+    /// the opened file will be replayed when it is done.
     Future<void> loopPlayback(bool shouldLoop) async
     {
         return await _player.loopPlayback(shouldLoop: shouldLoop);
     }
 
+    /// Set the volume of the playback.
+    /// 
+    /// **[volume]** The volume from `0.0` to `1.0`.
     Future<void> setVolume(double volume) async
     {
         return await _player.setVolume(volume: volume);
     }
 
+    /// Seek to a certain spot in the file and play from there.
+    /// 
+    /// **[seconds]** The position, in seconds, to seek to.
     Future<void> seek(int seconds) async
     {
         if(_usingNative)
@@ -256,7 +289,10 @@ class SimpleAudio
         return await _player.seek(seconds: seconds);
     }
 
-    Future<void> setMetadata(Metadata metadata) async
+    /// Set the metadata of the OS's media controller.
+    /// 
+    /// **[metadata]** The metadata information to display.
+    Future<void> setMetadata(types.Metadata metadata) async
     {
         if(metadata.artUri != null || metadata.artBytes != null)
         {
@@ -296,7 +332,15 @@ class SimpleAudio
 
         if(Platform.isLinux || Platform.isWindows)
         {
-            _player.setMetadata(metadata: metadata);
+            Metadata m = Metadata(
+                title: metadata.title,
+                artist: metadata.artist,
+                album: metadata.album,
+                artUri: metadata.artUri,
+                artBytes: metadata.artBytes
+            );
+
+            _player.setMetadata(metadata: m);
         }
         else if(_usingNative)
         {
@@ -332,22 +376,4 @@ class SimpleAudio
     {
         return await _player.normalizeVolume(shouldNormalize: shouldNormalize);
     }
-}
-
-enum PlaybackState
-{
-    play,
-    pause,
-    done
-}
-
-// NOTE: When updating the enum values, they need to be updated
-// in Kotlin and in Rust.
-enum NotificationActions
-{
-    rewind,
-    skipPrev,
-    playPause,
-    skipNext,
-    fastForward
 }
