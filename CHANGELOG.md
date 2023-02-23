@@ -1,5 +1,6 @@
 ## 1.2.0
 - Added the option to normalize volume.
+- Improve documentation.
 
 ## 1.1.0
 - Linux: CI builds on older Ubuntu version to support older `glibc` versions.
