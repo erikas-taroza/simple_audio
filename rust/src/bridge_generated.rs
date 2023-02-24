@@ -129,7 +129,7 @@ fn wire_open__method__Player_impl(
             let api_that = that.wire2api();
             let api_path = path.wire2api();
             let api_autoplay = autoplay.wire2api();
-            move |task_callback| Ok(Player::open(&api_that, api_path, api_autoplay))
+            move |task_callback| Player::open(&api_that, api_path, api_autoplay)
         },
     )
 }

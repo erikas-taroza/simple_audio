@@ -36,24 +36,21 @@ pub struct HttpStream
 
 impl HttpStream
 {
-    pub fn new(url:String) -> Self
+    pub fn new(url:String) -> anyhow::Result<Self>
     {
         // Get the size of the file we are streaming.
         let res = Client::new().head(&url)
-            .send()
-            .unwrap();
+            .send()?;
 
         let header = res
             .headers().get("Content-Length")
-            .unwrap();
+            .ok_or(anyhow::anyhow!("Could not get \"Content-Length\" header for HTTP stream."))?;
 
         let size:usize = header
-            .to_str()
-            .unwrap()
-            .parse()
-            .unwrap();
+            .to_str()?
+            .parse()?;
 
-        HttpStream
+        Ok(HttpStream
         {
             url,
             buffer: vec![0; size],
@@ -61,7 +58,7 @@ impl HttpStream
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
             receivers: Vec::new()
-        }
+        })
     }
 }
 

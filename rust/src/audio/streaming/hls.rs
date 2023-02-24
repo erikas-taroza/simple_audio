@@ -42,13 +42,13 @@ pub struct HlsStream
 
 impl HlsStream
 {
-    pub fn new(url:String) -> Self
+    pub fn new(url:String) -> anyhow::Result<Self>
     {
         let mut urls = Vec::new();
         let mut total_size = 0;
 
         let file = Client::new().get(url)
-            .send().unwrap().text().unwrap();
+            .send()?.text()?;
 
         for line in file.lines()
         {
@@ -56,24 +56,21 @@ impl HlsStream
 
             // Get the size of the part.
             let res = Client::new().head(line)
-                .send()
-                .unwrap();
+                .send()?;
 
             let header = res
                 .headers().get("Content-Length")
-                .unwrap();
+                .ok_or(anyhow::anyhow!("Could not get \"Content-Length\" header for a part of HLS stream."))?;
 
             let size:usize = header
-                .to_str()
-                .unwrap()
-                .parse()
-                .unwrap();
+                .to_str()?
+                .parse()?;
 
             urls.push((total_size..total_size + size + 1, line.to_string()));
             total_size += size;
         }
 
-        HlsStream
+        Ok(HlsStream
         {
             urls,
             buffer: vec![0; total_size],
@@ -81,7 +78,7 @@ impl HlsStream
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
             receivers: Vec::new()
-        }
+        })
     }
 }
 
