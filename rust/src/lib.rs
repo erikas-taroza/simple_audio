@@ -29,11 +29,7 @@ use symphonia::core::io::MediaSource;
 
 use crate::utils::{playback_state_stream::*, progress_state_stream::*, metadata_callback_stream::*};
 
-// NOTE: Code gen fails with empty structs.
-pub struct Player
-{
-    dummy:i32
-}
+pub struct Player { }
 
 impl Player
 {
@@ -78,7 +74,7 @@ impl Player
             }
         );
 
-        Player { dummy: 0 }
+        Player { }
     }
 
     fn signal_to_stop()

@@ -144,6 +144,11 @@ impl Wire2Api<String> for *mut wire_uint_8_list {
     }
 }
 
+impl Wire2Api<i64> for *mut i64 {
+    fn wire2api(self) -> i64 {
+        unsafe { *support::box_from_leak_ptr(self) }
+    }
+}
 impl Wire2Api<Metadata> for *mut wire_Metadata {
     fn wire2api(self) -> Metadata {
         let wrap = unsafe { support::box_from_leak_ptr(self) };
@@ -179,9 +184,7 @@ impl Wire2Api<Metadata> for wire_Metadata {
 
 impl Wire2Api<Player> for wire_Player {
     fn wire2api(self) -> Player {
-        Player {
-            dummy: self.dummy.wire2api(),
-        }
+        Player {}
     }
 }
 
@@ -214,9 +217,7 @@ pub struct wire_Metadata {
 
 #[repr(C)]
 #[derive(Clone)]
-pub struct wire_Player {
-    dummy: i32,
-}
+pub struct wire_Player {}
 
 #[repr(C)]
 #[derive(Clone)]
@@ -251,9 +252,7 @@ impl NewWithNullPtr for wire_Metadata {
 
 impl NewWithNullPtr for wire_Player {
     fn new_with_null_ptr() -> Self {
-        Self {
-            dummy: Default::default(),
-        }
+        Self {}
     }
 }
 

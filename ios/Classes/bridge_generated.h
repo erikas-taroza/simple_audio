@@ -22,7 +22,7 @@ typedef struct wire_uint_8_list {
 } wire_uint_8_list;
 
 typedef struct wire_Player {
-  int32_t dummy;
+
 } wire_Player;
 
 typedef struct wire_Metadata {
