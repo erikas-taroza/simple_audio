@@ -1,3 +1,7 @@
+## 1.2.1
+- Fix Android CMake
+- Update Flutter Rust Bridge
+
 ## 1.2.0
 - Added the option to normalize volume.
 - Improve documentation.
