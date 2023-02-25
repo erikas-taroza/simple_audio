@@ -1,3 +1,11 @@
+## 1.3.0
+- Allow user to handle errors. The following errors can be handled in Dart:
+    - Fail to open a file
+    - Error in network stream (ex. the URL is no longer valid)
+    - Error decoding the file (ex. the file isn't formatted correctly)
+    - Error during playback (ex. the device that was outputting is no longer available)
+- Fix the playback state not being updated when calling `open()`
+
 ## 1.2.1
 - Fix Android CMake
 - Update Flutter Rust Bridge
