@@ -138,7 +138,8 @@ impl Player
             )
         };
 
-        IS_PLAYING.store(autoplay, std::sync::atomic::Ordering::SeqCst);
+        if autoplay { Self::internal_play(); }
+        else { Self::internal_pause(); }
 
         // In case the user hasn't called stop before opening the first track.
         if TXRX2.read().unwrap().is_none() {
