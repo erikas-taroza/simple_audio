@@ -21,6 +21,8 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
+use crate::utils::{callback_stream::update_callback_stream, types::Callback};
+
 use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streaming::streamable::IS_STREAM_BUFFERING};
 
 /// The default output volume is way too high.
@@ -136,8 +138,8 @@ impl CpalOutput
                 // Set the volume.
                 data[0..written].iter_mut().for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
             },
-            move |err| {
-                panic!("ERR: An error occurred during the stream. {err}");
+            move |_| {
+                update_callback_stream(Callback::StreamError);
             }, None
         );
 

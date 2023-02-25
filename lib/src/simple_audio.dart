@@ -56,15 +56,20 @@ class SimpleAudio
     void Function()? onPreviousCallback;
     /// The callback for when the [NotificationActions.skipNext] action is called.
     void Function()? onNextCallback;
+    /// The callback for when an error occurs during the playback stream.
+    void Function()? onStreamError;
 
     /// **[onPreviousCallback]** Callback for when the user wants to skip to the previous media
     /// (via a media notification).
     /// 
     /// **[onNextCallback]** Callback for when the user wants to skip to the next media
     /// (via a media notification).
+    /// 
+    /// /// **[onStreamError]** The callback for when an error occurs during the playback stream.
     SimpleAudio({
         this.onPreviousCallback,
-        this.onNextCallback
+        this.onNextCallback,
+        this.onStreamError
     })
     {
         Player.callbackStream(bridge: api).listen((event) {
@@ -75,6 +80,9 @@ class SimpleAudio
                     break;
                 case Callback.NotificationActionSkipNext:
                     onNextCallback?.call();
+                    break;
+                case Callback.StreamError:
+                    onStreamError?.call();
                     break;
             }
         });

@@ -30,6 +30,10 @@ pub struct ProgressState
 
 pub enum Callback
 {
+    /// The media notification trigged the SkipPrev action.
     NotificationActionSkipPrev,
+    /// The media notification trigged the SkipNext action.
     NotificationActionSkipNext,
+    /// An error occurred during the CPAL stream.
+    StreamError
 }

@@ -29,9 +29,7 @@ pub fn callback_stream(stream:StreamSink<Callback>)
     *state_stream = Some(stream);
 }
 
-/// Updates the stream with the given value.
-/// `True` means that a signal for "Next" was received.
-/// `False` means that a signal for "Previous" was received.
+/// Updates/adds to the stream with the given value.
 pub fn update_callback_stream(value: Callback)
 {
     if let Some(stream) = &*CALLBACK_STREAM.read().unwrap()
