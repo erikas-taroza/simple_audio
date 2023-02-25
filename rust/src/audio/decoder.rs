@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+use anyhow::Context;
 use cpal::traits::StreamTrait;
 use rb::RbConsumer;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
@@ -27,26 +28,32 @@ pub struct Decoder;
 
 impl Decoder
 {
-    pub fn decode(&mut self, source:Box<dyn MediaSource>)
+    pub fn decode(&mut self, source:Box<dyn MediaSource>) -> anyhow::Result<()>
     {
         let mss = MediaSourceStream::new(source, Default::default());
 
         let format_options = FormatOptions { enable_gapless: true, ..Default::default() };
         let metadata_options:MetadataOptions = Default::default();
 
-        match default::get_probe().format(&Hint::new(), mss, &format_options, &metadata_options)
-        {
-            Err(err) => panic!("ERR: Failed to probe source. {err}"),
-            Ok(mut probed) => self.decode_loop(&mut probed.format)
-        }
+        let mut probed = default::get_probe().format(
+            &Hint::new(),
+            mss,
+            &format_options,
+            &metadata_options
+        ).context("Failed to create decoder.")?;
+
+        self.decode_loop(&mut probed.format)?;
+
+        Ok(())
     }
 
-    fn decode_loop(&mut self, reader:&mut Box<dyn FormatReader>)
+    fn decode_loop(&mut self, reader:&mut Box<dyn FormatReader>) -> anyhow::Result<()>
     {
-        let track = reader.default_track().unwrap();
+        let track = reader.default_track()
+            .context("Cannot start playback. There are no tracks present in the file.")?;
         let track_id = track.id;
 
-        let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default()).unwrap();
+        let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default())?;
         let mut cpal_output:Option<CpalOutput> = None;
 
         // Used only for outputting the current position and duration.
@@ -90,11 +97,11 @@ impl Decoder
                 {
                     ThreadMessage::Play if cfg!(not(target_os = "windows")) => {
                         if let Some(cpal_output) = cpal_output.as_ref()
-                        { cpal_output.stream.play().unwrap(); } 
+                        { cpal_output.stream.play()?; } 
                     },
                     ThreadMessage::Pause if cfg!(not(target_os = "windows")) => {
                         if let Some(cpal_output) = cpal_output.as_ref()
-                        { cpal_output.stream.pause().unwrap(); } 
+                        { cpal_output.stream.pause()?; } 
                     },
                     ThreadMessage::Stop => break,
                     _ => ()
@@ -147,32 +154,29 @@ impl Decoder
 
             if packet.track_id() != track_id { continue; }
 
-            match decoder.decode(&packet)
+            let decoded = decoder.decode(&packet)
+                .context("Could not decode audio packet.")?;
+
+            if packet.ts() < seek_ts { continue; }
+                
+            // Update the progress stream with calculated times.
+            let progress = ProgressState {
+                position: timebase.calc_time(packet.ts()).seconds,
+                duration
+            };
+
+            update_progress_state_stream(progress);
+            *PROGRESS.write().unwrap() = progress;
+
+            // Write the decoded packet to CPAL.
+            if cpal_output.is_none()
             {
-                Err(err) => println!("WARN: Failed to decode sound. {err}"),
-                Ok(decoded) => {
-                    if packet.ts() < seek_ts { continue; }
-                    
-                    // Update the progress stream with calculated times.
-                    let progress = ProgressState {
-                        position: timebase.calc_time(packet.ts()).seconds,
-                        duration
-                    };
-
-                    update_progress_state_stream(progress);
-                    *PROGRESS.write().unwrap() = progress;
-
-                    // Write the decoded packet to CPAL.
-                    if cpal_output.is_none()
-                    {
-                        let spec = *decoded.spec();
-                        let duration = decoded.capacity() as u64;
-                        cpal_output.replace(CpalOutput::build_stream(spec, duration));
-                    }
-
-                    cpal_output.as_mut().unwrap().write(decoded);
-                }
+                let spec = *decoded.spec();
+                let duration = decoded.capacity() as u64;
+                cpal_output.replace(CpalOutput::build_stream(spec, duration)?);
             }
+
+            cpal_output.as_mut().unwrap().write(decoded);
         }
 
         // Tell the main thread that everything is done here.
@@ -180,7 +184,7 @@ impl Decoder
 
         // This code is only ran if the stream
         // reached the end of the audio.
-        if !has_reached_end { return; }
+        if !has_reached_end { return Ok(()); }
         
         // Flushing isn't needed when the user deliberately
         // stops the stream because they no longer care about the remaining samples.
@@ -195,5 +199,7 @@ impl Decoder
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Done);
+
+        Ok(())
     }
 }

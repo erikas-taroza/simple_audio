@@ -16,6 +16,7 @@
 
 use std::sync::{Mutex, Arc, Condvar};
 
+use anyhow::Context;
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
@@ -43,19 +44,21 @@ pub struct CpalOutput
 
 impl CpalOutput
 {
-    fn get_config(spec:SignalSpec) -> (Device, StreamConfig)
+    fn get_config(spec:SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
     {
         let host = cpal::default_host();
-        let device = host.default_output_device().expect("ERR: Failed to get default output device.");
+        let device = host.default_output_device()
+            .context("Failed to get default output device.")?;
 
         let config;
 
         #[cfg(target_os = "windows")]
         {
             let mut supported_configs = device.supported_output_configs()
-                .expect("ERR: Failed to get supported outputs.");
+                .context("Failed to get supported output configs.")?;
             config = supported_configs.next()
-                .expect("ERR: Failed to get supported config.").with_max_sample_rate().config();
+                .context("Failed to get a config.")?
+                .with_max_sample_rate().config();
         }
 
         #[cfg(not(target_os = "windows"))]
@@ -68,15 +71,15 @@ impl CpalOutput
             };
         }
 
-        (device, config)
+        Ok((device, config))
     }
 
     /// Starts a new stream on the default device.
     /// Creates a new ring buffer and sample buffer.
-    pub fn build_stream(spec:SignalSpec, duration:u64) -> Self
+    pub fn build_stream(spec:SignalSpec, duration:u64) -> anyhow::Result<Self>
     {
         // Get the output config.
-        let (device, config) = Self::get_config(spec);
+        let (device, config) = Self::get_config(spec)?;
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
@@ -138,15 +141,14 @@ impl CpalOutput
             }, None
         );
 
-        if let Err(err) = stream
-        { panic!("ERR: An error occurred when building the stream. {err}"); }
+        let stream = stream
+            .context("Could not build the stream.")?;
 
-        let stream = stream.unwrap();
-        stream.play().expect("ERR: Failed to play the stream.");
+        stream.play()?;
 
         let sample_rate = config.sample_rate.0;
 
-        CpalOutput
+        Ok(CpalOutput
         {
             _device: device,
             _config: config,
@@ -157,7 +159,7 @@ impl CpalOutput
             resampler,
             is_stream_done,
             normalizer: Normalizer::new(spec.channels.count(), sample_rate)
-        }
+        })
     }
 
     /// Write the `AudioBufferRef` to the buffers.

@@ -147,7 +147,7 @@ impl Player
         }
 
         thread::spawn(move || {
-            Decoder::default().decode(source);
+            let _ = Decoder::default().decode(source);
         });
 
         Ok(())
