@@ -19,6 +19,7 @@ use std::ops::Range;
 use std::thread;
 use std::sync::mpsc::{channel, Sender};
 
+use anyhow::Context;
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
@@ -56,11 +57,11 @@ impl HlsStream
 
             // Get the size of the part.
             let res = Client::new().head(line)
-                .send()?;
+                .send()?.error_for_status()?;
 
             let header = res
                 .headers().get("Content-Length")
-                .ok_or(anyhow::anyhow!("Could not get \"Content-Length\" header for a part of HLS stream."))?;
+                .context("Could not get \"Content-Length\" header for a part of HLS stream.")?;
 
             let size:usize = header
                 .to_str()?

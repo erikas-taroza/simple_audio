@@ -18,6 +18,7 @@ use std::io::{Read, Seek};
 use std::thread;
 use std::sync::mpsc::{channel, Sender};
 
+use anyhow::Context;
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
@@ -40,11 +41,11 @@ impl HttpStream
     {
         // Get the size of the file we are streaming.
         let res = Client::new().head(&url)
-            .send()?;
+            .send()?.error_for_status()?;
 
         let header = res
             .headers().get("Content-Length")
-            .ok_or(anyhow::anyhow!("Could not get \"Content-Length\" header for HTTP stream."))?;
+            .context("Could not get \"Content-Length\" header for HTTP stream.")?;
 
         let size:usize = header
             .to_str()?
