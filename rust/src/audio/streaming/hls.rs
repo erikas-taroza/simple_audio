@@ -24,6 +24,9 @@ use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
+use crate::utils::callback_stream::update_callback_stream;
+use crate::utils::types::Callback;
+
 use super::{streamable::*, Receiver};
 
 // NOTE: Most of the implementation is the same as HttpStream.
@@ -85,12 +88,19 @@ impl HlsStream
 
 impl Streamable<Self> for HlsStream
 {
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, _:usize)
+    fn read_chunk(
+        tx:Sender<(usize, Vec<u8>)>,
+        url:String,
+        start:usize,
+        _:usize
+    ) -> anyhow::Result<()>
     {
         let chunk = Client::new().get(url)
-            .send().unwrap().bytes().unwrap().to_vec();
+            .send()?.bytes()?.to_vec();
         
-        tx.send((start, chunk)).unwrap();
+        // We don't care if the data was sent or not.
+        let _ = tx.send((start, chunk));
+        Ok(())
     }
 
     fn try_write_chunk(&mut self, should_buffer:bool)
@@ -175,7 +185,11 @@ impl Read for HlsStream
                 self.receivers.push(Receiver { id, receiver });
 
                 thread::spawn(move || {
-                    Self::read_chunk(tx, url, start, file_size);
+                    let result = Self::read_chunk(tx, url, start, file_size);
+
+                    if let Err(_) = result {
+                        update_callback_stream(Callback::NetworkStreamError)
+                    }
                 });
 
                 // Because the sizes of the parts vary, `should_get_chunk` may

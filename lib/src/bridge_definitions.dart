@@ -92,11 +92,15 @@ enum Callback {
   /// The media notification trigged the SkipNext action.
   NotificationActionSkipNext,
 
-  /// An error occurred during the CPAL stream.
-  StreamError,
+  /// An error occurred when trying to fetch more bytes for
+  /// a network stream.
+  NetworkStreamError,
 
   /// An error occurred when decoding the file.
   DecodeError,
+
+  /// An error occurred during the CPAL stream.
+  PlaybackStreamError,
 }
 
 class Metadata {

@@ -24,8 +24,9 @@ class _MyAppState extends State<MyApp>
     final SimpleAudio player = SimpleAudio(
         onSkipNext: () => debugPrint("Next"),
         onSkipPrevious: () => debugPrint("Prev"),
-        onStreamError: () => debugPrint("Stream Error"),
-        onDecodeError: () => debugPrint("Decode Error")
+        onNetworkStreamError: () => debugPrint("Network Stream Error"),
+        onDecodeError: () => debugPrint("Decode Error"),
+        onPlaybackStreamError: () => debugPrint("Playback Error"),
     );
 
     PlaybackState playbackState = PlaybackState.done;

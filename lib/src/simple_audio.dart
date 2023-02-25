@@ -56,10 +56,14 @@ class SimpleAudio
     void Function()? onSkipPrevious;
     /// The callback for when the [NotificationActions.skipNext] action is called.
     void Function()? onSkipNext;
-    /// The callback for when an error occurs during the playback stream.
-    void Function()? onStreamError;
+
+    /// The callback for when an error occurs when trying to fetch
+    /// more bytes for a network stream.
+    void Function()? onNetworkStreamError;
     /// The callback for when an error occurs during the decode loop.
     void Function()? onDecodeError;
+    /// The callback for when an error occurs during the playback stream.
+    void Function()? onPlaybackStreamError;
 
     /// **[onSkipPrevious]** The callback for when the user wants to skip to the previous media
     /// (via a media notification).
@@ -67,13 +71,17 @@ class SimpleAudio
     /// **[onSkipNext]** The callback for when the user wants to skip to the next media
     /// (via a media notification).
     /// 
-    /// **[onStreamError]** The callback for when an error occurs during the playback stream.
+    /// **[onNetworkStreamError]** The callback for when an error occurs when trying to fetch
+    /// more bytes for a network stream.
     /// 
     /// **[onDecodeError]** The callback for when an error occurs during the decode loop.
+    /// 
+    /// **[onPlaybackStreamError]** The callback for when an error occurs during the playback stream.
     SimpleAudio({
         this.onSkipPrevious,
         this.onSkipNext,
-        this.onStreamError,
+        this.onNetworkStreamError,
+        this.onPlaybackStreamError,
         this.onDecodeError
     })
     {
@@ -86,11 +94,14 @@ class SimpleAudio
                 case Callback.NotificationActionSkipNext:
                     onSkipNext?.call();
                     break;
-                case Callback.StreamError:
-                    onStreamError?.call();
+                case Callback.NetworkStreamError:
+                    onNetworkStreamError?.call();
                     break;
                 case Callback.DecodeError:
                     onDecodeError?.call();
+                    break;
+                case Callback.PlaybackStreamError:
+                    onPlaybackStreamError?.call();
                     break;
             }
         });

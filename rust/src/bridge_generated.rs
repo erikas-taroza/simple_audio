@@ -320,8 +320,9 @@ impl support::IntoDart for Callback {
         match self {
             Self::NotificationActionSkipPrev => 0,
             Self::NotificationActionSkipNext => 1,
-            Self::StreamError => 2,
+            Self::NetworkStreamError => 2,
             Self::DecodeError => 3,
+            Self::PlaybackStreamError => 4,
         }
         .into_dart()
     }

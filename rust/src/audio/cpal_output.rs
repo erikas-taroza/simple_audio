@@ -139,7 +139,7 @@ impl CpalOutput
                 data[0..written].iter_mut().for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
             },
             move |_| {
-                update_callback_stream(Callback::StreamError);
+                update_callback_stream(Callback::PlaybackStreamError);
             }, None
         );
 
