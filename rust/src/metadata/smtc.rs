@@ -20,7 +20,7 @@ use std::{sync::{Arc, Mutex, RwLock}, time::Duration};
 
 use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus, PlaybackPositionChangeRequestedEventArgs}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::{RandomAccessStreamReference, InMemoryRandomAccessStream, DataWriter}};
 
-use crate::{audio::controls::PROGRESS, utils::playback_state::PlaybackState};
+use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
 use super::types::{Event, Metadata, Actions};
 
