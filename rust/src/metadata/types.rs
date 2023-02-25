@@ -36,7 +36,7 @@ pub enum Event
     Pause,
     Stop,
     PlayPause,
-    /// `u64`: Position.
+    /// `i64`: Position.
     /// 
     /// `bool`: Is absolute.
     /// If `true`, the position is between `0-duration`.
