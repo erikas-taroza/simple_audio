@@ -82,7 +82,9 @@ impl Streamable<Self> for HttpStream
 
         let chunk = Client::new().get(url)
             .header("Range", format!("bytes={start}-{end}"))
-            .send()?.bytes()?.to_vec();
+            .send()?
+            .error_for_status()?
+            .bytes()?.to_vec();
         
         // We don't care if the data was sent or not.
         let _ = tx.send((start, chunk));

@@ -96,7 +96,9 @@ impl Streamable<Self> for HlsStream
     ) -> anyhow::Result<()>
     {
         let chunk = Client::new().get(url)
-            .send()?.bytes()?.to_vec();
+            .send()?
+            .error_for_status()?
+            .bytes()?.to_vec();
         
         // We don't care if the data was sent or not.
         let _ = tx.send((start, chunk));
