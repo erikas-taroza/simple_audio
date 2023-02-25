@@ -243,7 +243,7 @@ impl Default for Player
     fn default() -> Self {
         crate::Player::new(
             vec![0, 1, 2, 3, 4],
-            "SimpleAudio".to_string(),
+            "com.erikas.SimpleAudio".to_string(),
             None
         )
     }
