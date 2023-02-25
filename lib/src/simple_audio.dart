@@ -67,9 +67,16 @@ class SimpleAudio
         this.onNextCallback
     })
     {
-        Player.metadataCallbackStream(bridge: api).listen((event) {
-            if(!event) { onPreviousCallback?.call(); }
-            else { onNextCallback?.call(); }
+        Player.callbackStream(bridge: api).listen((event) {
+            switch(event)
+            {
+                case Callback.NotificationActionSkipPrev:
+                    onPreviousCallback?.call();
+                    break;
+                case Callback.NotificationActionSkipNext:
+                    onNextCallback?.call();
+                    break;
+            }
         });
         
         _methodChannel.setMethodCallHandler((call) async {

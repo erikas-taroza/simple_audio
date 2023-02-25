@@ -26,10 +26,9 @@ abstract class SimpleAudio {
   FlutterRustBridgeTaskConstMeta
       get kProgressStateStreamStaticMethodPlayerConstMeta;
 
-  Stream<bool> metadataCallbackStreamStaticMethodPlayer({dynamic hint});
+  Stream<Callback> callbackStreamStaticMethodPlayer({dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta
-      get kMetadataCallbackStreamStaticMethodPlayerConstMeta;
+  FlutterRustBridgeTaskConstMeta get kCallbackStreamStaticMethodPlayerConstMeta;
 
   Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint});
 
@@ -86,6 +85,11 @@ abstract class SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta;
 }
 
+enum Callback {
+  NotificationActionSkipPrev,
+  NotificationActionSkipNext,
+}
+
 class Metadata {
   final String? title;
   final String? artist;
@@ -124,9 +128,9 @@ class Player {
           {required SimpleAudio bridge, dynamic hint}) =>
       bridge.progressStateStreamStaticMethodPlayer(hint: hint);
 
-  static Stream<bool> metadataCallbackStream(
+  static Stream<Callback> callbackStream(
           {required SimpleAudio bridge, dynamic hint}) =>
-      bridge.metadataCallbackStreamStaticMethodPlayer(hint: hint);
+      bridge.callbackStreamStaticMethodPlayer(hint: hint);
 
   Future<bool> isPlaying({dynamic hint}) => bridge.isPlayingMethodPlayer(
         that: this,

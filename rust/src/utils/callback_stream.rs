@@ -18,20 +18,22 @@ use std::sync::RwLock;
 
 use flutter_rust_bridge::{StreamSink, support::lazy_static};
 
-lazy_static! { static ref METADATA_CALLBACK_STREAM:RwLock<Option<StreamSink<bool>>> = RwLock::new(None); }
+use super::types::Callback;
 
-/// Creates a new stream for responding to callbacks from the metadata handler.
-pub fn metadata_callback_stream(stream:StreamSink<bool>)
+lazy_static! { static ref CALLBACK_STREAM:RwLock<Option<StreamSink<Callback>>> = RwLock::new(None); }
+
+/// Creates a new stream for sending callbacks to Dart.
+pub fn callback_stream(stream:StreamSink<Callback>)
 {
-    let mut state_stream = METADATA_CALLBACK_STREAM.write().unwrap();
+    let mut state_stream = CALLBACK_STREAM.write().unwrap();
     *state_stream = Some(stream);
 }
 
 /// Updates the stream with the given value.
 /// `True` means that a signal for "Next" was received.
 /// `False` means that a signal for "Previous" was received.
-pub fn update_metadata_callback_stream(value:bool)
+pub fn update_callback_stream(value: Callback)
 {
-    if let Some(stream) = &*METADATA_CALLBACK_STREAM.read().unwrap()
+    if let Some(stream) = &*CALLBACK_STREAM.read().unwrap()
     { stream.add(value); }
 }

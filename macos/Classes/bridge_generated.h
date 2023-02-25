@@ -54,7 +54,7 @@ void wire_playback_state_stream__static_method__Player(int64_t port_);
 
 void wire_progress_state_stream__static_method__Player(int64_t port_);
 
-void wire_metadata_callback_stream__static_method__Player(int64_t port_);
+void wire_callback_stream__static_method__Player(int64_t port_);
 
 void wire_is_playing__method__Player(int64_t port_, struct wire_Player *that);
 
@@ -102,7 +102,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_new__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_playback_state_stream__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_progress_state_stream__static_method__Player);
-    dummy_var ^= ((int64_t) (void*) wire_metadata_callback_stream__static_method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_callback_stream__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_is_playing__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_get_progress__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_open__method__Player);

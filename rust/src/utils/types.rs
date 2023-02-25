@@ -27,3 +27,9 @@ pub struct ProgressState
     pub position:u64,
     pub duration:u64
 }
+
+pub enum Callback
+{
+    NotificationActionSkipPrev,
+    NotificationActionSkipNext,
+}

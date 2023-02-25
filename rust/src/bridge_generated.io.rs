@@ -22,8 +22,8 @@ pub extern "C" fn wire_progress_state_stream__static_method__Player(port_: i64) 
 }
 
 #[no_mangle]
-pub extern "C" fn wire_metadata_callback_stream__static_method__Player(port_: i64) {
-    wire_metadata_callback_stream__static_method__Player_impl(port_)
+pub extern "C" fn wire_callback_stream__static_method__Player(port_: i64) {
+    wire_callback_stream__static_method__Player_impl(port_)
 }
 
 #[no_mangle]
