@@ -173,7 +173,7 @@ impl Decoder
             {
                 let spec = *decoded.spec();
                 let duration = decoded.capacity() as u64;
-                cpal_output.replace(CpalOutput::build_stream(spec, duration)?);
+                cpal_output.replace(CpalOutput::new(spec, duration)?);
             }
 
             cpal_output.as_mut().unwrap().write(decoded);

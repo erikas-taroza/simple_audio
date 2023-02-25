@@ -33,8 +33,6 @@ const BASE_VOLUME:f32 = 0.7;
 //TODO: Support i16 and u16 instead of only f32.
 pub struct CpalOutput
 {
-    _device:Device,
-    _config:StreamConfig,
     pub stream:Stream,
     pub ring_buffer_reader:Consumer<f32>,
     ring_buffer_writer:Producer<f32>,
@@ -46,39 +44,8 @@ pub struct CpalOutput
 
 impl CpalOutput
 {
-    fn get_config(spec:SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
-    {
-        let host = cpal::default_host();
-        let device = host.default_output_device()
-            .context("Failed to get default output device.")?;
-
-        let config;
-
-        #[cfg(target_os = "windows")]
-        {
-            let mut supported_configs = device.supported_output_configs()
-                .context("Failed to get supported output configs.")?;
-            config = supported_configs.next()
-                .context("Failed to get a config.")?
-                .with_max_sample_rate().config();
-        }
-
-        #[cfg(not(target_os = "windows"))]
-        {
-            let channels = spec.channels.count();
-            config = cpal::StreamConfig {
-                channels: channels as cpal::ChannelCount,
-                sample_rate: cpal::SampleRate(spec.rate),
-                buffer_size: cpal::BufferSize::Default,
-            };
-        }
-
-        Ok((device, config))
-    }
-
     /// Starts a new stream on the default device.
-    /// Creates a new ring buffer and sample buffer.
-    pub fn build_stream(spec:SignalSpec, duration:u64) -> anyhow::Result<Self>
+    pub fn new(spec:SignalSpec, duration:u64) -> anyhow::Result<Self>
     {
         // Get the output config.
         let (device, config) = Self::get_config(spec)?;
@@ -152,8 +119,6 @@ impl CpalOutput
 
         Ok(CpalOutput
         {
-            _device: device,
-            _config: config,
             stream,
             ring_buffer_reader: ring_buffer.consumer(),
             ring_buffer_writer,
@@ -162,6 +127,36 @@ impl CpalOutput
             is_stream_done,
             normalizer: Normalizer::new(spec.channels.count(), sample_rate)
         })
+    }
+
+    fn get_config(spec:SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
+    {
+        let host = cpal::default_host();
+        let device = host.default_output_device()
+            .context("Failed to get default output device.")?;
+
+        let config;
+
+        #[cfg(target_os = "windows")]
+        {
+            let mut supported_configs = device.supported_output_configs()
+                .context("Failed to get supported output configs.")?;
+            config = supported_configs.next()
+                .context("Failed to get a config.")?
+                .with_max_sample_rate().config();
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let channels = spec.channels.count();
+            config = cpal::StreamConfig {
+                channels: channels as cpal::ChannelCount,
+                sample_rate: cpal::SampleRate(spec.rate),
+                buffer_size: cpal::BufferSize::Default,
+            };
+        }
+
+        Ok((device, config))
     }
 
     /// Write the `AudioBufferRef` to the buffers.
