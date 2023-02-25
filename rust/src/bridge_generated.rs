@@ -20,7 +20,7 @@ use std::sync::Arc;
 // Section: imports
 
 use crate::metadata::types::Metadata;
-use crate::utils::progress_state_stream::ProgressState;
+use crate::utils::types::ProgressState;
 use crate::Player;
 
 // Section: wire functions

@@ -21,7 +21,7 @@ use std::sync::{RwLock, atomic::AtomicBool};
 use crossbeam::channel::{Sender, Receiver, unbounded};
 use lazy_static::lazy_static;
 
-use crate::utils::progress_state_stream::ProgressState;
+use crate::utils::types::ProgressState;
 
 lazy_static!
 {

@@ -18,7 +18,7 @@ use std::sync::RwLock;
 
 use flutter_rust_bridge::{StreamSink, support::lazy_static};
 
-use super::playback_state::PlaybackState;
+use super::types::PlaybackState;
 
 lazy_static! { static ref PLAYBACK_STATE_STREAM:RwLock<Option<StreamSink<i32>>> = RwLock::new(None); }
 

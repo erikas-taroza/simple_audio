@@ -18,7 +18,7 @@ use cpal::traits::StreamTrait;
 use rb::RbConsumer;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
 
-use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream};
+use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream, types::*};
 
 use super::{cpal_output::CpalOutput, controls::*};
 
@@ -190,10 +190,10 @@ impl Decoder
         // Send the done message once cpal finishes flushing.
         // There may be samples left over and we don't want to
         // start playing another file before they are read.
-        update_playback_state_stream(crate::utils::playback_state::PlaybackState::Done);
+        update_playback_state_stream(PlaybackState::Done);
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(crate::utils::playback_state::PlaybackState::Done);
+        crate::metadata::set_playback_state(PlaybackState::Done);
     }
 }

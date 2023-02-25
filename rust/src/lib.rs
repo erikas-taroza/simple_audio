@@ -27,6 +27,7 @@ use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, Actions};
 use symphonia::core::io::MediaSource;
+use utils::types::*;
 
 use crate::utils::{playback_state_stream::*, progress_state_stream::*, metadata_callback_stream::*};
 
@@ -161,9 +162,9 @@ impl Player
 
         TXRX.read().unwrap().0.send(ThreadMessage::Play).unwrap();
 
-        update_playback_state_stream(utils::playback_state::PlaybackState::Play);
+        update_playback_state_stream(PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Play);
+        crate::metadata::set_playback_state(PlaybackState::Play);
     }
     
     /// Allows for access in other places
@@ -175,9 +176,9 @@ impl Player
 
         TXRX.read().unwrap().0.send(ThreadMessage::Pause).unwrap();
 
-        update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
+        update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
+        crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 
     /// Allows for access in other places
@@ -188,10 +189,10 @@ impl Player
     {
         Self::signal_to_stop();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
-        update_playback_state_stream(utils::playback_state::PlaybackState::Pause);
+        update_playback_state_stream(PlaybackState::Pause);
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(utils::playback_state::PlaybackState::Pause);
+        crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 
     fn internal_seek(seconds:u64)

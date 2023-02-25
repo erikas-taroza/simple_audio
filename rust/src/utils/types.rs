@@ -20,3 +20,10 @@ pub enum PlaybackState
     Pause = 1,
     Done = 2
 }
+
+#[derive(Clone, Copy)]
+pub struct ProgressState
+{
+    pub position:u64,
+    pub duration:u64
+}

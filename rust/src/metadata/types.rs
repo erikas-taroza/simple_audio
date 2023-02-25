@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use crate::utils::playback_state::PlaybackState;
+use crate::utils::types::PlaybackState;
 
 #[derive(Default)]
 pub struct Metadata

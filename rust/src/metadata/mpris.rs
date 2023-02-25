@@ -24,7 +24,7 @@ use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
 use dbus_crossroads::{Crossroads, IfaceBuilder};
 
-use crate::{utils::playback_state::PlaybackState, audio::controls::PROGRESS};
+use crate::{utils::types::PlaybackState, audio::controls::PROGRESS};
 
 use super::types::{Metadata, Event, Command, Actions};
 
