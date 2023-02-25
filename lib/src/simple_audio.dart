@@ -53,36 +53,44 @@ class SimpleAudio
     bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
     /// The callback for when the [NotificationActions.skipPrev] action is called.
-    void Function()? onPreviousCallback;
+    void Function()? onSkipPrevious;
     /// The callback for when the [NotificationActions.skipNext] action is called.
-    void Function()? onNextCallback;
+    void Function()? onSkipNext;
     /// The callback for when an error occurs during the playback stream.
     void Function()? onStreamError;
+    /// The callback for when an error occurs during the decode loop.
+    void Function()? onDecodeError;
 
-    /// **[onPreviousCallback]** Callback for when the user wants to skip to the previous media
+    /// **[onSkipPrevious]** The callback for when the user wants to skip to the previous media
     /// (via a media notification).
     /// 
-    /// **[onNextCallback]** Callback for when the user wants to skip to the next media
+    /// **[onSkipNext]** The callback for when the user wants to skip to the next media
     /// (via a media notification).
     /// 
-    /// /// **[onStreamError]** The callback for when an error occurs during the playback stream.
+    /// **[onStreamError]** The callback for when an error occurs during the playback stream.
+    /// 
+    /// **[onDecodeError]** The callback for when an error occurs during the decode loop.
     SimpleAudio({
-        this.onPreviousCallback,
-        this.onNextCallback,
-        this.onStreamError
+        this.onSkipPrevious,
+        this.onSkipNext,
+        this.onStreamError,
+        this.onDecodeError
     })
     {
         Player.callbackStream(bridge: api).listen((event) {
             switch(event)
             {
                 case Callback.NotificationActionSkipPrev:
-                    onPreviousCallback?.call();
+                    onSkipPrevious?.call();
                     break;
                 case Callback.NotificationActionSkipNext:
-                    onNextCallback?.call();
+                    onSkipNext?.call();
                     break;
                 case Callback.StreamError:
                     onStreamError?.call();
+                    break;
+                case Callback.DecodeError:
+                    onDecodeError?.call();
                     break;
             }
         });
@@ -100,10 +108,10 @@ class SimpleAudio
                     stop();
                     break;
                 case "next":
-                    onNextCallback?.call();
+                    onSkipNext?.call();
                     break;
                 case "previous":
-                    onPreviousCallback?.call();
+                    onSkipPrevious?.call();
                     break;
                 case "seekRelative":
                     int position = (await _progress).position;

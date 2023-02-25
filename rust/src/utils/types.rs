@@ -35,5 +35,7 @@ pub enum Callback
     /// The media notification trigged the SkipNext action.
     NotificationActionSkipNext,
     /// An error occurred during the CPAL stream.
-    StreamError
+    StreamError,
+    /// An error occurred when decoding the file.
+    DecodeError
 }

@@ -22,8 +22,10 @@ class MyApp extends StatefulWidget
 class _MyAppState extends State<MyApp>
 {
     final SimpleAudio player = SimpleAudio(
-        onNextCallback: () => debugPrint("Next"),
-        onPreviousCallback: () => debugPrint("Prev")
+        onSkipNext: () => debugPrint("Next"),
+        onSkipPrevious: () => debugPrint("Prev"),
+        onStreamError: () => debugPrint("Stream Error"),
+        onDecodeError: () => debugPrint("Decode Error")
     );
 
     PlaybackState playbackState = PlaybackState.done;

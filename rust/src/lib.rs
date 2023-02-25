@@ -147,7 +147,11 @@ impl Player
         }
 
         thread::spawn(move || {
-            let _ = Decoder::default().decode(source);
+            let result = Decoder::default().decode(source);
+
+            if let Err(_) = result {
+                update_callback_stream(Callback::DecodeError);
+            }
         });
 
         Ok(())
