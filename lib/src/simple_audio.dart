@@ -53,23 +53,24 @@ class SimpleAudio
     bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
     /// The callback for when the [NotificationActions.skipPrev] action is called.
-    void Function()? onSkipPrevious;
+    void Function(SimpleAudio player)? onSkipPrevious;
     /// The callback for when the [NotificationActions.skipNext] action is called.
-    void Function()? onSkipNext;
+    void Function(SimpleAudio player)? onSkipNext;
 
     /// The callback for when an error occurs when trying to fetch
     /// more bytes for a network stream.
-    void Function()? onNetworkStreamError;
+    void Function(SimpleAudio player)? onNetworkStreamError;
     /// The callback for when an error occurs during the decode loop.
-    void Function()? onDecodeError;
+    void Function(SimpleAudio player)? onDecodeError;
     /// The callback for when an error occurs during the playback stream.
-    void Function()? onPlaybackStreamError;
+    void Function(SimpleAudio player)? onPlaybackStreamError;
 
-    /// **[onSkipPrevious]** The callback for when the user wants to skip to the previous media
-    /// (via a media notification).
+    /// Each callback has a reference to the instantiated `SimpleAudio` object
+    /// if you need to access its members to implement the callbacks.
     /// 
-    /// **[onSkipNext]** The callback for when the user wants to skip to the next media
-    /// (via a media notification).
+    /// **[onSkipPrevious]** The callback for when the [NotificationActions.skipPrev] action is called.
+    /// 
+    /// **[onSkipNext]** The callback for when the [NotificationActions.skipNext] action is called.
     /// 
     /// **[onNetworkStreamError]** The callback for when an error occurs when trying to fetch
     /// more bytes for a network stream.
@@ -89,19 +90,19 @@ class SimpleAudio
             switch(event)
             {
                 case Callback.NotificationActionSkipPrev:
-                    onSkipPrevious?.call();
+                    onSkipPrevious?.call(this);
                     break;
                 case Callback.NotificationActionSkipNext:
-                    onSkipNext?.call();
+                    onSkipNext?.call(this);
                     break;
                 case Callback.NetworkStreamError:
-                    onNetworkStreamError?.call();
+                    onNetworkStreamError?.call(this);
                     break;
                 case Callback.DecodeError:
-                    onDecodeError?.call();
+                    onDecodeError?.call(this);
                     break;
                 case Callback.PlaybackStreamError:
-                    onPlaybackStreamError?.call();
+                    onPlaybackStreamError?.call(this);
                     break;
             }
         });
@@ -119,10 +120,10 @@ class SimpleAudio
                     stop();
                     break;
                 case "next":
-                    onSkipNext?.call();
+                    onSkipNext?.call(this);
                     break;
                 case "previous":
-                    onSkipPrevious?.call();
+                    onSkipPrevious?.call(this);
                     break;
                 case "seekRelative":
                     int position = (await _progress).position;

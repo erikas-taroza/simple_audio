@@ -22,11 +22,20 @@ class MyApp extends StatefulWidget
 class _MyAppState extends State<MyApp>
 {
     final SimpleAudio player = SimpleAudio(
-        onSkipNext: () => debugPrint("Next"),
-        onSkipPrevious: () => debugPrint("Prev"),
-        onNetworkStreamError: () => debugPrint("Network Stream Error"),
-        onDecodeError: () => debugPrint("Decode Error"),
-        onPlaybackStreamError: () => debugPrint("Playback Error"),
+        onSkipNext: (_) => debugPrint("Next"),
+        onSkipPrevious: (_) => debugPrint("Prev"),
+        onNetworkStreamError: (player) {
+            debugPrint("Network Stream Error");
+            player.stop();
+        },
+        onDecodeError: (player) {
+            debugPrint("Decode Error");
+            player.stop();
+        },
+        onPlaybackStreamError: (player) {
+            debugPrint("Playback Error");
+            player.stop();
+        },
     );
 
     PlaybackState playbackState = PlaybackState.done;
