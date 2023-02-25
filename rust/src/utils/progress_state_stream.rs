@@ -18,6 +18,8 @@ use std::sync::RwLock;
 
 use flutter_rust_bridge::{StreamSink, support::lazy_static};
 
+use super::types::ProgressState;
+
 lazy_static! { static ref PROGRESS_STATE_STREAM:RwLock<Option<StreamSink<ProgressState>>> = RwLock::new(None); }
 
 /// Creates a new progress stream.
@@ -32,11 +34,4 @@ pub fn update_progress_state_stream(value:ProgressState)
 {
     if let Some(stream) = &*PROGRESS_STATE_STREAM.read().unwrap()
     { stream.add(value); }
-}
-
-#[derive(Clone, Copy)]
-pub struct ProgressState
-{
-    pub position:u64,
-    pub duration:u64
 }

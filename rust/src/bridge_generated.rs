@@ -20,7 +20,8 @@ use std::sync::Arc;
 // Section: imports
 
 use crate::metadata::types::Metadata;
-use crate::utils::progress_state_stream::ProgressState;
+use crate::utils::types::Callback;
+use crate::utils::types::ProgressState;
 use crate::Player;
 
 // Section: wire functions
@@ -65,20 +66,14 @@ fn wire_progress_state_stream__static_method__Player_impl(port_: MessagePort) {
         move || move |task_callback| Ok(Player::progress_state_stream(task_callback.stream_sink())),
     )
 }
-fn wire_metadata_callback_stream__static_method__Player_impl(port_: MessagePort) {
+fn wire_callback_stream__static_method__Player_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
-            debug_name: "metadata_callback_stream__static_method__Player",
+            debug_name: "callback_stream__static_method__Player",
             port: Some(port_),
             mode: FfiCallMode::Stream,
         },
-        move || {
-            move |task_callback| {
-                Ok(Player::metadata_callback_stream(
-                    task_callback.stream_sink(),
-                ))
-            }
-        },
+        move || move |task_callback| Ok(Player::callback_stream(task_callback.stream_sink())),
     )
 }
 fn wire_is_playing__method__Player_impl(
@@ -129,7 +124,7 @@ fn wire_open__method__Player_impl(
             let api_that = that.wire2api();
             let api_path = path.wire2api();
             let api_autoplay = autoplay.wire2api();
-            move |task_callback| Ok(Player::open(&api_that, api_path, api_autoplay))
+            move |task_callback| Player::open(&api_that, api_path, api_autoplay)
         },
     )
 }
@@ -319,6 +314,19 @@ impl Wire2Api<u8> for u8 {
 }
 
 // Section: impl IntoDart
+
+impl support::IntoDart for Callback {
+    fn into_dart(self) -> support::DartAbi {
+        match self {
+            Self::NotificationActionSkipPrev => 0,
+            Self::NotificationActionSkipNext => 1,
+            Self::NetworkStreamError => 2,
+            Self::DecodeError => 3,
+            Self::PlaybackStreamError => 4,
+        }
+        .into_dart()
+    }
+}
 
 impl support::IntoDart for Player {
     fn into_dart(self) -> support::DartAbi {

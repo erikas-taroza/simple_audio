@@ -16,7 +16,7 @@
 
 use self::types::{Event, Metadata, Actions};
 
-use crate::utils::playback_state::PlaybackState;
+use crate::utils::types::PlaybackState;
 
 pub mod mpris;
 pub mod smtc;

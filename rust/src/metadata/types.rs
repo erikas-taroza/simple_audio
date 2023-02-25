@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use crate::utils::playback_state::PlaybackState;
+use crate::utils::types::PlaybackState;
 
 #[derive(Default)]
 pub struct Metadata
@@ -36,7 +36,7 @@ pub enum Event
     Pause,
     Stop,
     PlayPause,
-    /// `u64`: Position.
+    /// `i64`: Position.
     /// 
     /// `bool`: Is absolute.
     /// If `true`, the position is between `0-duration`.

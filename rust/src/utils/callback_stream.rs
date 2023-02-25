@@ -14,9 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-pub enum PlaybackState
+use std::sync::RwLock;
+
+use flutter_rust_bridge::{StreamSink, support::lazy_static};
+
+use super::types::Callback;
+
+lazy_static! { static ref CALLBACK_STREAM:RwLock<Option<StreamSink<Callback>>> = RwLock::new(None); }
+
+/// Creates a new stream for sending callbacks to Dart.
+pub fn callback_stream(stream:StreamSink<Callback>)
 {
-    Play = 0,
-    Pause = 1,
-    Done = 2
+    let mut state_stream = CALLBACK_STREAM.write().unwrap();
+    *state_stream = Some(stream);
+}
+
+/// Updates/adds to the stream with the given value.
+pub fn update_callback_stream(value: Callback)
+{
+    if let Some(stream) = &*CALLBACK_STREAM.read().unwrap()
+    { stream.add(value); }
 }

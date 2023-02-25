@@ -24,7 +24,13 @@ pub const CHUNK_SIZE:usize = 1024 * 128;
 
 pub trait Streamable<T: Read + Seek + Send + Sync + MediaSource>
 {
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize);
+    fn read_chunk(
+        tx:Sender<(usize, Vec<u8>)>,
+        url:String,
+        start:usize,
+        file_size:usize
+    ) -> anyhow::Result<()>;
+    
     fn try_write_chunk(&mut self, should_buffer:bool);
     fn should_get_chunk(&self) -> (bool, usize);
 }

@@ -18,9 +18,13 @@ use std::io::{Read, Seek};
 use std::thread;
 use std::sync::mpsc::{channel, Sender};
 
+use anyhow::Context;
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
+
+use crate::utils::callback_stream::update_callback_stream;
+use crate::utils::types::Callback;
 
 use super::{streamable::*, Receiver};
 
@@ -36,24 +40,21 @@ pub struct HttpStream
 
 impl HttpStream
 {
-    pub fn new(url:String) -> Self
+    pub fn new(url:String) -> anyhow::Result<Self>
     {
         // Get the size of the file we are streaming.
         let res = Client::new().head(&url)
-            .send()
-            .unwrap();
+            .send()?.error_for_status()?;
 
         let header = res
             .headers().get("Content-Length")
-            .unwrap();
+            .context("Could not get \"Content-Length\" header for HTTP stream.")?;
 
         let size:usize = header
-            .to_str()
-            .unwrap()
-            .parse()
-            .unwrap();
+            .to_str()?
+            .parse()?;
 
-        HttpStream
+        Ok(HttpStream
         {
             url,
             buffer: vec![0; size],
@@ -61,7 +62,7 @@ impl HttpStream
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
             receivers: Vec::new()
-        }
+        })
     }
 }
 
@@ -70,15 +71,24 @@ impl Streamable<Self> for HttpStream
     /// Gets the next chunk in the sequence.
     /// 
     /// Returns the received bytes by sending them via `tx`.
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, file_size:usize)
+    fn read_chunk(
+        tx:Sender<(usize, Vec<u8>)>,
+        url:String,
+        start:usize,
+        file_size:usize
+    ) -> anyhow::Result<()>
     {
         let end = (start + CHUNK_SIZE).min(file_size) - 1;
 
         let chunk = Client::new().get(url)
             .header("Range", format!("bytes={start}-{end}"))
-            .send().unwrap().bytes().unwrap().to_vec();
+            .send()?
+            .error_for_status()?
+            .bytes()?.to_vec();
         
-        tx.send((start, chunk)).unwrap();
+        // We don't care if the data was sent or not.
+        let _ = tx.send((start, chunk));
+        Ok(())
     }
 
     /// Polls all receivers.
@@ -187,7 +197,11 @@ impl Read for HttpStream
             self.receivers.push(Receiver { id, receiver });
 
             thread::spawn(move || {
-                Self::read_chunk(tx, url, chunk_write_pos, file_size);
+                let result = Self::read_chunk(tx, url, chunk_write_pos, file_size);
+
+                if let Err(_) = result {
+                    update_callback_stream(Callback::NetworkStreamError)
+                }
             });
         }
 

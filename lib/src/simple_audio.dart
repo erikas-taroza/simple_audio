@@ -53,23 +53,58 @@ class SimpleAudio
     bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
     /// The callback for when the [NotificationActions.skipPrev] action is called.
-    void Function()? onPreviousCallback;
+    void Function(SimpleAudio player)? onSkipPrevious;
     /// The callback for when the [NotificationActions.skipNext] action is called.
-    void Function()? onNextCallback;
+    void Function(SimpleAudio player)? onSkipNext;
 
-    /// **[onPreviousCallback]** Callback for when the user wants to skip to the previous media
-    /// (via a media notification).
+    /// The callback for when an error occurs when trying to fetch
+    /// more bytes for a network stream.
+    void Function(SimpleAudio player)? onNetworkStreamError;
+    /// The callback for when an error occurs during the decode loop.
+    void Function(SimpleAudio player)? onDecodeError;
+    /// The callback for when an error occurs during the playback stream.
+    void Function(SimpleAudio player)? onPlaybackStreamError;
+
+    /// Each callback has a reference to the instantiated `SimpleAudio` object
+    /// if you need to access its members to implement the callbacks.
     /// 
-    /// **[onNextCallback]** Callback for when the user wants to skip to the next media
-    /// (via a media notification).
+    /// **[onSkipPrevious]** The callback for when the [NotificationActions.skipPrev] action is called.
+    /// 
+    /// **[onSkipNext]** The callback for when the [NotificationActions.skipNext] action is called.
+    /// 
+    /// **[onNetworkStreamError]** The callback for when an error occurs when trying to fetch
+    /// more bytes for a network stream.
+    /// 
+    /// **[onDecodeError]** The callback for when an error occurs during the decode loop.
+    /// 
+    /// **[onPlaybackStreamError]** The callback for when an error occurs during the playback stream.
     SimpleAudio({
-        this.onPreviousCallback,
-        this.onNextCallback
+        this.onSkipPrevious,
+        this.onSkipNext,
+        this.onNetworkStreamError,
+        this.onPlaybackStreamError,
+        this.onDecodeError
     })
     {
-        Player.metadataCallbackStream(bridge: api).listen((event) {
-            if(!event) { onPreviousCallback?.call(); }
-            else { onNextCallback?.call(); }
+        Player.callbackStream(bridge: api).listen((event) {
+            switch(event)
+            {
+                case Callback.NotificationActionSkipPrev:
+                    onSkipPrevious?.call(this);
+                    break;
+                case Callback.NotificationActionSkipNext:
+                    onSkipNext?.call(this);
+                    break;
+                case Callback.NetworkStreamError:
+                    onNetworkStreamError?.call(this);
+                    break;
+                case Callback.DecodeError:
+                    onDecodeError?.call(this);
+                    break;
+                case Callback.PlaybackStreamError:
+                    onPlaybackStreamError?.call(this);
+                    break;
+            }
         });
         
         _methodChannel.setMethodCallHandler((call) async {
@@ -85,10 +120,10 @@ class SimpleAudio
                     stop();
                     break;
                 case "next":
-                    onNextCallback?.call();
+                    onSkipNext?.call(this);
                     break;
                 case "previous":
-                    onPreviousCallback?.call();
+                    onSkipPrevious?.call(this);
                     break;
                 case "seekRelative":
                     int position = (await _progress).position;

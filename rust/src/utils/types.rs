@@ -14,24 +14,31 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::RwLock;
-
-use flutter_rust_bridge::{StreamSink, support::lazy_static};
-
-lazy_static! { static ref METADATA_CALLBACK_STREAM:RwLock<Option<StreamSink<bool>>> = RwLock::new(None); }
-
-/// Creates a new stream for responding to callbacks from the metadata handler.
-pub fn metadata_callback_stream(stream:StreamSink<bool>)
+pub enum PlaybackState
 {
-    let mut state_stream = METADATA_CALLBACK_STREAM.write().unwrap();
-    *state_stream = Some(stream);
+    Play = 0,
+    Pause = 1,
+    Done = 2
 }
 
-/// Updates the stream with the given value.
-/// `True` means that a signal for "Next" was received.
-/// `False` means that a signal for "Previous" was received.
-pub fn update_metadata_callback_stream(value:bool)
+#[derive(Clone, Copy)]
+pub struct ProgressState
 {
-    if let Some(stream) = &*METADATA_CALLBACK_STREAM.read().unwrap()
-    { stream.add(value); }
+    pub position:u64,
+    pub duration:u64
+}
+
+pub enum Callback
+{
+    /// The media notification trigged the SkipPrev action.
+    NotificationActionSkipPrev,
+    /// The media notification trigged the SkipNext action.
+    NotificationActionSkipNext,
+    /// An error occurred when trying to fetch more bytes for
+    /// a network stream.
+    NetworkStreamError,
+    /// An error occurred when decoding the file.
+    DecodeError,
+    /// An error occurred during the CPAL stream.
+    PlaybackStreamError,
 }

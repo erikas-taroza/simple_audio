@@ -19,9 +19,13 @@ use std::ops::Range;
 use std::thread;
 use std::sync::mpsc::{channel, Sender};
 
+use anyhow::Context;
 use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
+
+use crate::utils::callback_stream::update_callback_stream;
+use crate::utils::types::Callback;
 
 use super::{streamable::*, Receiver};
 
@@ -42,13 +46,13 @@ pub struct HlsStream
 
 impl HlsStream
 {
-    pub fn new(url:String) -> Self
+    pub fn new(url:String) -> anyhow::Result<Self>
     {
         let mut urls = Vec::new();
         let mut total_size = 0;
 
         let file = Client::new().get(url)
-            .send().unwrap().text().unwrap();
+            .send()?.text()?;
 
         for line in file.lines()
         {
@@ -56,24 +60,21 @@ impl HlsStream
 
             // Get the size of the part.
             let res = Client::new().head(line)
-                .send()
-                .unwrap();
+                .send()?.error_for_status()?;
 
             let header = res
                 .headers().get("Content-Length")
-                .unwrap();
+                .context("Could not get \"Content-Length\" header for a part of HLS stream.")?;
 
             let size:usize = header
-                .to_str()
-                .unwrap()
-                .parse()
-                .unwrap();
+                .to_str()?
+                .parse()?;
 
             urls.push((total_size..total_size + size + 1, line.to_string()));
             total_size += size;
         }
 
-        HlsStream
+        Ok(HlsStream
         {
             urls,
             buffer: vec![0; total_size],
@@ -81,18 +82,27 @@ impl HlsStream
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
             receivers: Vec::new()
-        }
+        })
     }
 }
 
 impl Streamable<Self> for HlsStream
 {
-    fn read_chunk(tx:Sender<(usize, Vec<u8>)>, url:String, start:usize, _:usize)
+    fn read_chunk(
+        tx:Sender<(usize, Vec<u8>)>,
+        url:String,
+        start:usize,
+        _:usize
+    ) -> anyhow::Result<()>
     {
         let chunk = Client::new().get(url)
-            .send().unwrap().bytes().unwrap().to_vec();
+            .send()?
+            .error_for_status()?
+            .bytes()?.to_vec();
         
-        tx.send((start, chunk)).unwrap();
+        // We don't care if the data was sent or not.
+        let _ = tx.send((start, chunk));
+        Ok(())
     }
 
     fn try_write_chunk(&mut self, should_buffer:bool)
@@ -177,7 +187,11 @@ impl Read for HlsStream
                 self.receivers.push(Receiver { id, receiver });
 
                 thread::spawn(move || {
-                    Self::read_chunk(tx, url, start, file_size);
+                    let result = Self::read_chunk(tx, url, start, file_size);
+
+                    if let Err(_) = result {
+                        update_callback_stream(Callback::NetworkStreamError)
+                    }
                 });
 
                 // Because the sizes of the parts vary, `should_get_chunk` may
