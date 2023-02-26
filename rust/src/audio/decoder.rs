@@ -97,13 +97,25 @@ impl Decoder
                 {
                     ThreadMessage::Play if cfg!(not(target_os = "windows")) => {
                         if let Some(cpal_output) = cpal_output.as_ref()
-                        { cpal_output.stream.play()?; } 
+                        { cpal_output.stream.play()?; }
                     },
                     ThreadMessage::Pause if cfg!(not(target_os = "windows")) => {
                         if let Some(cpal_output) = cpal_output.as_ref()
-                        { cpal_output.stream.pause()?; } 
+                        { cpal_output.stream.pause()?; }
                     },
                     ThreadMessage::Stop => break,
+                    // When the device is changed/disconnected,
+                    // then we should reestablish a connection.
+                    // To make a new connection, dispose of the current cpal_output
+                    // and pause playback. Once the user is ready, they can start
+                    // playback themselves.
+                    ThreadMessage::DeviceChanged => {
+                        cpal_output = None;
+                        // This method sends a `ThreadMessage::Pause` but it is
+                        // ignored because `cpal_output` is `None`.
+                        crate::Player::internal_pause();
+                        DEVICE_CHANGED.store(false, std::sync::atomic::Ordering::SeqCst);
+                    }
                     _ => ()
                 }
             }
@@ -130,7 +142,7 @@ impl Decoder
                 // Clear the ring buffer which prevents the writer
                 // from blocking.
                 if let Some(cpal_output) = cpal_output.as_ref()
-                { let _ = cpal_output.ring_buffer_reader.skip(usize::MAX); }
+                { let _ = cpal_output.ring_buffer_reader.skip_pending(); }
                 continue;
             }
 

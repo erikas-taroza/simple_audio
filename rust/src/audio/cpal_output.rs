@@ -21,8 +21,6 @@ use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, Stream
 use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-use crate::utils::{callback_stream::update_callback_stream, types::Callback};
-
 use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streaming::streamable::IS_STREAM_BUFFERING};
 
 /// The default output volume is way too high.
@@ -90,8 +88,6 @@ impl CpalOutput
                     return;
                 }
 
-                // This is where data should be modified (like changing volume).
-                // This will be the point where there is the lowest latency.
                 let written = ring_buffer_reader.read(data).unwrap_or(0);
 
                 // Notify that the stream was finished reading.
@@ -103,10 +99,24 @@ impl CpalOutput
                 }
                 
                 // Set the volume.
-                data[0..written].iter_mut().for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
+                data[0..written].iter_mut()
+                    .for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
             },
-            move |_| {
-                update_callback_stream(Callback::PlaybackStreamError);
+            move |err| {
+                match err
+                {
+                    cpal::StreamError::DeviceNotAvailable => {
+                        // Tell the decoder that there is no longer a valid device.
+                        // The decoder will make a new `cpal_output`.
+                        let tx = TXRX.read().unwrap().0.clone();
+                        tx.send(ThreadMessage::DeviceChanged).unwrap();
+                        DEVICE_CHANGED.store(true, std::sync::atomic::Ordering::SeqCst);
+                    },
+                    cpal::StreamError::BackendSpecific { err } => {
+                        // This should never happen.
+                        panic!("Unknown error occurred during playback: {err}");
+                    },
+                }
             }, None
         );
 
@@ -177,9 +187,19 @@ impl CpalOutput
             samples = self.normalizer.normalize(samples);
         }
 
-        // Write the interleaved samples to the ring buffer which is output by CPAL.
-        while let Some(written) = self.ring_buffer_writer.write_blocking(samples)
-        { samples = &samples[written..]; }
+        loop
+        {
+            if DEVICE_CHANGED.load(std::sync::atomic::Ordering::SeqCst) 
+                || samples.is_empty()
+            {
+                break;
+            }
+
+            let result = self.ring_buffer_writer.write(samples);
+            if let Ok(written) = result {
+                samples = &samples[written..];
+            }
+        }
     }
 
     /// Clean up after playback is done.

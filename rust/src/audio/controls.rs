@@ -35,6 +35,7 @@ lazy_static!
     pub static ref TXRX2:RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
 }
 
+pub static DEVICE_CHANGED:AtomicBool = AtomicBool::new(false);
 pub static IS_PLAYING:AtomicBool = AtomicBool::new(false);
 pub static IS_LOOPING:AtomicBool = AtomicBool::new(false);
 pub static IS_NORMALIZING:AtomicBool = AtomicBool::new(false);
@@ -46,5 +47,8 @@ pub enum ThreadMessage
 {
     Play,
     Pause,
-    Stop
+    Stop,
+    /// Called by `cpal_output` in the event the device outputting
+    /// audio was changed/disconnected.
+    DeviceChanged
 }
