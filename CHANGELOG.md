@@ -1,3 +1,8 @@
+## 1.4.0
+- Support changing output devices.
+- Remove playback error handling.
+    - The main cause of this was the output device changing.
+
 ## 1.3.0
 - Allow user to handle errors. The following errors can be handled in Dart:
     - Fail to open a file
