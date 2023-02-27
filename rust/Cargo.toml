@@ -12,7 +12,6 @@ flutter_rust_bridge = "1.65.0"
 reqwest = { version = "0.11.12", features = ["blocking"] }
 # symphonia = { version = "0.5.2", features = ["all"] }
 symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements", features = ["all"] }
-rb = "0.4.1"
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 openssl-sys = { version = "0.9.77", features = ["vendored"] }
 rubato = "0.12.0"

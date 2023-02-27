@@ -18,8 +18,9 @@ use std::sync::{Mutex, Arc, Condvar};
 
 use anyhow::Context;
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
-use rb::{Producer, Consumer, SpscRb, RB, RbConsumer, RbProducer};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
+
+use crate::utils::blocking_rb::BlockingRb;
 
 use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streaming::streamable::IS_STREAM_BUFFERING};
 
@@ -32,8 +33,8 @@ const BASE_VOLUME:f32 = 0.7;
 pub struct CpalOutput
 {
     pub stream:Stream,
-    pub ring_buffer_reader:Consumer<f32>,
-    ring_buffer_writer:Producer<f32>,
+    pub ring_buffer_reader:BlockingRb<f32>,
+    ring_buffer_writer:BlockingRb<f32>,
     sample_buffer:SampleBuffer<f32>,
     resampler:Option<Resampler<f32>>,
     is_stream_done:Arc<(Mutex<bool>, Condvar)>,
@@ -57,10 +58,12 @@ impl CpalOutput
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
         let ring_len = ((200 * spec.rate as usize) / 1000) * channels;
-        let ring_buffer:SpscRb<f32> = SpscRb::new(ring_len);
+
         // Create the buffers for the stream.
-        let ring_buffer_reader = ring_buffer.consumer();
-        let ring_buffer_writer = ring_buffer.producer();
+        let rb = BlockingRb::<f32>::new(ring_len);
+        let ring_buffer_reader = rb.clone();
+        let ring_buffer_writer = rb.clone();
+
         let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
 
         let is_stream_done = Arc::new((Mutex::new(false), Condvar::new()));
@@ -82,7 +85,7 @@ impl CpalOutput
                     data.iter_mut().for_each(|s| *s = 0.0);
                     
                     if buffering {
-                        let _ = ring_buffer_reader.skip_pending();
+                        let _ = ring_buffer_reader.skip_all();
                     }
 
                     return;
@@ -111,6 +114,7 @@ impl CpalOutput
                         let tx = TXRX.read().unwrap().0.clone();
                         tx.send(ThreadMessage::DeviceChanged).unwrap();
                         DEVICE_CHANGED.store(true, std::sync::atomic::Ordering::SeqCst);
+                        ring_buffer_writer.cancel_write();
                     },
                     cpal::StreamError::BackendSpecific { err } => {
                         // This should never happen.
@@ -130,8 +134,8 @@ impl CpalOutput
         Ok(CpalOutput
         {
             stream,
-            ring_buffer_reader: ring_buffer.consumer(),
-            ring_buffer_writer,
+            ring_buffer_reader: rb.clone(),
+            ring_buffer_writer: rb.clone(),
             sample_buffer,
             resampler,
             is_stream_done,
@@ -187,18 +191,8 @@ impl CpalOutput
             samples = self.normalizer.normalize(samples);
         }
 
-        loop
-        {
-            if DEVICE_CHANGED.load(std::sync::atomic::Ordering::SeqCst) 
-                || samples.is_empty()
-            {
-                break;
-            }
-
-            let result = self.ring_buffer_writer.write(samples);
-            if let Ok(written) = result {
-                samples = &samples[written..];
-            }
+        while let Some(written) = self.ring_buffer_writer.write(samples) {
+            samples = &samples[written..]
         }
     }
 
@@ -210,7 +204,7 @@ impl CpalOutput
         if let Some(resampler) = &mut self.resampler {
             let mut remaining_samples = resampler.flush().unwrap_or_default();
 
-            while let Some(written) = self.ring_buffer_writer.write_blocking(remaining_samples) {
+            while let Some(written) = self.ring_buffer_writer.write(remaining_samples) {
                 remaining_samples = &remaining_samples[written..];
             }
         }

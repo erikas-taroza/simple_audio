@@ -16,7 +16,6 @@
 
 use anyhow::Context;
 use cpal::traits::StreamTrait;
-use rb::RbConsumer;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::Time}, default};
 
 use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream, types::*};
@@ -142,7 +141,7 @@ impl Decoder
                 // Clear the ring buffer which prevents the writer
                 // from blocking.
                 if let Some(cpal_output) = cpal_output.as_ref()
-                { let _ = cpal_output.ring_buffer_reader.skip_pending(); }
+                { let _ = cpal_output.ring_buffer_reader.skip_all(); }
                 continue;
             }
 
