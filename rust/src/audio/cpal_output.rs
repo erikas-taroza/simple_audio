@@ -91,10 +91,10 @@ impl CpalOutput
                     return;
                 }
 
-                let written = ring_buffer_reader.read(data).unwrap_or(0);
+                let written = ring_buffer_reader.read(data);
 
                 // Notify that the stream was finished reading.
-                if written == 0 {
+                if written.is_none() {
                     let (mutex, cvar) = &*is_stream_done_clone;
                     *mutex.lock().unwrap() = true;
                     cvar.notify_one();
@@ -102,7 +102,7 @@ impl CpalOutput
                 }
                 
                 // Set the volume.
-                data[0..written].iter_mut()
+                data[0..written.unwrap()].iter_mut()
                     .for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
             },
             move |err| {

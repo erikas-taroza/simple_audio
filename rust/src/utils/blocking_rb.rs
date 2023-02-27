@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{Mutex, atomic::{AtomicUsize, AtomicBool}, Arc, Condvar};
+use std::sync::{Mutex, atomic::AtomicUsize, Arc, Condvar};
 
 #[derive(Clone)]
 pub struct BlockingRb<T>
 {
     size: usize,
-    is_full: Arc<AtomicBool>,
+    num_values: Arc<AtomicUsize>,
     buf: Arc<Mutex<Vec<T>>>,
     read_pos: Arc<AtomicUsize>,
     write_pos: Arc<AtomicUsize>,
@@ -34,7 +34,7 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
         BlockingRb
         {
             size,
-            is_full: Arc::new(AtomicBool::new(false)),
+            num_values: Arc::new(AtomicUsize::new(0)),
             buf: Arc::new(Mutex::new(vec![T::default(); size])),
             read_pos: Arc::new(AtomicUsize::new(0)),
             write_pos: Arc::new(AtomicUsize::new(0)),
@@ -45,26 +45,20 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
     /// Returns the number of free spaces in the ring buffer.
     fn num_free(&self) -> usize
     {
-        let read_pos = self.read_pos.load(std::sync::atomic::Ordering::SeqCst);
-        let write_pos = self.write_pos.load(std::sync::atomic::Ordering::SeqCst);
+        let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
+        self.size - num_values
+    }
 
-        if write_pos == read_pos && self.is_full.load(std::sync::atomic::Ordering::SeqCst) {
-            return 0;
-        }
-        else if write_pos < read_pos {
-            read_pos - write_pos
-        }
-        else {
-            self.size - (write_pos - read_pos)
-        }
+    fn is_full(&self) -> bool
+    {
+        let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
+        num_values == self.size
     }
 
     fn is_empty(&self) -> bool
     {
-        let read_pos = self.read_pos.load(std::sync::atomic::Ordering::SeqCst);
-        let write_pos = self.write_pos.load(std::sync::atomic::Ordering::SeqCst);
-
-        read_pos == write_pos && !self.is_full.load(std::sync::atomic::Ordering::SeqCst)
+        let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
+        num_values == 0
     }
 
     // ---------------------------------
@@ -84,7 +78,7 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
 
         let num_free = self.num_free();
         // Block if the buffer doesn't have space for the slice.
-        if num_free < slice.len() || self.is_full.load(std::sync::atomic::Ordering::SeqCst)
+        if num_free < slice.len() || self.is_full()
         {
             // Wait for the event to tell us that there free space
             // available or that the operation should be cancelled.
@@ -127,10 +121,7 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
 
         let write_pos = (write_pos + count) % self.size;
         self.write_pos.store(write_pos, std::sync::atomic::Ordering::SeqCst);
-
-        if write_pos == self.read_pos.load(std::sync::atomic::Ordering::SeqCst) {
-            self.is_full.store(true, std::sync::atomic::Ordering::SeqCst);
-        }
+        self.num_values.fetch_add(count, std::sync::atomic::Ordering::SeqCst);
 
         Some(count)
     }
@@ -183,7 +174,9 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
         }
 
         self.read_pos.store((read_pos + count) % self.size, std::sync::atomic::Ordering::SeqCst);
-        self.is_full.store(false, std::sync::atomic::Ordering::SeqCst);
+        
+        let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
+        self.num_values.store(num_values.checked_sub(count).unwrap_or(0), std::sync::atomic::Ordering::SeqCst);
 
         let (mutex, cvar) = &*self.producer_events;
         *mutex.lock().unwrap() = Event::FreeSpace;
@@ -202,7 +195,7 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
 
         // This method basically "reads" until the write position.
         // When reading, the following has to be done.
-        self.is_full.store(false, std::sync::atomic::Ordering::SeqCst);
+        self.num_values.store(0, std::sync::atomic::Ordering::SeqCst);
 
         let (mutex, cvar) = &*self.producer_events;
         *mutex.lock().unwrap() = Event::FreeSpace;
