@@ -113,7 +113,6 @@ impl Decoder
                         // This method sends a `ThreadMessage::Pause` but it is
                         // ignored because `cpal_output` is `None`.
                         crate::Player::internal_pause();
-                        DEVICE_CHANGED.store(false, std::sync::atomic::Ordering::SeqCst);
                     }
                     _ => ()
                 }

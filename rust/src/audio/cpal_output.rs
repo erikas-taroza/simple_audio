@@ -113,7 +113,6 @@ impl CpalOutput
                         // The decoder will make a new `cpal_output`.
                         let tx = TXRX.read().unwrap().0.clone();
                         tx.send(ThreadMessage::DeviceChanged).unwrap();
-                        DEVICE_CHANGED.store(true, std::sync::atomic::Ordering::SeqCst);
                         ring_buffer_writer.cancel_write();
                     },
                     cpal::StreamError::BackendSpecific { err } => {
