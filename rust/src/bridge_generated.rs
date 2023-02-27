@@ -322,7 +322,6 @@ impl support::IntoDart for Callback {
             Self::NotificationActionSkipNext => 1,
             Self::NetworkStreamError => 2,
             Self::DecodeError => 3,
-            Self::PlaybackStreamError => 4,
         }
         .into_dart()
     }

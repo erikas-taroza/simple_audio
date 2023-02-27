@@ -98,9 +98,6 @@ enum Callback {
 
   /// An error occurred when decoding the file.
   DecodeError,
-
-  /// An error occurred during the CPAL stream.
-  PlaybackStreamError,
 }
 
 class Metadata {

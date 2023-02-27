@@ -62,8 +62,6 @@ class SimpleAudio
     void Function(SimpleAudio player)? onNetworkStreamError;
     /// The callback for when an error occurs during the decode loop.
     void Function(SimpleAudio player)? onDecodeError;
-    /// The callback for when an error occurs during the playback stream.
-    void Function(SimpleAudio player)? onPlaybackStreamError;
 
     /// Each callback has a reference to the instantiated `SimpleAudio` object
     /// if you need to access its members to implement the callbacks.
@@ -76,13 +74,10 @@ class SimpleAudio
     /// more bytes for a network stream.
     /// 
     /// **[onDecodeError]** The callback for when an error occurs during the decode loop.
-    /// 
-    /// **[onPlaybackStreamError]** The callback for when an error occurs during the playback stream.
     SimpleAudio({
         this.onSkipPrevious,
         this.onSkipNext,
         this.onNetworkStreamError,
-        this.onPlaybackStreamError,
         this.onDecodeError
     })
     {
@@ -100,9 +95,6 @@ class SimpleAudio
                     break;
                 case Callback.DecodeError:
                     onDecodeError?.call(this);
-                    break;
-                case Callback.PlaybackStreamError:
-                    onPlaybackStreamError?.call(this);
                     break;
             }
         });

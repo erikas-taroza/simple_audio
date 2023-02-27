@@ -32,10 +32,6 @@ class _MyAppState extends State<MyApp>
             debugPrint("Decode Error");
             player.stop();
         },
-        onPlaybackStreamError: (player) {
-            debugPrint("Playback Error");
-            player.stop();
-        },
     );
 
     PlaybackState playbackState = PlaybackState.done;

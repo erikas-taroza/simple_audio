@@ -38,7 +38,5 @@ pub enum Callback
     /// a network stream.
     NetworkStreamError,
     /// An error occurred when decoding the file.
-    DecodeError,
-    /// An error occurred during the CPAL stream.
-    PlaybackStreamError,
+    DecodeError
 }
