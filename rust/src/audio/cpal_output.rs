@@ -85,7 +85,7 @@ impl CpalOutput
                     data.iter_mut().for_each(|s| *s = 0.0);
                     
                     if buffering {
-                        let _ = ring_buffer_reader.skip_all();
+                        ring_buffer_reader.skip_all();
                     }
 
                     return;
@@ -134,7 +134,7 @@ impl CpalOutput
         {
             stream,
             ring_buffer_reader: rb.clone(),
-            ring_buffer_writer: rb.clone(),
+            ring_buffer_writer: rb,
             sample_buffer,
             resampler,
             is_stream_done,

@@ -103,18 +103,18 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
 
         let write_pos = self.write_pos.load(std::sync::atomic::Ordering::SeqCst);
 
-        // The data can fit in line in the buffer.
         if write_pos + count < self.size
         {
+            // The data can fit in line in the buffer.
             buf[write_pos..write_pos + count]
                 .copy_from_slice(&slice[..count]);
         }
-        // The data is towards the end of the buffer and
-        // needs to be wrapped.
         else
         {
             // How much data can be written before wrapping.
             let num_end = self.size - write_pos;
+            // The data is towards the end of the buffer and
+            // needs to be wrapped.
             buf[write_pos..].copy_from_slice(&slice[..num_end]);
             buf[..count - num_end].copy_from_slice(&slice[num_end..count]);
         }
@@ -157,18 +157,18 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
 
         let read_pos = self.read_pos.load(std::sync::atomic::Ordering::SeqCst);
 
-        // The data can be read in line from the buffer.
         if read_pos + count < self.size
         {
+            // The data can be read in line from the buffer.
             slice[..count].copy_from_slice(
                 &buf[read_pos..read_pos + count]);
         }
-        // The read position is towards the end of the buffer and
-        // needs to be wrapped.
         else
         {
             // How much data can be written before wrapping.
             let num_end = self.size - read_pos;
+            // The read position is towards the end of the buffer and
+            // needs to be wrapped.
             slice[..num_end].copy_from_slice(&buf[read_pos..]);
             slice[num_end..count].copy_from_slice(&buf[..count - num_end]);
         }
@@ -176,7 +176,7 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
         self.read_pos.store((read_pos + count) % self.size, std::sync::atomic::Ordering::SeqCst);
         
         let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
-        self.num_values.store(num_values.checked_sub(count).unwrap_or(0), std::sync::atomic::Ordering::SeqCst);
+        self.num_values.store(num_values.saturating_sub(count), std::sync::atomic::Ordering::SeqCst);
 
         let (mutex, cvar) = &*self.producer_events;
         *mutex.lock().unwrap() = Event::FreeSpace;

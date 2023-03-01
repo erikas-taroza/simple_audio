@@ -150,7 +150,7 @@ impl Player
         thread::spawn(move || {
             let result = Decoder::default().decode(source);
 
-            if let Err(_) = result {
+            if result.is_err() {
                 update_callback_stream(Callback::DecodeError);
             }
         });

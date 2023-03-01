@@ -199,7 +199,7 @@ impl Read for HttpStream
             thread::spawn(move || {
                 let result = Self::read_chunk(tx, url, chunk_write_pos, file_size);
 
-                if let Err(_) = result {
+                if result.is_err() {
                     update_callback_stream(Callback::NetworkStreamError)
                 }
             });

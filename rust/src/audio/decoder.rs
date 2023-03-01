@@ -140,7 +140,7 @@ impl Decoder
                 // Clear the ring buffer which prevents the writer
                 // from blocking.
                 if let Some(cpal_output) = cpal_output.as_ref()
-                { let _ = cpal_output.ring_buffer_reader.skip_all(); }
+                { cpal_output.ring_buffer_reader.skip_all(); }
                 continue;
             }
 
