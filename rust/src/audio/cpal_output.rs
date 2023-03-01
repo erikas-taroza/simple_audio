@@ -20,7 +20,7 @@ use anyhow::Context;
 use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
 use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
 
-use crate::utils::blocking_rb::BlockingRb;
+use crate::utils::blocking_rb::*;
 
 use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, streaming::streamable::IS_STREAM_BUFFERING};
 
@@ -33,8 +33,8 @@ const BASE_VOLUME:f32 = 0.7;
 pub struct CpalOutput
 {
     pub stream:Stream,
-    pub ring_buffer_reader:BlockingRb<f32>,
-    ring_buffer_writer:BlockingRb<f32>,
+    pub ring_buffer_reader:BlockingRb<f32, Consumer>,
+    ring_buffer_writer:BlockingRb<f32, Producer>,
     sample_buffer:SampleBuffer<f32>,
     resampler:Option<Resampler<f32>>,
     is_stream_done:Arc<(Mutex<bool>, Condvar)>,
@@ -61,8 +61,9 @@ impl CpalOutput
 
         // Create the buffers for the stream.
         let rb = BlockingRb::<f32>::new(ring_len);
-        let ring_buffer_reader = rb.clone();
-        let ring_buffer_writer = rb.clone();
+        let rb_clone = rb.clone();
+        let ring_buffer_writer = rb.0;
+        let ring_buffer_reader = rb.1;
 
         let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
 
@@ -133,8 +134,8 @@ impl CpalOutput
         Ok(CpalOutput
         {
             stream,
-            ring_buffer_reader: rb.clone(),
-            ring_buffer_writer: rb,
+            ring_buffer_writer: rb_clone.0,
+            ring_buffer_reader: rb_clone.1,
             sample_buffer,
             resampler,
             is_stream_done,

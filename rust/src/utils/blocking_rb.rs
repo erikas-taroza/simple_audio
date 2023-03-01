@@ -16,8 +16,16 @@
 
 use std::sync::{Mutex, atomic::AtomicUsize, Arc, Condvar};
 
+/// Provides the producer methods of the ring buffer.
 #[derive(Clone)]
-pub struct BlockingRb<T>
+pub struct Producer;
+
+/// Provides the consumer methods of the ring buffer.
+#[derive(Clone)]
+pub struct Consumer;
+
+#[derive(Clone)]
+pub struct BlockingRb<T, Type = Producer>
 {
     size: usize,
     num_values: Arc<AtomicUsize>,
@@ -25,21 +33,36 @@ pub struct BlockingRb<T>
     read_pos: Arc<AtomicUsize>,
     write_pos: Arc<AtomicUsize>,
     producer_events: Arc<(Mutex<Event>, Condvar)>,
+    _type: std::marker::PhantomData<Type>
 }
 
-impl<T: Copy + Clone + Default> BlockingRb<T>
+impl<T: Copy + Clone + Default, Type> BlockingRb<T, Type>
 {
-    pub fn new(size: usize) -> Self
+    /// Returns a producer and a consumer tuple.
+    pub fn new(size: usize) -> (BlockingRb<T, Producer>, BlockingRb<T, Consumer>)
     {
-        BlockingRb
-        {
-            size,
-            num_values: Arc::new(AtomicUsize::new(0)),
-            buf: Arc::new(Mutex::new(vec![T::default(); size])),
-            read_pos: Arc::new(AtomicUsize::new(0)),
-            write_pos: Arc::new(AtomicUsize::new(0)),
-            producer_events: Arc::new((Mutex::new(Event::None), Condvar::new()))
-        }
+        (
+            BlockingRb
+            {
+                size,
+                num_values: Arc::new(AtomicUsize::new(0)),
+                buf: Arc::new(Mutex::new(vec![T::default(); size])),
+                read_pos: Arc::new(AtomicUsize::new(0)),
+                write_pos: Arc::new(AtomicUsize::new(0)),
+                producer_events: Arc::new((Mutex::new(Event::None), Condvar::new())),
+                _type: std::marker::PhantomData::<Producer>
+            },
+            BlockingRb
+            {
+                size,
+                num_values: Arc::new(AtomicUsize::new(0)),
+                buf: Arc::new(Mutex::new(vec![T::default(); size])),
+                read_pos: Arc::new(AtomicUsize::new(0)),
+                write_pos: Arc::new(AtomicUsize::new(0)),
+                producer_events: Arc::new((Mutex::new(Event::None), Condvar::new())),
+                _type: std::marker::PhantomData::<Consumer>
+            }
+        )
     }
 
     /// Returns the number of free spaces in the ring buffer.
@@ -60,11 +83,10 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
         let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
         num_values == 0
     }
+}
 
-    // ---------------------------------
-    //             PRODUCER
-    // ---------------------------------
-
+impl<T: Copy + Clone + Default> BlockingRb<T, Producer>
+{
     /// Blocks the thread until there is space in the
     /// buffer to write to. This operation can be cancelled
     /// by calling `cancel`.
@@ -133,11 +155,10 @@ impl<T: Copy + Clone + Default> BlockingRb<T>
         *mutex.lock().unwrap() = Event::CancelWrite;
         cvar.notify_all();
     }
+}
 
-    // ---------------------------------
-    //             CONSUMER
-    // ---------------------------------
-
+impl<T: Copy + Clone + Default> BlockingRb<T, Consumer>
+{
     /// Reads from the ring buffer and fills the given slice
     /// with as much data as possible.
     /// 
@@ -221,18 +242,17 @@ mod tests
     #[test]
     fn test_write()
     {
-        let rb = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
-        let writer = rb.clone();
+        let (writer, _) = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
 
         let data = vec![1, 2, 3, 4, 5];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 5);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 5);
 
         let data = vec![6, 7];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 3);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 3);
     }
 
     /// Expected output:
@@ -242,79 +262,73 @@ mod tests
     #[test]
     fn test_write_wrap()
     {
-        let rb = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
-        let writer = rb.clone();
-        let reader = rb.clone();
+        let (writer, reader) = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
 
         let data = vec![1, 2, 3, 4, 5];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 5);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 5);
 
         let mut read_buf = vec![0; 2];
         let _ = reader.read(&mut read_buf);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 7);
+        println!("{:?}", *reader.buf.lock().unwrap());
+        assert!(reader.num_free() == 7);
 
         let data = vec![6, 7, 8, 9, 10, 11, 12];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 0);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 0);
 
         // This should block to prevent overwriting.
         let data = vec![13, 14, 15];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
+        println!("{:?}", *writer.buf.lock().unwrap());
     }
 
     #[test]
     fn test_read()
     {
-        let rb = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
-        let writer = rb.clone();
-        let reader = rb.clone();
+        let (writer, reader) = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
 
         let data = vec![1, 2, 3, 4, 5];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 5);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 5);
 
         let mut read_buf = vec![0; 2];
         let _ = reader.read(&mut read_buf);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 7);
+        println!("{:?}", *reader.buf.lock().unwrap());
+        assert!(reader.num_free() == 7);
 
         let mut read_buf = vec![0; 2];
         let _ = reader.read(&mut read_buf);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 9);
+        println!("{:?}", *reader.buf.lock().unwrap());
+        assert!(reader.num_free() == 9);
     }
 
     #[test]
     fn test_read_wrap()
     {
-        let rb = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
-        let writer = rb.clone();
-        let reader = rb.clone();
+        let (writer, reader) = crate::utils::blocking_rb::BlockingRb::<u32>::new(10);
 
         let data = vec![1, 2, 3, 4, 5];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 5);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 5);
 
         let mut read_buf = vec![0; 5];
         let _ = reader.read(&mut read_buf);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 10);
+        println!("{:?}", *reader.buf.lock().unwrap());
+        assert!(reader.num_free() == 10);
 
         let data = vec![6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         let _ = writer.write(&data);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 0);
+        println!("{:?}", *writer.buf.lock().unwrap());
+        assert!(writer.num_free() == 0);
 
         let mut read_buf = vec![0; 7];
         let _ = reader.read(&mut read_buf);
-        println!("{:?}", *rb.buf.lock().unwrap());
-        assert!(rb.num_free() == 7);
+        println!("{:?}", *reader.buf.lock().unwrap());
+        assert!(reader.num_free() == 7);
     }
 }
