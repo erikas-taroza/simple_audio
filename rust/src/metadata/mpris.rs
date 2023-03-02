@@ -37,7 +37,7 @@ pub struct Mpris
 
 impl Mpris
 {
-    pub fn new<C>(actions:Vec<Actions>, dbus_name:String, callback:C) -> Self
+    pub fn new<C>(actions: Vec<Actions>, dbus_name: String, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
@@ -50,13 +50,13 @@ impl Mpris
         Mpris { tx }
     }
 
-    pub fn set_metadata(&self, metadata:Metadata)
+    pub fn set_metadata(&self, metadata: Metadata)
     { self.tx.send(Command::SetMetadata(metadata)).unwrap(); }
 
-    pub fn set_playback_state(&self, state:PlaybackState)
+    pub fn set_playback_state(&self, state: PlaybackState)
     { self.tx.send(Command::SetPlaybackState(state)).unwrap(); }
 
-    fn run<C>(actions:Vec<Actions>, dbus_name:String, rx:Receiver<Command>, callback:C) -> Result<(), dbus::Error>
+    fn run<C>(actions: Vec<Actions>, dbus_name: String, rx: Receiver<Command>, callback: C) -> Result<(), dbus::Error>
     where
         C: Fn(Event) + Send + 'static
     {
@@ -78,7 +78,7 @@ impl Mpris
         let metadata = Arc::new(Mutex::new(Metadata::default()));
         let playback_state = Arc::new(Mutex::new(PlaybackState::Done));
 
-        let mp = cr.register("org.mpris.MediaPlayer2", move |e:&mut IfaceBuilder<()>| {
+        let mp = cr.register("org.mpris.MediaPlayer2", move |e: &mut IfaceBuilder<()>| {
             e.property("Identity")
                 .get(move |_, &mut _| Ok(bus_name.clone()));
             e.property("CanQuit")
@@ -92,7 +92,7 @@ impl Mpris
                 .emits_changed_true();
 
             // Open the app when the MPRIS notification is clicked.
-            e.method("Raise", (), (), move |_, _, _:()| {
+            e.method("Raise", (), (), move |_, _, _: ()| {
                 let process = std::env::current_exe().unwrap();
 
                 let _ = std::process::Command::new(process)
@@ -102,7 +102,7 @@ impl Mpris
             });
         });
 
-        let mpp = cr.register("org.mpris.MediaPlayer2.Player", |e:&mut IfaceBuilder<()>|{
+        let mpp = cr.register("org.mpris.MediaPlayer2.Player", |e: &mut IfaceBuilder<()>|{
             let callback = callback.clone();
 
             // Defaults
@@ -128,7 +128,7 @@ impl Mpris
 
             e.property("Position")
                 .get(move |_, _|{
-                    let position:i64 = PROGRESS.read().unwrap().position as i64;
+                    let position: i64 = PROGRESS.read().unwrap().position as i64;
                     Ok(position)
                 });
 
@@ -140,7 +140,7 @@ impl Mpris
                 let callback = callback.clone();
                 let actions = actions.to_vec();
 
-                move |ctx, _, (offset,):(i64,)| {
+                move |ctx, _, (offset,): (i64,)| {
                     let offset = offset * 1_000_000;
 
                     //TODO: This needs testing.
@@ -154,7 +154,7 @@ impl Mpris
 
             e.method("SetPosition", ("TrackId", "Position"), (), {
                 let callback = callback.clone();
-                move |_, _, (_track_id, position):(Path, i64)| {
+                move |_, _, (_track_id, position): (Path, i64)| {
                     if position > PROGRESS.read().unwrap().duration as i64 { return Ok(()); }
                     
                     if let Ok(position) = u64::try_from(position)
@@ -217,7 +217,7 @@ impl Mpris
             {
                 Err(_) => (),
                 Ok(message) => {
-                    let mut changes:HashMap<String, Variant<Box<dyn RefArg>>> = HashMap::new();
+                    let mut changes: HashMap<String, Variant<Box<dyn RefArg>>> = HashMap::new();
 
                     match message
                     {
@@ -259,7 +259,7 @@ impl Mpris
 }
 
 /// Helper method to register callbacks to a MPRIS callback.
-fn register_method<C>(e:&mut IfaceBuilder<()>, callback:&Arc<Mutex<C>>, name:&'static str, event:Event)
+fn register_method<C>(e: &mut IfaceBuilder<()>, callback: &Arc<Mutex<C>>, name: &'static str, event: Event)
 where
     C: Fn(Event) + Send + 'static
 {
@@ -271,7 +271,7 @@ where
 }
 
 /// Converts the metadata object to a map that the MPRIS interface uses.
-fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg>>>
+fn metadata_to_map(metadata: &Metadata) -> HashMap<String, Variant<Box<dyn RefArg>>>
 {
     let mut map = HashMap::<String, Variant<Box<dyn RefArg>>>::new();
 
@@ -305,7 +305,7 @@ fn metadata_to_map(metadata:&Metadata) -> HashMap<String, Variant<Box<dyn RefArg
 }
 
 /// Converts the playback status to a string that MPRIS can use.
-fn playback_state_to_string(state:&PlaybackState) -> String
+fn playback_state_to_string(state: &PlaybackState) -> String
 {
     match state
     {

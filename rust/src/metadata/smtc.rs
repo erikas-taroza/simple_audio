@@ -28,23 +28,23 @@ pub static HANDLER:RwLock<Option<Smtc>> = RwLock::new(None);
 
 pub struct Smtc
 {
-    controls:SystemMediaTransportControls,
-    display:SystemMediaTransportControlsDisplayUpdater,
-    timeline:SystemMediaTransportControlsTimelineProperties
+    controls: SystemMediaTransportControls,
+    display: SystemMediaTransportControlsDisplayUpdater,
+    timeline: SystemMediaTransportControlsTimelineProperties
 }
 
 impl Smtc
 {
-    pub fn new<C>(actions:Vec<Actions>, hwnd:isize, callback:C) -> Self
+    pub fn new<C>(actions: Vec<Actions>, hwnd: isize, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
-        let interop:ISystemMediaTransportControlsInterop = windows::core::factory::<
+        let interop: ISystemMediaTransportControlsInterop = windows::core::factory::<
             SystemMediaTransportControls,
             ISystemMediaTransportControlsInterop
         >().unwrap();
 
-        let controls:SystemMediaTransportControls = unsafe { interop.GetForWindow(HWND(hwnd)) }.unwrap();
+        let controls: SystemMediaTransportControls = unsafe { interop.GetForWindow(HWND(hwnd)) }.unwrap();
         let display = controls.DisplayUpdater().unwrap();
         let timeline = SystemMediaTransportControlsTimelineProperties::new().unwrap();
 
@@ -73,8 +73,8 @@ impl Smtc
         let button_callback = TypedEventHandler::new({
             let callback = callback.clone();
 
-            move |_, args:&Option<_>| {
-                let args:&SystemMediaTransportControlsButtonPressedEventArgs = args.as_ref().unwrap();
+            move |_, args: &Option<_>| {
+                let args: &SystemMediaTransportControlsButtonPressedEventArgs = args.as_ref().unwrap();
                 let button = args.Button().unwrap();
 
                 let event = match button
@@ -97,8 +97,8 @@ impl Smtc
         let position_callback = TypedEventHandler::new({
             let callback = callback.clone();
 
-            move |_, args:&Option<_>| {
-                let args:&PlaybackPositionChangeRequestedEventArgs = args.as_ref().unwrap();
+            move |_, args: &Option<_>| {
+                let args: &PlaybackPositionChangeRequestedEventArgs = args.as_ref().unwrap();
                 let position = Duration::from(args.RequestedPlaybackPosition().unwrap());
                 callback.lock().unwrap()(Event::Seek(position.as_secs() as i64, true));
 
@@ -112,7 +112,7 @@ impl Smtc
         Smtc { controls, display, timeline }
     }
 
-    pub fn set_metadata(&self, metadata:Metadata)
+    pub fn set_metadata(&self, metadata: Metadata)
     {
         let properties = self.display.MusicProperties().unwrap();
 
@@ -163,9 +163,9 @@ impl Smtc
         self.display.Update().unwrap();
     }
 
-    pub fn set_playback_state(&self, state:PlaybackState)
+    pub fn set_playback_state(&self, state: PlaybackState)
     {
-        let status:MediaPlaybackStatus = match state
+        let status: MediaPlaybackStatus = match state
         {
             PlaybackState::Play => MediaPlaybackStatus::Playing,
             PlaybackState::Pause => MediaPlaybackStatus::Paused,

@@ -27,20 +27,20 @@ lazy_static!
 {
     /// Use this to communicate between the main thread and the decoder thread
     /// Ex: play/pause commands
-    pub static ref TXRX:RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
+    pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
 
     /// Use this to communicate from the decoder to the main thread.
     /// Ex: Tell the main thread this thread is done.
     // This is an option because we don't want to wait for a non existent thread on the first run.
-    pub static ref TXRX2:RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
+    pub static ref TXRX2: RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
 }
 
-pub static IS_PLAYING:AtomicBool = AtomicBool::new(false);
-pub static IS_LOOPING:AtomicBool = AtomicBool::new(false);
-pub static IS_NORMALIZING:AtomicBool = AtomicBool::new(false);
-pub static VOLUME:RwLock<f32> = RwLock::new(1.0);
-pub static SEEK_TS:RwLock<Option<u64>> = RwLock::new(None);
-pub static PROGRESS:RwLock<ProgressState> = RwLock::new(ProgressState { position: 0, duration: 0 });
+pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
+pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
+pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
+pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
+pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
+pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState { position: 0, duration: 0 });
 
 pub enum ThreadMessage
 {

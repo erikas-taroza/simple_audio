@@ -19,11 +19,11 @@ use crate::utils::types::PlaybackState;
 #[derive(Default)]
 pub struct Metadata
 {
-    pub title:Option<String>,
-    pub artist:Option<String>,
-    pub album:Option<String>,
-    pub art_uri:Option<String>,
-    pub art_bytes:Option<Vec<u8>>
+    pub title: Option<String>,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    pub art_uri: Option<String>,
+    pub art_bytes: Option<Vec<u8>>
 }
 
 /// Callback events from the media notification.
@@ -63,7 +63,7 @@ pub enum Actions
 
 impl From<i32> for Actions
 {
-    fn from(i:i32) -> Self
+    fn from(i: i32) -> Self
     {
         match i
         {

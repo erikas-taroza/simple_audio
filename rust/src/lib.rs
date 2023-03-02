@@ -36,9 +36,9 @@ pub struct Player { }
 impl Player
 {
     pub fn new(
-        actions:Vec<i32>,
-        dbus_name:String,
-        hwnd:Option<i64>
+        actions: Vec<i32>,
+        dbus_name: String,
+        hwnd: Option<i64>
     ) -> Player
     {
         crate::metadata::init(
@@ -117,7 +117,7 @@ impl Player
     // ---------------------------------
 
     /// Opens a file or network resource for reading and playing.
-    pub fn open(&self, path:String, autoplay:bool) -> anyhow::Result<()>
+    pub fn open(&self, path: String, autoplay: bool) -> anyhow::Result<()>
     {
         let path2 = path.clone();
 
@@ -222,19 +222,19 @@ impl Player
     pub fn stop(&self)
     { Self::internal_stop(); }
 
-    pub fn loop_playback(&self, should_loop:bool)
+    pub fn loop_playback(&self, should_loop: bool)
     { IS_LOOPING.store(should_loop, std::sync::atomic::Ordering::SeqCst); }
 
-    pub fn set_volume(&self, volume:f32)
+    pub fn set_volume(&self, volume: f32)
     { *VOLUME.write().unwrap() = volume; }
 
-    pub fn seek(&self, seconds:u64)
+    pub fn seek(&self, seconds: u64)
     { Self::internal_seek(seconds); }
 
-    pub fn set_metadata(&self, metadata:Metadata)
+    pub fn set_metadata(&self, metadata: Metadata)
     { crate::metadata::set_metadata(metadata); }
 
-    pub fn normalize_volume(&self, should_normalize:bool)
+    pub fn normalize_volume(&self, should_normalize: bool)
     { IS_NORMALIZING.store(should_normalize, std::sync::atomic::Ordering::SeqCst); }
 }
 

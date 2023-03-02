@@ -30,17 +30,17 @@ use super::{streamable::*, Receiver};
 
 pub struct HttpStream
 {
-    url:String,
-    buffer:Vec<u8>,
-    read_position:usize,
-    downloaded:RangeSet<usize>,
-    requested:RangeSet<usize>,
-    receivers:Vec<Receiver>
+    url: String,
+    buffer: Vec<u8>,
+    read_position: usize,
+    downloaded: RangeSet<usize>,
+    requested: RangeSet<usize>,
+    receivers: Vec<Receiver>
 }
 
 impl HttpStream
 {
-    pub fn new(url:String) -> anyhow::Result<Self>
+    pub fn new(url: String) -> anyhow::Result<Self>
     {
         // Get the size of the file we are streaming.
         let res = Client::new().head(&url)
@@ -50,7 +50,7 @@ impl HttpStream
             .headers().get("Content-Length")
             .context("Could not get \"Content-Length\" header for HTTP stream.")?;
 
-        let size:usize = header
+        let size: usize = header
             .to_str()?
             .parse()?;
 
@@ -72,10 +72,10 @@ impl Streamable<Self> for HttpStream
     /// 
     /// Returns the received bytes by sending them via `tx`.
     fn read_chunk(
-        tx:Sender<(usize, Vec<u8>)>,
-        url:String,
-        start:usize,
-        file_size:usize
+        tx: Sender<(usize, Vec<u8>)>,
+        url: String,
+        start: usize,
+        file_size: usize
     ) -> anyhow::Result<()>
     {
         let end = (start + CHUNK_SIZE).min(file_size) - 1;
@@ -96,7 +96,7 @@ impl Streamable<Self> for HttpStream
     /// If there is data to receive, then write it to the buffer.
     /// 
     /// Changes made are commited to `downloaded`.
-    fn try_write_chunk(&mut self, should_buffer:bool)
+    fn try_write_chunk(&mut self, should_buffer: bool)
     {
         let mut completed_downloads = Vec::new();
 

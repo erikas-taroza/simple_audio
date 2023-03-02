@@ -24,7 +24,7 @@ pub mod types;
 
 /// Initialize a platform specific metadata handler.
 #[allow(unused_variables)]
-pub fn init<C>(actions:Vec<Actions>, dbus_name:String, hwnd:Option<i64>, callback:C)
+pub fn init<C>(actions: Vec<Actions>, dbus_name: String, hwnd: Option<i64>, callback: C)
 where
     C: Fn(Event) + Send + 'static
 {
@@ -48,7 +48,7 @@ where
 }
 
 
-pub fn set_metadata(metadata:Metadata)
+pub fn set_metadata(metadata: Metadata)
 {
     #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {
@@ -66,7 +66,7 @@ pub fn set_metadata(metadata:Metadata)
 }
 
 
-pub fn set_playback_state(state:PlaybackState)
+pub fn set_playback_state(state: PlaybackState)
 {
     #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
     {

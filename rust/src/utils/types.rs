@@ -24,8 +24,8 @@ pub enum PlaybackState
 #[derive(Clone, Copy)]
 pub struct ProgressState
 {
-    pub position:u64,
-    pub duration:u64
+    pub position: u64,
+    pub duration: u64
 }
 
 pub enum Callback

@@ -27,12 +27,12 @@ pub struct Decoder;
 
 impl Decoder
 {
-    pub fn decode(&mut self, source:Box<dyn MediaSource>) -> anyhow::Result<()>
+    pub fn decode(&mut self, source: Box<dyn MediaSource>) -> anyhow::Result<()>
     {
         let mss = MediaSourceStream::new(source, Default::default());
 
         let format_options = FormatOptions { enable_gapless: true, ..Default::default() };
-        let metadata_options:MetadataOptions = Default::default();
+        let metadata_options: MetadataOptions = Default::default();
 
         let mut probed = default::get_probe().format(
             &Hint::new(),
@@ -46,14 +46,14 @@ impl Decoder
         Ok(())
     }
 
-    fn decode_loop(&mut self, reader:&mut Box<dyn FormatReader>) -> anyhow::Result<()>
+    fn decode_loop(&mut self, reader: &mut Box<dyn FormatReader>) -> anyhow::Result<()>
     {
         let track = reader.default_track()
             .context("Cannot start playback. There are no tracks present in the file.")?;
         let track_id = track.id;
 
         let mut decoder = default::get_codecs().make(&track.codec_params, &Default::default())?;
-        let mut cpal_output:Option<CpalOutput> = None;
+        let mut cpal_output: Option<CpalOutput> = None;
 
         // Used only for outputting the current position and duration.
         let timebase = track.codec_params.time_base.unwrap();
@@ -78,7 +78,7 @@ impl Decoder
             // Poll the status of the RX in lib.rs.
             // If the player is paused, then block this thread until a message comes in
             // to save the CPU.
-            let recv:Option<ThreadMessage> = if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+            let recv: Option<ThreadMessage> = if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
                 // This will always be None on the first iteration
                 // which is good because we don't need to block
                 // on the first iteration.
@@ -122,7 +122,7 @@ impl Decoder
             { continue; }
 
             // Seeking.
-            let seek_ts:u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
+            let seek_ts: u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
             {
                 let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(track_id) };
                 match reader.seek(SeekMode::Coarse, seek_to)

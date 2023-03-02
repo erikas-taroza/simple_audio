@@ -36,17 +36,17 @@ use super::{streamable::*, Receiver};
 pub struct HlsStream
 {
     /// A list of parts with their size and URL.
-    urls:Vec<(Range<usize>, String)>,
-    buffer:Vec<u8>,
-    read_position:usize,
-    downloaded:RangeSet<usize>,
-    requested:RangeSet<usize>,
-    receivers:Vec<Receiver>
+    urls: Vec<(Range<usize>, String)>,
+    buffer: Vec<u8>,
+    read_position: usize,
+    downloaded: RangeSet<usize>,
+    requested: RangeSet<usize>,
+    receivers: Vec<Receiver>
 }
 
 impl HlsStream
 {
-    pub fn new(url:String) -> anyhow::Result<Self>
+    pub fn new(url: String) -> anyhow::Result<Self>
     {
         let mut urls = Vec::new();
         let mut total_size = 0;
@@ -66,7 +66,7 @@ impl HlsStream
                 .headers().get("Content-Length")
                 .context("Could not get \"Content-Length\" header for a part of HLS stream.")?;
 
-            let size:usize = header
+            let size: usize = header
                 .to_str()?
                 .parse()?;
 
@@ -89,10 +89,10 @@ impl HlsStream
 impl Streamable<Self> for HlsStream
 {
     fn read_chunk(
-        tx:Sender<(usize, Vec<u8>)>,
-        url:String,
-        start:usize,
-        _:usize
+        tx: Sender<(usize, Vec<u8>)>,
+        url: String,
+        start: usize,
+        _: usize
     ) -> anyhow::Result<()>
     {
         let chunk = Client::new().get(url)
@@ -105,7 +105,7 @@ impl Streamable<Self> for HlsStream
         Ok(())
     }
 
-    fn try_write_chunk(&mut self, should_buffer:bool)
+    fn try_write_chunk(&mut self, should_buffer: bool)
     {
         let mut completed_downloads = Vec::new();
 

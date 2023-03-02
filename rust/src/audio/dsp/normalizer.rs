@@ -17,17 +17,17 @@
 use ebur128::*;
 
 /// The target LUFS value.
-const NORMALIZE_TO:f64 = -15.0;
+const NORMALIZE_TO: f64 = -15.0;
 
 pub struct Normalizer
 {
-    ebur128:EbuR128,
-    buffer:Vec<f32>
+    ebur128: EbuR128,
+    buffer: Vec<f32>
 }
 
 impl Normalizer
 {
-    pub fn new(channels:usize, sample_rate:u32) -> Self
+    pub fn new(channels: usize, sample_rate: u32) -> Self
     {
         let ebur128 = EbuR128::new(
             channels as u32,
@@ -38,7 +38,7 @@ impl Normalizer
         Normalizer { ebur128, buffer: Vec::new() }
     }
 
-    pub fn normalize(&mut self, input:&[f32]) -> &[f32]
+    pub fn normalize(&mut self, input: &[f32]) -> &[f32]
     {
         // Completely quiet inputs cause a crackling sound to be made.
         if !input.iter().any(|x| *x != 0.0) { return &[];}

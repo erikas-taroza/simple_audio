@@ -20,10 +20,10 @@ use flutter_rust_bridge::{StreamSink, support::lazy_static};
 
 use super::types::Callback;
 
-lazy_static! { static ref CALLBACK_STREAM:RwLock<Option<StreamSink<Callback>>> = RwLock::new(None); }
+lazy_static! { static ref CALLBACK_STREAM: RwLock<Option<StreamSink<Callback>>> = RwLock::new(None); }
 
 /// Creates a new stream for sending callbacks to Dart.
-pub fn callback_stream(stream:StreamSink<Callback>)
+pub fn callback_stream(stream: StreamSink<Callback>)
 {
     let mut state_stream = CALLBACK_STREAM.write().unwrap();
     *state_stream = Some(stream);

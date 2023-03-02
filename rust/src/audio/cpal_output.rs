@@ -27,31 +27,31 @@ use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, st
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number
 /// will help to reduce it.
-const BASE_VOLUME:f32 = 0.7;
+const BASE_VOLUME: f32 = 0.7;
 
 //TODO: Support i16 and u16 instead of only f32.
 pub struct CpalOutput
 {
-    pub stream:Stream,
-    pub ring_buffer_reader:BlockingRb<f32, Consumer>,
-    ring_buffer_writer:BlockingRb<f32, Producer>,
-    sample_buffer:SampleBuffer<f32>,
-    resampler:Option<Resampler<f32>>,
-    is_stream_done:Arc<(Mutex<bool>, Condvar)>,
-    normalizer:Normalizer
+    pub stream: Stream,
+    pub ring_buffer_reader: BlockingRb<f32, Consumer>,
+    ring_buffer_writer: BlockingRb<f32, Producer>,
+    sample_buffer: SampleBuffer<f32>,
+    resampler: Option<Resampler<f32>>,
+    is_stream_done: Arc<(Mutex<bool>, Condvar)>,
+    normalizer: Normalizer
 }
 
 impl CpalOutput
 {
     /// Starts a new stream on the default device.
-    pub fn new(spec:SignalSpec, duration:u64) -> anyhow::Result<Self>
+    pub fn new(spec: SignalSpec, duration: u64) -> anyhow::Result<Self>
     {
         // Get the output config.
         let (device, config) = Self::get_config(spec)?;
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
-        let resampler:Option<Resampler<f32>> = if cfg!(target_os = "windows") &&
+        let resampler: Option<Resampler<f32>> = if cfg!(target_os = "windows") &&
             spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration)) }
             else { None };
 
@@ -72,7 +72,7 @@ impl CpalOutput
 
         let stream = device.build_output_stream(
             &config,
-            move |data:&mut [f32], _:&cpal::OutputCallbackInfo| {
+            move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
                 let buffering = IS_STREAM_BUFFERING.load(std::sync::atomic::Ordering::SeqCst);
 
                 // "Pause" the stream.
@@ -143,7 +143,7 @@ impl CpalOutput
         })
     }
 
-    fn get_config(spec:SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
+    fn get_config(spec: SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
     {
         let host = cpal::default_host();
         let device = host.default_output_device()
@@ -174,7 +174,7 @@ impl CpalOutput
     }
 
     /// Write the `AudioBufferRef` to the buffers.
-    pub fn write(&mut self, decoded:AudioBufferRef)
+    pub fn write(&mut self, decoded: AudioBufferRef)
     {
         if decoded.frames() == 0 { return; }
 
