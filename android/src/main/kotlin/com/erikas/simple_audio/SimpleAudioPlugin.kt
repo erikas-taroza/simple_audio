@@ -113,7 +113,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     }
 }
 
-enum class PlaybackActions(val data:PlaybackActionsMapping)
+enum class PlaybackActions(val data: PlaybackActionsMapping)
 {
     Rewind(PlaybackActionsMapping(R.drawable.rewind, "Rewind", PlaybackStateCompat.ACTION_REWIND, ACTION_REWIND)),
     SkipPrev(PlaybackActionsMapping(R.drawable.skip_prev, "Skip Prev", PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, ACTION_PREV)),
@@ -124,9 +124,9 @@ enum class PlaybackActions(val data:PlaybackActionsMapping)
 
 class PlaybackActionsMapping(
     val icon: Int,
-    val name:String,
+    val name: String,
     // The action used by MediaSession.
-    val sessionAction:Long,
+    val sessionAction: Long,
     // The action used by the notification for SimpleAudioReceiver.
-    val notificationAction:String
+    val notificationAction: String
 )

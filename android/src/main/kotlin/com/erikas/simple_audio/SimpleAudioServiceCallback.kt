@@ -72,7 +72,7 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
         super.onRewind()
     }
 
-    override fun onSeekTo(pos:Long) {
+    override fun onSeekTo(pos: Long) {
         channel?.invokeMethod("seek", pos / 1000)
         super.onSeekTo(pos)
     }

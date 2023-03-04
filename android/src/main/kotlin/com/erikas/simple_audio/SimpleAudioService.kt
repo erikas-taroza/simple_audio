@@ -34,18 +34,18 @@ import androidx.media.MediaBrowserServiceCompat
 import java.net.URL
 import kotlin.system.exitProcess
 
-private const val CHANNEL_ID:String = "SimpleAudio::Notification"
-private const val NOTIFICATION_ID:Int = 777
+private const val CHANNEL_ID: String = "SimpleAudio::Notification"
+private const val NOTIFICATION_ID: Int = 777
 
 class SimpleAudioService : MediaBrowserServiceCompat()
 {
-    private var mediaSession:MediaSessionCompat? = null
-    private var playbackState:PlaybackStateCompat.Builder? = null
-    private var iconPath:String = "mipmap/ic_launcher"
-    private var playbackActions:List<PlaybackActions> = PlaybackActions.values().toList()
-    private var compactPlaybackActions:List<Int> = listOf()
+    private var mediaSession: MediaSessionCompat? = null
+    private var playbackState: PlaybackStateCompat.Builder? = null
+    private var iconPath: String = "mipmap/ic_launcher"
+    private var playbackActions: List<PlaybackActions> = PlaybackActions.values().toList()
+    private var compactPlaybackActions: List<Int> = listOf()
 
-    var isPlaying:Boolean = false
+    var isPlaying: Boolean = false
 
     override fun onGetRoot(
         clientPackageName: String,
@@ -102,14 +102,14 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         exitProcess(0)
     }
 
-    private fun getNotificationManager():NotificationManager
+    private fun getNotificationManager(): NotificationManager
     { return getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
 
     private fun init(
-        iconPath:String,
-        playbackActions:List<PlaybackActions>,
-        compactPlaybackActions:List<Int>,
-        notificationClickedIntent:Intent
+        iconPath: String,
+        playbackActions: List<PlaybackActions>,
+        compactPlaybackActions: List<Int>,
+        notificationClickedIntent: Intent
     )
     {
         if(mediaSession != null) return
@@ -121,7 +121,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         // Create the media session which defines the
         // controls and registers the callbacks.
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
-            var actions:Long = 0
+            var actions: Long = 0
             for(action in playbackActions)
             { actions = actions or action.data.sessionAction }
 
@@ -191,9 +191,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         stopSelf()
     }
 
-    private fun buildNotification():Notification
+    private fun buildNotification(): Notification
     {
-        fun buildAction(icon:Int, name:String, action:String):NotificationCompat.Action
+        fun buildAction(icon: Int, name: String, action: String): NotificationCompat.Action
         {
             return NotificationCompat.Action(
                 icon,
@@ -206,7 +206,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             )
         }
 
-        val actions:ArrayList<NotificationCompat.Action> = arrayListOf()
+        val actions: ArrayList<NotificationCompat.Action> = arrayListOf()
 
         for(action in playbackActions)
         {
@@ -263,16 +263,16 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     }
 
     fun setMetadata(
-        title:String?,
-        artist:String?,
-        album:String?,
-        artUri:String?,
-        artBytes:ByteArray?,
-        duration:Int?
+        title: String?,
+        artist: String?,
+        album: String?,
+        artUri: String?,
+        artBytes: ByteArray?,
+        duration: Int?
     )
     {
         // If a URI was received.
-        val bitmap:Bitmap? = if(artUri != null) {
+        val bitmap: Bitmap? = if(artUri != null) {
             val uri = Uri.parse(artUri)
 
             val bitmap = if(uri.scheme == "http" || uri.scheme == "https")
@@ -303,7 +303,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     }
 
     // See enum type PlaybackState in simple_audio.dart for integer values.
-    fun setPlaybackState(state:Int?, position:Int?)
+    fun setPlaybackState(state: Int?, position: Int?)
     {
         val translatedState = when(state) {
             0 -> {

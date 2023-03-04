@@ -20,7 +20,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-private const val ACTION_HEADER:String = "com.erikas.simple_audio.action."
+private const val ACTION_HEADER: String = "com.erikas.simple_audio.action."
 const val ACTION_PLAY = ACTION_HEADER + "play"
 const val ACTION_PAUSE = ACTION_HEADER + "pause"
 const val ACTION_NEXT = ACTION_HEADER + "next"
