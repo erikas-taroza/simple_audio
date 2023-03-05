@@ -169,6 +169,7 @@ impl Player
 
         update_playback_state_stream(PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
+        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Play);
     }
     
@@ -183,6 +184,7 @@ impl Player
 
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 
@@ -192,11 +194,14 @@ impl Player
     /// This stops all threads that are streaming.
     fn internal_stop()
     {
+        if IS_STOPPED.load(std::sync::atomic::Ordering::SeqCst) { return; }
+
         Self::signal_to_stop();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
         update_playback_state_stream(PlaybackState::Pause);
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 

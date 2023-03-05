@@ -36,6 +36,7 @@ lazy_static!
 }
 
 pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
+pub static IS_STOPPED: AtomicBool = AtomicBool::new(true);
 pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
 pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
 pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
