@@ -102,9 +102,9 @@ impl Player
     //          SETTERS/GETTERS
     // ---------------------------------
 
-    pub fn playback_state_stream(stream:StreamSink<i32>) { playback_state_stream(stream); }
-    pub fn progress_state_stream(stream:StreamSink<ProgressState>) { progress_state_stream(stream); }
-    pub fn callback_stream(stream:StreamSink<Callback>) { callback_stream(stream); }
+    pub fn playback_state_stream(stream: StreamSink<PlaybackState>) { playback_state_stream(stream); }
+    pub fn progress_state_stream(stream: StreamSink<ProgressState>) { progress_state_stream(stream); }
+    pub fn callback_stream(stream: StreamSink<Callback>) { callback_stream(stream); }
 
     pub fn is_playing(&self) -> bool
     { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }

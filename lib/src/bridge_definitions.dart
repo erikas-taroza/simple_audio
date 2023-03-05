@@ -16,7 +16,7 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
-  Stream<int> playbackStateStreamStaticMethodPlayer({dynamic hint});
+  Stream<PlaybackState> playbackStateStreamStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta
       get kPlaybackStateStreamStaticMethodPlayerConstMeta;
@@ -115,6 +115,12 @@ class Metadata {
   });
 }
 
+enum PlaybackState {
+  Play,
+  Pause,
+  Done,
+}
+
 class Player {
   final SimpleAudio bridge;
   Player({
@@ -130,7 +136,7 @@ class Player {
       bridge.newStaticMethodPlayer(
           actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
 
-  static Stream<int> playbackStateStream(
+  static Stream<PlaybackState> playbackStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>
       bridge.playbackStateStreamStaticMethodPlayer(hint: hint);
 

@@ -21,6 +21,7 @@ use std::sync::Arc;
 
 use crate::metadata::types::Metadata;
 use crate::utils::types::Callback;
+use crate::utils::types::PlaybackState;
 use crate::utils::types::ProgressState;
 use crate::Player;
 
@@ -327,6 +328,16 @@ impl support::IntoDart for Callback {
     }
 }
 
+impl support::IntoDart for PlaybackState {
+    fn into_dart(self) -> support::DartAbi {
+        match self {
+            Self::Play => 0,
+            Self::Pause => 1,
+            Self::Done => 2,
+        }
+        .into_dart()
+    }
+}
 impl support::IntoDart for Player {
     fn into_dart(self) -> support::DartAbi {
         Vec::<u8>::new().into_dart()

@@ -48,11 +48,11 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["actions", "dbusName", "hwnd"],
       );
 
-  Stream<int> playbackStateStreamStaticMethodPlayer({dynamic hint}) {
+  Stream<PlaybackState> playbackStateStreamStaticMethodPlayer({dynamic hint}) {
     return _platform.executeStream(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner
           .wire_playback_state_stream__static_method__Player(port_),
-      parseSuccessData: _wire2api_i32,
+      parseSuccessData: _wire2api_playback_state,
       constMeta: kPlaybackStateStreamStaticMethodPlayerConstMeta,
       argValues: [],
       hint: hint,
@@ -332,6 +332,10 @@ class SimpleAudioImpl implements SimpleAudio {
 
   int _wire2api_i32(dynamic raw) {
     return raw as int;
+  }
+
+  PlaybackState _wire2api_playback_state(dynamic raw) {
+    return PlaybackState.values[raw];
   }
 
   Player _wire2api_player(dynamic raw) {

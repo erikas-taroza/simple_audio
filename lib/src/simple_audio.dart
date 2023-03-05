@@ -24,7 +24,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-import './ffi.dart';
+import './ffi.dart' hide PlaybackState;
 
 late final Player _player;
 
@@ -36,7 +36,7 @@ class SimpleAudio
     /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
         // Map the int event to a dart enum.
-        .map((event) => PlaybackState.values[event])
+        .map((event) => PlaybackState.values[event.index])
         .asBroadcastStream();
 
     /// A stream that returns a [ProgressState] when the progress of the player

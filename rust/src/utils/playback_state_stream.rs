@@ -20,10 +20,10 @@ use flutter_rust_bridge::{StreamSink, support::lazy_static};
 
 use super::types::PlaybackState;
 
-lazy_static! { static ref PLAYBACK_STATE_STREAM: RwLock<Option<StreamSink<i32>>> = RwLock::new(None); }
+lazy_static! { static ref PLAYBACK_STATE_STREAM: RwLock<Option<StreamSink<PlaybackState>>> = RwLock::new(None); }
 
 /// Creates a new playback stream.
-pub fn playback_state_stream(stream: StreamSink<i32>)
+pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
 {
     let mut state_stream = PLAYBACK_STATE_STREAM.write().unwrap();
     *state_stream = Some(stream);
@@ -33,5 +33,5 @@ pub fn playback_state_stream(stream: StreamSink<i32>)
 pub fn update_playback_state_stream(value: PlaybackState)
 {
     if let Some(stream) = &*PLAYBACK_STATE_STREAM.read().unwrap()
-    { stream.add(value as i32); }
+    { stream.add(value); }
 }
