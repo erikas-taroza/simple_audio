@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp>
     double trueVolume = 1;
     double volume = 1;
     bool normalize = false;
+    bool loop = false;
     
     double position = 0;
     double duration = 0;
@@ -62,17 +63,6 @@ class _MyAppState extends State<MyApp>
 
         player.playbackStateStream.listen((event) {
             setState(() => playbackState = event);
-
-            if(playbackState == PlaybackState.done)
-            {
-                player.setMetadata(Metadata(
-                    title: "Title",
-                    artist: "Artist",
-                    album: "Album",
-                    artUri: "https://picsum.photos/200"
-                ));
-                player.open(path);
-            }
         });
 
         player.progressStateStream.listen((event) {
@@ -208,6 +198,22 @@ class _MyAppState extends State<MyApp>
                                 ],
                             ),
 
+                            // Toggle looping playback.
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    Checkbox(
+                                        value: loop,
+                                        onChanged: (value) {
+                                            setState(() => loop = value!);
+                                            player.loopPlayback(loop);
+                                        },
+                                    ),
+                                    const Text("Loop Playback")
+                                ],
+                            ),
+
+                            // Toggle volume normalization
                             Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [

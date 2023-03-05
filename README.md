@@ -64,6 +64,9 @@ player.setMetadata(Metadata(
   artUri: "https://my-files.com/image.jpg"
 ));
 
+// Loop the playback.
+player.loopPlayback(true);
+
 // Normalize the volume of the audio.
 player.normalizeVolume(true);
 ```
