@@ -1,3 +1,10 @@
+## 1.4.1
+- Fix progress bar on media notifications not changing after loop.
+- Fix `simple_audio` blocking when `stop()` is called twice.
+- Other changes
+    - Formatting (Rust, Kotlin)
+    - Refactoring (Rust)
+
 ## 1.4.0
 - Support changing output devices.
 - Remove playback error handling.
