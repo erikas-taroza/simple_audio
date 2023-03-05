@@ -38,5 +38,8 @@ pub enum Callback
     /// a network stream.
     NetworkStreamError,
     /// An error occurred when decoding the file.
-    DecodeError
+    DecodeError,
+    /// The player is in the looping mode and the playback 
+    /// just looped to the beginning.
+    PlaybackLooped
 }

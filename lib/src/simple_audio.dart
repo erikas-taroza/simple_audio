@@ -96,6 +96,15 @@ class SimpleAudio
                 case Callback.DecodeError:
                     onDecodeError?.call(this);
                     break;
+                // This isn't a callback for the user to handle.
+                // Instead, it is used to communicate via MethodChannel
+                // with Dart being the middleman.
+                case Callback.PlaybackLooped:
+                    _methodChannel.invokeMethod("setPlaybackState", {
+                        "state": PlaybackState.play.index,
+                        "position": 0
+                    });
+                    break;
             }
         });
         

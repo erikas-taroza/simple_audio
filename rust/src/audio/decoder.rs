@@ -154,6 +154,7 @@ impl Decoder
                     if IS_LOOPING.load(std::sync::atomic::Ordering::SeqCst)
                     {
                         *SEEK_TS.write().unwrap() = Some(0);
+                        crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
                         continue;
                     }
 
