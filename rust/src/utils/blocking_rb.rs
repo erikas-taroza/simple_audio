@@ -41,25 +41,31 @@ impl<T: Copy + Clone + Default, Type> BlockingRb<T, Type>
     /// Returns a producer and a consumer tuple.
     pub fn new(size: usize) -> (BlockingRb<T, Producer>, BlockingRb<T, Consumer>)
     {
+        let num_values = Arc::new(AtomicUsize::new(0));
+        let buf = Arc::new(Mutex::new(vec![T::default(); size]));
+        let read_pos = Arc::new(AtomicUsize::new(0));
+        let write_pos = Arc::new(AtomicUsize::new(0));
+        let producer_events = Arc::new((Mutex::new(Event::None), Condvar::new()));
+
         (
             BlockingRb
             {
                 size,
-                num_values: Arc::new(AtomicUsize::new(0)),
-                buf: Arc::new(Mutex::new(vec![T::default(); size])),
-                read_pos: Arc::new(AtomicUsize::new(0)),
-                write_pos: Arc::new(AtomicUsize::new(0)),
-                producer_events: Arc::new((Mutex::new(Event::None), Condvar::new())),
+                num_values: num_values.clone(),
+                buf: buf.clone(),
+                read_pos: read_pos.clone(),
+                write_pos: write_pos.clone(),
+                producer_events: producer_events.clone(),
                 _type: std::marker::PhantomData::<Producer>
             },
             BlockingRb
             {
                 size,
-                num_values: Arc::new(AtomicUsize::new(0)),
-                buf: Arc::new(Mutex::new(vec![T::default(); size])),
-                read_pos: Arc::new(AtomicUsize::new(0)),
-                write_pos: Arc::new(AtomicUsize::new(0)),
-                producer_events: Arc::new((Mutex::new(Event::None), Condvar::new())),
+                num_values,
+                buf,
+                read_pos,
+                write_pos,
+                producer_events,
                 _type: std::marker::PhantomData::<Consumer>
             }
         )
