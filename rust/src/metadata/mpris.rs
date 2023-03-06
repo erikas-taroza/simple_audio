@@ -18,7 +18,7 @@
 
 #![cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
 
-use std::{thread, sync::{Arc, Mutex, RwLock}, time::Duration, collections::HashMap};
+use std::{thread::{self, JoinHandle}, sync::{Arc, Mutex, RwLock}, time::Duration, collections::HashMap};
 
 use crossbeam::channel::{Receiver, unbounded};
 use dbus::{blocking::{Connection, stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged}, channel::{MatchingReceiver, Sender}, message::{MatchRule, SignalArgs}, arg::{Variant, RefArg}, Path};
@@ -32,7 +32,8 @@ pub static HANDLER: RwLock<Option<Mpris>> = RwLock::new(None);
 
 pub struct Mpris
 {
-    tx: crossbeam::channel::Sender<Command>
+    tx: crossbeam::channel::Sender<Command>,
+    handle: JoinHandle<()>
 }
 
 impl Mpris
@@ -43,11 +44,11 @@ impl Mpris
     {
         let (tx, rx) = unbounded::<Command>();
         
-        thread::spawn(move || {
+        let handle = thread::spawn(move || {
             Self::run(actions, dbus_name, rx, callback).unwrap();
         });
 
-        Mpris { tx }
+        Mpris { tx, handle }
     }
 
     pub fn set_metadata(&self, metadata: Metadata)
@@ -55,6 +56,12 @@ impl Mpris
 
     pub fn set_playback_state(&self, state: PlaybackState)
     { self.tx.send(Command::SetPlaybackState(state)).unwrap(); }
+
+    pub fn stop(self)
+    {
+        self.tx.send(Command::Stop).unwrap();
+        let _ = self.handle.join();
+    }
 
     fn run<C>(actions: Vec<Actions>, dbus_name: String, rx: Receiver<Command>, callback: C) -> Result<(), dbus::Error>
     where
@@ -78,9 +85,10 @@ impl Mpris
         let metadata = Arc::new(Mutex::new(Metadata::default()));
         let playback_state = Arc::new(Mutex::new(PlaybackState::Done));
 
+        let bus_name_clone = bus_name.clone();
         let mp = cr.register("org.mpris.MediaPlayer2", move |e: &mut IfaceBuilder<()>| {
             e.property("Identity")
-                .get(move |_, &mut _| Ok(bus_name.clone()));
+                .get(move |_, &mut _| Ok(bus_name_clone.clone()));
             e.property("CanQuit")
                 .get(|_, &mut _| Ok(false))
                 .emits_changed_true();
@@ -238,7 +246,8 @@ impl Mpris
                                 "PlaybackStatus".to_string(),
                                 Variant(Box::new(playback_state_to_string(&playback_state)))
                             );
-                        }
+                        },
+                        Command::Stop => break
                     }
 
                     let properties_changed = PropertiesPropertiesChanged
@@ -255,6 +264,11 @@ impl Mpris
 
             conn.process(Duration::from_millis(200))?;
         }
+
+        // Clean up.
+        conn.release_name(format!("org.mpris.MediaPlayer2.{bus_name}"))?;
+
+        Ok(())
     }
 }
 

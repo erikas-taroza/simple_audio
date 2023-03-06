@@ -83,11 +83,13 @@ impl Player
     /// static variables in `controls.rs`.
     pub fn dispose()
     {
-        // Stop working the working thread.
+        // Stop the working thread.
         Self::signal_to_stop();
         // Reset the controls in `controls.rs` to default values.
         reset_controls_to_default();
         audio::streaming::streamable::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
+        // Reset the Linux/Windows media controllers.
+        metadata::dispose();
     }
 
     fn signal_to_stop()

@@ -47,6 +47,25 @@ where
     }
 }
 
+/// Stops the OS's media controller.
+pub fn dispose()
+{
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))]
+    {
+        let mut lock = mpris::HANDLER.write().unwrap();
+        if lock.is_none() { return; }
+        let mpris = (*lock).take().unwrap();
+        mpris.stop();
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let smtc = smtc::HANDLER.read().unwrap();
+        if smtc.is_none() { return; }
+        // TODO
+        *smtc = None;
+    }
+}
 
 pub fn set_metadata(metadata: Metadata)
 {
