@@ -28,11 +28,11 @@ use crate::{utils::types::PlaybackState, audio::controls::PROGRESS};
 
 use super::types::{Metadata, Event, Command, Actions};
 
-pub static HANDLER:RwLock<Option<Mpris>> = RwLock::new(None);
+pub static HANDLER: RwLock<Option<Mpris>> = RwLock::new(None);
 
 pub struct Mpris
 {
-    tx:crossbeam::channel::Sender<Command>
+    tx: crossbeam::channel::Sender<Command>
 }
 
 impl Mpris

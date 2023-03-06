@@ -16,6 +16,10 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
+  Future<void> disposeStaticMethodPlayer({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kDisposeStaticMethodPlayerConstMeta;
+
   Stream<PlaybackState> playbackStateStreamStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta
@@ -139,6 +143,9 @@ class Player {
           dynamic hint}) =>
       bridge.newStaticMethodPlayer(
           actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
+
+  static Future<void> dispose({required SimpleAudio bridge, dynamic hint}) =>
+      bridge.disposeStaticMethodPlayer(hint: hint);
 
   static Stream<PlaybackState> playbackStateStream(
           {required SimpleAudio bridge, dynamic hint}) =>

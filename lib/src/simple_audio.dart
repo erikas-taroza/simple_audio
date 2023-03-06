@@ -199,7 +199,7 @@ class SimpleAudio
         bool applePreferSkipButtons = true
     }) async
     {
-        _dispose();
+        await _dispose();
 
         // You must include this action.
         if(showMediaNotification) assert(actions.contains(NotificationActions.playPause));
@@ -239,10 +239,9 @@ class SimpleAudio
     /// to its default state. Currently, the Rust code has some static
     /// variables that are used between the threads.
     /// These values would persist after a hot restart.
-    static void _dispose()
+    static Future<void> _dispose() async
     {
-        print("This is called at the right time.");
-        // Player.dispose();
+        await Player.dispose(bridge: api);
 
         // if(_usingNative) {
         //     _methodChannel.invokeMethod("dispose");

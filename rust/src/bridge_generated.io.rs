@@ -12,6 +12,11 @@ pub extern "C" fn wire_new__static_method__Player(
 }
 
 #[no_mangle]
+pub extern "C" fn wire_dispose__static_method__Player(port_: i64) {
+    wire_dispose__static_method__Player_impl(port_)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_playback_state_stream__static_method__Player(port_: i64) {
     wire_playback_state_stream__static_method__Player_impl(port_)
 }
