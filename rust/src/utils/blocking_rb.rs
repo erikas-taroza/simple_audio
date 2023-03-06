@@ -241,6 +241,7 @@ enum Event
     CancelWrite
 }
 
+#[cfg(test)]
 mod tests
 {
     /// Expected output:
