@@ -32,7 +32,9 @@ class SimpleAudio
 {
     static const MethodChannel _methodChannel = MethodChannel("simple_audio");
 
-    // Maybe subscribe to this stream for native media notifications.
+    /// Returns `true` if the user's platform uses native Kotlin or Swift code.
+    static bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+
     /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
         // Map the int event to a dart enum.
@@ -48,9 +50,8 @@ class SimpleAudio
 
     /// Returns `true` if the player is playing.
     Future<bool> get isPlaying => _player.isPlaying();
+    /// Returns the current progress state.
     Future<ProgressState> get _progress => _player.getProgress();
-
-    bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
     /// The callback for when the [NotificationActions.skipPrev] action is called.
     void Function(SimpleAudio player)? onSkipPrevious;
@@ -198,6 +199,8 @@ class SimpleAudio
         bool applePreferSkipButtons = true
     }) async
     {
+        _dispose();
+
         // You must include this action.
         if(showMediaNotification) assert(actions.contains(NotificationActions.playPause));
 
@@ -229,6 +232,21 @@ class SimpleAudio
                 "preferSkipButtons": applePreferSkipButtons
             });
         }
+    }
+
+    /// If there are any old players (ex. after a hot restart),
+    /// then release their resources. This also reverts `simple_audio`
+    /// to its default state. Currently, the Rust code has some static
+    /// variables that are used between the threads.
+    /// These values would persist after a hot restart.
+    static void _dispose()
+    {
+        print("This is called at the right time.");
+        // Player.dispose();
+
+        // if(_usingNative) {
+        //     _methodChannel.invokeMethod("dispose");
+        // }
     }
 
     /// Open a new file for playback.
@@ -381,7 +399,7 @@ class SimpleAudio
         else if(_usingNative)
         {
             // Prevent users from awaiting this method
-            // and blocking their program infintely
+            // and blocking their program infintely.
             Future<void> _() async
             {
                 // Wait for a valid duration.
