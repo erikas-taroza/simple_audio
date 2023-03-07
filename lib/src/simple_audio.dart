@@ -30,10 +30,10 @@ late final Player _player;
 
 class SimpleAudio
 {
-    static const MethodChannel _methodChannel = MethodChannel("simple_audio");
-
-    /// Returns `true` if the user's platform uses native Kotlin or Swift code.
-    static bool get _usingNative => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+    /// Non-null if the app is running on Android, iOS, or macOS.
+    static final MethodChannel? _methodChannel =
+        Platform.isAndroid || Platform.isIOS || Platform.isMacOS ? const MethodChannel("simple_audio")
+        : null;
 
     /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
@@ -101,7 +101,7 @@ class SimpleAudio
                 // Instead, it is used to communicate via MethodChannel
                 // with Dart being the middleman.
                 case Callback.PlaybackLooped:
-                    _methodChannel.invokeMethod("setPlaybackState", {
+                    _methodChannel?.invokeMethod("setPlaybackState", {
                         "state": PlaybackState.play.index,
                         "position": 0
                     });
@@ -109,7 +109,7 @@ class SimpleAudio
             }
         });
         
-        _methodChannel.setMethodCallHandler((call) async {
+        _methodChannel?.setMethodCallHandler((call) async {
             switch(call.method)
             {
                 case "play":
@@ -217,7 +217,7 @@ class SimpleAudio
 
         if(Platform.isAndroid)
         {
-            _methodChannel.invokeMethod("init", {
+            _methodChannel?.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "actions": actions.map((e) => e.index).toList(),
                 "compactActions": androidCompactPlaybackActions,
@@ -226,7 +226,7 @@ class SimpleAudio
         }
         else if(Platform.isIOS || Platform.isMacOS)
         {
-            _methodChannel.invokeMethod("init", {
+            _methodChannel?.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "actions": actions.map((e) => e.index).toList(),
                 "preferSkipButtons": applePreferSkipButtons
@@ -242,10 +242,7 @@ class SimpleAudio
     static Future<void> _dispose() async
     {
         await Player.dispose(bridge: api);
-
-        if(_usingNative) {
-            _methodChannel.invokeMethod("dispose");
-        }
+        _methodChannel?.invokeMethod("dispose");
     }
 
     /// Open a new file for playback.
@@ -258,9 +255,9 @@ class SimpleAudio
     {
         await _player.open(path: path, autoplay: autoplay);
 
-        if(_usingNative && autoplay)
+        if(autoplay)
         {
-            _methodChannel.invokeMethod("setPlaybackState", {
+            _methodChannel?.invokeMethod("setPlaybackState", {
                 "state": PlaybackState.play.index,
                 "position": 0
             });
@@ -271,13 +268,10 @@ class SimpleAudio
     /// this resumes it.
     Future<void> play() async
     {
-        if(_usingNative)
-        {
-            _methodChannel.invokeMethod("setPlaybackState", {
-                "state": PlaybackState.play.index,
-                "position": (await _progress).position
-            });
-        }
+        _methodChannel?.invokeMethod("setPlaybackState", {
+            "state": PlaybackState.play.index,
+            "position": (await _progress).position
+        });
 
         return await _player.play();
     }
@@ -285,13 +279,10 @@ class SimpleAudio
     /// Pauses playback of the opened file.
     Future<void> pause() async
     {
-        if(_usingNative)
-        {
-            _methodChannel.invokeMethod("setPlaybackState", {
-                "state": PlaybackState.pause.index,
-                "position": (await _progress).position
-            });
-        }
+        _methodChannel?.invokeMethod("setPlaybackState", {
+            "state": PlaybackState.pause.index,
+            "position": (await _progress).position
+        });
 
         return await _player.pause();
     }
@@ -300,13 +291,10 @@ class SimpleAudio
     /// to be opened to start playback.
     Future<void> stop() async
     {
-        if(_usingNative)
-        {
-            _methodChannel.invokeMethod("setPlaybackState", {
-                "state": -1,
-                "position": 0
-            });
-        }
+        _methodChannel?.invokeMethod("setPlaybackState", {
+            "state": -1,
+            "position": 0
+        });
 
         return await _player.stop();
     }
@@ -331,13 +319,10 @@ class SimpleAudio
     /// **[seconds]** The position, in seconds, to seek to.
     Future<void> seek(int seconds) async
     {
-        if(_usingNative)
-        {
-            _methodChannel.invokeMethod("setPlaybackState", {
-                "state": (await isPlaying ? PlaybackState.play : PlaybackState.pause).index,
-                "position": seconds
-            });
-        }
+        _methodChannel?.invokeMethod("setPlaybackState", {
+            "state": (await isPlaying ? PlaybackState.play : PlaybackState.pause).index,
+            "position": seconds
+        });
 
         return await _player.seek(seconds: seconds);
     }
@@ -395,7 +380,8 @@ class SimpleAudio
 
             _player.setMetadata(metadata: m);
         }
-        else if(_usingNative)
+        /// The method channel is only available for Android, iOS, macOS.
+        else if(_methodChannel != null)
         {
             // Prevent users from awaiting this method
             // and blocking their program infintely.
@@ -409,7 +395,7 @@ class SimpleAudio
                     continue;
                 }
 
-                await _methodChannel.invokeMethod("setMetadata", {
+                await _methodChannel?.invokeMethod("setMetadata", {
                     "title": metadata.title,
                     "artist": metadata.artist,
                     "album": metadata.album,
