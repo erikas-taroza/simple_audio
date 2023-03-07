@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.StrictMode
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -31,13 +30,13 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
-var simpleAudioService:SimpleAudioService? = null
+var simpleAudioService: SimpleAudioService? = null
 
 /// The MethodChannel that will the communication between Flutter and native Android
 ///
 /// This local reference serves to register the plugin with the Flutter Engine and unregister it
 /// when the Flutter Engine is detached from the Activity
-var channel:MethodChannel? = null
+var channel: MethodChannel? = null
 
 /** SimpleAudioPlugin */
 class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
@@ -45,7 +44,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     private var appContext: Context? = null
     private var appActivity: Activity? = null
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding)
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding)
     {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
         channel?.setMethodCallHandler(this)
@@ -58,7 +57,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
         appContext = flutterPluginBinding.applicationContext
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding)
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding)
     {
         channel?.setMethodCallHandler(null)
         channel = null
@@ -74,7 +73,7 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) { }
     override fun onDetachedFromActivity() { }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "init" -> {
                 if(call.argument<Boolean>("showMediaNotification") == false) return
@@ -91,6 +90,10 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
                 }
 
                 appContext?.startService(intent)
+            }
+            "dispose" -> {
+                simpleAudioService?.exitProcessOnDestroy = false
+                simpleAudioService?.kill()
             }
             "setMetadata" -> {
                 simpleAudioService?.setMetadata(

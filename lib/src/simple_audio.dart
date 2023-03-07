@@ -243,9 +243,9 @@ class SimpleAudio
     {
         await Player.dispose(bridge: api);
 
-        // if(_usingNative) {
-        //     _methodChannel.invokeMethod("dispose");
-        // }
+        if(_usingNative) {
+            _methodChannel.invokeMethod("dispose");
+        }
     }
 
     /// Open a new file for playback.
