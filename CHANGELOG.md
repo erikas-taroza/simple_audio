@@ -1,3 +1,6 @@
+## 1.4.2
+- Add missing Android libs from CI fail.
+
 ## 1.4.1
 - Fix progress bar on media notifications not changing after loop.
 - Fix `simple_audio` blocking when `stop()` is called twice.
