@@ -1,5 +1,5 @@
 # Download the binaries from GitHub.
-version = "1.4.0"
+version = "1.4.2"
 lib_url = "https://github.com/erikas-taroza/simple_audio/blob/v#{version}/ios/Frameworks/simple_audio.xcframework"
 
 `
@@ -20,10 +20,10 @@ cd ../..
 
 Pod::Spec.new do |s|
   s.name             = 'simple_audio'
-  s.version          = '1.4.0'
-  s.summary          = 'A cross-platform solution for playing audio in Flutter.'
+  s.version          = '1.4.2'
+  s.summary          = 'A simple cross-platform solution for playing audio in Flutter.'
   s.description      = <<-DESC
-A cross-platform solution for playing audio in Flutter.
+  A simple cross-platform solution for playing audio in Flutter.
                        DESC
   s.homepage         = 'https://github.com/erikas-taroza/simple_audio'
   s.license          = { :file => '../LICENSE' }
