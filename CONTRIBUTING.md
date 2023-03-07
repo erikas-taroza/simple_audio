@@ -10,6 +10,25 @@ This will have to be installed (not manually, see below). The versions of `flutt
 there is `flutter_rust_bridge_codegen` (CLI tool) and `flutter_rust_bridge` (Rust + Dart dependency).
 These must all have the same version for proper functionality.
 
+If you need it, the documentation for `flutter_rust_bridge` is [here](https://cjycode.com/flutter_rust_bridge/).
+
+### Platform Specific Development
+`simple_audio` has some platform specific code. Here is what I recommend to easily edit that code:
+- Linux: VSCode on a Linux desktop computer.
+- Android: Android Studio on a Linux desktop computer.
+- macOS/iOS: XCode on a Mac desktop computer (or a [VM](https://github.com/notAperson535/OneClick-macOS-Simple-KVM)).
+- Windows: VSCode on a Windows desktop computer.
+
+**NOTE**: If you are testing/building for Linux, please install the ALSA development files.
+
+### OpenSSL
+This project uses OpenSSL. If you are building and you get an error related to OpenSSL follow these steps:
+- Install Perl with CPAN.
+- You may need to clone [`openssl`](https://github.com/openssl/openssl) and run the `Configure` script.
+
+On iOS, running the `Configure` script is necessary because the `vendored` feature for the `openssl` crate
+does not work for the `aarch64-apple-ios-sim` target.
+
 ## Plugin Tool
 I have written a tool in Python that allows one to easily run common commands.
 This tool can be used to run the codegen and build the libraries.
