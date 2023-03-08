@@ -1,3 +1,6 @@
+## 1.4.3
+- Fix method channel being used for incorrect platforms when looping playback.
+
 ## 1.4.2
 - Add missing Android libs from CI fail.
 

@@ -380,7 +380,7 @@ class SimpleAudio
 
             _player.setMetadata(metadata: m);
         }
-        /// The method channel is only available for Android, iOS, macOS.
+        // The method channel is only available for Android, iOS, macOS.
         else if(_methodChannel != null)
         {
             // Prevent users from awaiting this method
