@@ -18,19 +18,21 @@
 
 use std::{sync::{Arc, Mutex, RwLock}, time::Duration};
 
-use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus, PlaybackPositionChangeRequestedEventArgs}, Foundation::{TypedEventHandler, Uri}, core::HSTRING, Storage::Streams::{RandomAccessStreamReference, InMemoryRandomAccessStream, DataWriter}};
+use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Foundation::HWND}, Media::{SystemMediaTransportControls, SystemMediaTransportControlsTimelineProperties, SystemMediaTransportControlsDisplayUpdater, MediaPlaybackType, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsButton, MediaPlaybackStatus, PlaybackPositionChangeRequestedEventArgs}, Foundation::{TypedEventHandler, Uri, EventRegistrationToken}, core::HSTRING, Storage::Streams::{RandomAccessStreamReference, InMemoryRandomAccessStream, DataWriter}};
 
 use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
 use super::types::{Event, Metadata, Actions};
 
-pub static HANDLER:RwLock<Option<Smtc>> = RwLock::new(None);
+pub static HANDLER: RwLock<Option<Smtc>> = RwLock::new(None);
 
 pub struct Smtc
 {
     controls: SystemMediaTransportControls,
     display: SystemMediaTransportControlsDisplayUpdater,
-    timeline: SystemMediaTransportControlsTimelineProperties
+    timeline: SystemMediaTransportControlsTimelineProperties,
+    button_press_token: EventRegistrationToken,
+    playback_pos_token: EventRegistrationToken
 }
 
 impl Smtc
@@ -106,10 +108,26 @@ impl Smtc
             }
         });
         
-        controls.ButtonPressed(&button_callback).unwrap();
-        controls.PlaybackPositionChangeRequested(&position_callback).unwrap();
+        let button_press_token =
+            controls.ButtonPressed(&button_callback).unwrap();
+        let playback_pos_token =
+            controls.PlaybackPositionChangeRequested(&position_callback).unwrap();
 
-        Smtc { controls, display, timeline }
+        Smtc {
+            controls,
+            display,
+            timeline,
+            button_press_token,
+            playback_pos_token
+        }
+    }
+
+    pub fn stop(self)
+    {
+        self.controls.RemoveButtonPressed(self.button_press_token).unwrap();
+        self.controls.RemovePlaybackPositionChangeRequested(self.playback_pos_token).unwrap();
+        self.display.ClearAll().unwrap();
+        self.display.Update().unwrap();
     }
 
     pub fn set_metadata(&self, metadata: Metadata)

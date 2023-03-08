@@ -60,10 +60,10 @@ pub fn dispose()
 
     #[cfg(target_os = "windows")]
     {
-        let smtc = smtc::HANDLER.read().unwrap();
-        if smtc.is_none() { return; }
-        // TODO
-        *smtc = None;
+        let mut lock = smtc::HANDLER.write().unwrap();
+        if lock.is_none() { return; }
+        let smtc = (*lock).take().unwrap();
+        smtc.stop();
     }
 }
 
