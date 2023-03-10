@@ -1,3 +1,6 @@
+## 1.4.4
+- Handle hot restarts.
+
 ## 1.4.3
 - Fix method channel being used for incorrect platforms when looping playback.
 

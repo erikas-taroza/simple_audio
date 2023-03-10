@@ -1,6 +1,6 @@
 name: simple_audio
 description: A simple cross-platform solution for playing audio in Flutter.
-version: 1.4.3
+version: 1.4.4
 homepage: https://github.com/erikas-taroza/simple_audio
 repository: https://github.com/erikas-taroza/simple_audio
 
