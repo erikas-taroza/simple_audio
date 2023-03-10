@@ -26,12 +26,12 @@ import MediaPlayer
 @available(macOS 10.12.2, *)
 public class SimpleAudio
 {
-    var channel:FlutterMethodChannel
-    var currentMetadata:[String: Any] = [:]
+    var channel: FlutterMethodChannel
+    var currentMetadata: [String: Any] = [:]
     
-    var showMediaNotification:Bool = true
+    var showMediaNotification: Bool = true
 
-    init(channel:FlutterMethodChannel?)
+    init(channel: FlutterMethodChannel?)
     {
         self.channel = channel!
     }
@@ -41,7 +41,7 @@ public class SimpleAudio
         switch call.method
         {
             case "init":
-                let args:[String: Any] = call.arguments as! [String: Any]
+                let args: [String: Any] = call.arguments as! [String: Any]
             
                 showMediaNotification = args["showMediaNotification"] as! Bool
                 if(!showMediaNotification) { return }
@@ -50,8 +50,10 @@ public class SimpleAudio
                 let preferSkipButtons = args["preferSkipButtons"] as! Bool
             
                 initialize(actions: actions.map { try! Actions.fromInt(i: $0) }, preferSkipButtons: preferSkipButtons)
+            case "dispose":
+                dispose()
             case "setMetadata":
-                let args:[String: Any] = call.arguments as! [String: Any]
+                let args: [String: Any] = call.arguments as! [String: Any]
                     
                 if(!showMediaNotification) { return }
             
@@ -64,7 +66,7 @@ public class SimpleAudio
                     duration: args["duration"] as? Int
                 )
             case "setPlaybackState":
-                let args:[String: Any] = call.arguments as! [String: Any]
+                let args: [String: Any] = call.arguments as! [String: Any]
                     
                 if(!showMediaNotification) { return }
             
@@ -77,7 +79,7 @@ public class SimpleAudio
         }
     }
     
-    func initialize(actions:[Actions], preferSkipButtons:Bool)
+    func initialize(actions: [Actions], preferSkipButtons: Bool)
     {
         #if os(iOS)
         let session = AVAudioSession.sharedInstance()
@@ -153,13 +155,35 @@ public class SimpleAudio
         #endif
     }
     
+    func dispose()
+    {
+        #if os(iOS)
+        let session = AVAudioSession.sharedInstance()
+        try! session.setActive(false)
+        #endif
+
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.playCommand.isEnabled = false
+        commandCenter.pauseCommand.isEnabled = false
+        commandCenter.previousTrackCommand.isEnabled = false
+        commandCenter.nextTrackCommand.isEnabled = false
+        commandCenter.skipForwardCommand.isEnabled = false
+        commandCenter.skipBackwardCommand.isEnabled = false
+        commandCenter.changePlaybackPositionCommand.isEnabled = false
+
+        #if os(macOS)
+        let nowPlaying = MPNowPlayingInfoCenter.default()
+        nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
+        #endif
+    }
+    
     func setMetadata(
-        title:String?,
-        artist:String?,
-        album:String?,
-        artUri:String?,
-        artBytes:FlutterStandardTypedData?,
-        duration:Int?
+        title: String?,
+        artist: String?,
+        album: String?,
+        artUri: String?,
+        artBytes: FlutterStandardTypedData?,
+        duration: Int?
     )
     {
         currentMetadata = [
@@ -209,12 +233,12 @@ public class SimpleAudio
     }
     
     // See enum type PlaybackState in simple_audio.dart for integer values.
-    func setPlaybackState(state:Int?, position:Int?)
+    func setPlaybackState(state: Int?, position: Int?)
     {
         let nowPlaying = MPNowPlayingInfoCenter.default()
         
         #if os(macOS)
-        var translatedState:MPNowPlayingPlaybackState
+        var translatedState: MPNowPlayingPlaybackState
         
         switch(state)
         {
@@ -264,7 +288,7 @@ enum Actions
     case skipNext
     case fastForward
                 
-    static func fromInt(i:Int) throws -> Actions
+    static func fromInt(i: Int) throws -> Actions
     {
         switch(i)
         {
