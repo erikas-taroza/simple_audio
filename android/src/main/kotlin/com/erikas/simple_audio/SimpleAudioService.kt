@@ -45,6 +45,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     private var playbackActions: List<PlaybackActions> = PlaybackActions.values().toList()
     private var compactPlaybackActions: List<Int> = listOf()
 
+    var exitProcessOnDestroy = true
     var isPlaying: Boolean = false
 
     override fun onGetRoot(
@@ -82,6 +83,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        exitProcessOnDestroy = true
         kill()
     }
 
@@ -99,7 +101,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
         // exit the process to prevent the foreground service from staying longer.
         // stopSelf/stopForeground don't work properly, so this is the only way.
         // Foreground service packages on Flutter do the same.
-        exitProcess(0)
+        // This will only be done when `onTaskRemoved` is called. The dispose method channel call
+        // will not kill the app.
+        if(exitProcessOnDestroy) exitProcess(0)
     }
 
     private fun getNotificationManager(): NotificationManager

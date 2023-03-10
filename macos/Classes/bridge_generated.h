@@ -50,6 +50,8 @@ void wire_new__static_method__Player(int64_t port_,
                                      struct wire_uint_8_list *dbus_name,
                                      int64_t *hwnd);
 
+void wire_dispose__static_method__Player(int64_t port_);
+
 void wire_playback_state_stream__static_method__Player(int64_t port_);
 
 void wire_progress_state_stream__static_method__Player(int64_t port_);
@@ -100,6 +102,7 @@ void free_WireSyncReturn(WireSyncReturn ptr);
 static int64_t dummy_method_to_enforce_bundling(void) {
     int64_t dummy_var = 0;
     dummy_var ^= ((int64_t) (void*) wire_new__static_method__Player);
+    dummy_var ^= ((int64_t) (void*) wire_dispose__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_playback_state_stream__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_progress_state_stream__static_method__Player);
     dummy_var ^= ((int64_t) (void*) wire_callback_stream__static_method__Player);

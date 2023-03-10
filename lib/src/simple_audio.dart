@@ -35,7 +35,6 @@ class SimpleAudio
         Platform.isAndroid || Platform.isIOS || Platform.isMacOS ? const MethodChannel("simple_audio")
         : null;
 
-    // Maybe subscribe to this stream for native media notifications.
     /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
         // Map the int event to a dart enum.
@@ -51,6 +50,7 @@ class SimpleAudio
 
     /// Returns `true` if the player is playing.
     Future<bool> get isPlaying => _player.isPlaying();
+    /// Returns the current progress state.
     Future<ProgressState> get _progress => _player.getProgress();
 
     /// The callback for when the [NotificationActions.skipPrev] action is called.
@@ -199,6 +199,8 @@ class SimpleAudio
         bool applePreferSkipButtons = true
     }) async
     {
+        await _dispose();
+
         // You must include this action.
         if(showMediaNotification) assert(actions.contains(NotificationActions.playPause));
 
@@ -230,6 +232,17 @@ class SimpleAudio
                 "preferSkipButtons": applePreferSkipButtons
             });
         }
+    }
+
+    /// If there are any old players (ex. after a hot restart),
+    /// then release their resources. This also reverts `simple_audio`
+    /// to its default state. Currently, the Rust code has some static
+    /// variables that are used between the threads.
+    /// These values would persist after a hot restart.
+    static Future<void> _dispose() async
+    {
+        await Player.dispose(bridge: api);
+        _methodChannel?.invokeMethod("dispose");
     }
 
     /// Open a new file for playback.
@@ -371,7 +384,7 @@ class SimpleAudio
         else if(_methodChannel != null)
         {
             // Prevent users from awaiting this method
-            // and blocking their program infintely
+            // and blocking their program infintely.
             Future<void> _() async
             {
                 // Wait for a valid duration.

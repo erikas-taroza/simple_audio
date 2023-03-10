@@ -48,6 +48,23 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["actions", "dbusName", "hwnd"],
       );
 
+  Future<void> disposeStaticMethodPlayer({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_dispose__static_method__Player(port_),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kDisposeStaticMethodPlayerConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kDisposeStaticMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "dispose__static_method__Player",
+        argNames: [],
+      );
+
   Stream<PlaybackState> playbackStateStreamStaticMethodPlayer({dynamic hint}) {
     return _platform.executeStream(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner
@@ -596,6 +613,20 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
       _wire_new__static_method__PlayerPtr.asFunction<
           void Function(int, ffi.Pointer<wire_int_32_list>,
               ffi.Pointer<wire_uint_8_list>, ffi.Pointer<ffi.Int64>)>();
+
+  void wire_dispose__static_method__Player(
+    int port_,
+  ) {
+    return _wire_dispose__static_method__Player(
+      port_,
+    );
+  }
+
+  late final _wire_dispose__static_method__PlayerPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_dispose__static_method__Player');
+  late final _wire_dispose__static_method__Player =
+      _wire_dispose__static_method__PlayerPtr.asFunction<void Function(int)>();
 
   void wire_playback_state_stream__static_method__Player(
     int port_,

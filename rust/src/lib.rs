@@ -79,6 +79,19 @@ impl Player
         Player { }
     }
 
+    /// Stops any old players/threads and resets the
+    /// static variables in `controls.rs`.
+    pub fn dispose()
+    {
+        // Stop the working thread.
+        Self::signal_to_stop();
+        // Reset the controls in `controls.rs` to default values.
+        reset_controls_to_default();
+        audio::streaming::streamable::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
+        // Reset the Linux/Windows media controllers.
+        metadata::dispose();
+    }
+
     fn signal_to_stop()
     {
         // If there are any threads in existence that were spawned when calling open(),
@@ -88,7 +101,7 @@ impl Player
 
         // Wait for the decoder thread to stop before proceeding.
         if let Some(txrx) = &*TXRX2.read().unwrap()
-        { let _ = txrx.1.recv(); }
+        { let _ = txrx.1.recv_timeout(std::time::Duration::from_millis(100)); }
 
         // Create new TXRXs to clear the messages.
         let mut txrx = TXRX.write().unwrap();
@@ -121,7 +134,7 @@ impl Player
     {
         let path2 = path.clone();
 
-        let source:Box<dyn MediaSource> = if path.contains("http") {
+        let source: Box<dyn MediaSource> = if path.contains("http") {
             if path.contains("m3u") {
                 Box::new(HlsStream::new(path)
                     .context(format!("Could not open HLS stream at \"{path2}\""))?

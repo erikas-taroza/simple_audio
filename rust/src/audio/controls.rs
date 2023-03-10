@@ -25,8 +25,8 @@ use crate::utils::types::ProgressState;
 
 lazy_static!
 {
-    /// Use this to communicate between the main thread and the decoder thread
-    /// Ex: play/pause commands
+    /// Use this to communicate between the main thread and the decoder thread.
+    /// Ex: play/pause commands.
     pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
 
     /// Use this to communicate from the decoder to the main thread.
@@ -42,6 +42,17 @@ pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
 pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
 pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
 pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState { position: 0, duration: 0 });
+
+pub fn reset_controls_to_default()
+{
+    IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+    IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
+    IS_LOOPING.store(false, std::sync::atomic::Ordering::SeqCst);
+    IS_NORMALIZING.store(false, std::sync::atomic::Ordering::SeqCst);
+    *VOLUME.write().unwrap() = 1.0;
+    *SEEK_TS.write().unwrap() = None;
+    *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
+}
 
 pub enum ThreadMessage
 {

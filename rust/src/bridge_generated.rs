@@ -47,6 +47,16 @@ fn wire_new__static_method__Player_impl(
         },
     )
 }
+fn wire_dispose__static_method__Player_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "dispose__static_method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(Player::dispose()),
+    )
+}
 fn wire_playback_state_stream__static_method__Player_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {

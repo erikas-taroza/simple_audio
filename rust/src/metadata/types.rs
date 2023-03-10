@@ -48,7 +48,8 @@ pub enum Event
 pub enum Command
 {
     SetMetadata(Metadata),
-    SetPlaybackState(PlaybackState)
+    SetPlaybackState(PlaybackState),
+    Stop
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
