@@ -171,10 +171,11 @@ public class SimpleAudio
         commandCenter.skipBackwardCommand.isEnabled = false
         commandCenter.changePlaybackPositionCommand.isEnabled = false
 
-        #if os(macOS)
         let nowPlaying = MPNowPlayingInfoCenter.default()
-        nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
-        #endif
+        if #available(iOS 13.0, *) {
+            nowPlaying.playbackState = MPNowPlayingPlaybackState.unknown
+        }
+        nowPlaying.nowPlayingInfo = [:]
     }
     
     func setMetadata(
