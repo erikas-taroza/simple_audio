@@ -8,7 +8,7 @@ import 'package:simple_audio/simple_audio.dart';
 void main() async
 {
     // Initialize with default values.
-    SimpleAudio.init(
+    await SimpleAudio.init(
         showMediaNotification: true,
         shouldNormalizeVolume: false,
         dbusName: "com.erikas.SimpleAudio",

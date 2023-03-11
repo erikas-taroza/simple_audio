@@ -145,6 +145,8 @@ class SimpleAudio
     }
 
     /// Initialize [SimpleAudio]. This should only be done once in the `main` method.
+    /// This method should be awaited to make sure that the player is created
+    /// before the app runs.
     /// 
     /// **[showMediaNotification]** Whether or not to show the media notification when playing
     /// audio.

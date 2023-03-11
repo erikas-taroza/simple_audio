@@ -28,9 +28,9 @@ To see a sample player project, please check the [example](https://github.com/er
 
 ```dart
 // Initialize SimpleAudio
-void main() {
+void main() async {
   // Initialize with default values.
-  SimpleAudio.init(
+  await SimpleAudio.init(
     showMediaNotification: true,
     shouldNormalizeVolume: false,
     dbusName: "com.erikas.SimpleAudio",
@@ -179,3 +179,7 @@ You will need to update the macOS build versions to ``10.13``
 - At the top of your project hierarchy view, select the ``Runner`` project.
 - In your ``Runner`` project, go to the ``Info`` tab and set ``macOS Deployment Target`` to ``10.13``
 - Select the ``Runner`` target and set the ``Minimum Deployments`` macOS version to ``10.13``
+
+### Special Thanks
+- [sanihaq](https://github.com/sanihaq) - Report multiple bugs in `simple_audio`'s first releases.
+  These bugs would not have been fixed for a long time without their help.
