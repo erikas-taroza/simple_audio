@@ -29,7 +29,23 @@ To see a sample player project, please check the [example](https://github.com/er
 ```dart
 // Initialize SimpleAudio
 void main() {
-  SimpleAudio.init();
+  // Initialize with default values.
+  SimpleAudio.init(
+    showMediaNotification: true,
+    shouldNormalizeVolume: false,
+    dbusName: "com.erikas.SimpleAudio",
+    actions: [
+      NotificationActions.rewind,
+      NotificationActions.skipPrev,
+      NotificationActions.playPause,
+      NotificationActions.skipNext,
+      NotificationActions.fastForward
+    ],
+    androidNotificationIconPath: "mipmap/ic_launcher",
+    androidCompactPlaybackActions: [1, 2, 3],
+    applePreferSkipButtons: true
+  );
+
   runApp(const MyApp());
 }
 
