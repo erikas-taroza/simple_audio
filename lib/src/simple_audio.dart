@@ -219,10 +219,19 @@ class SimpleAudio
 
         if(Platform.isAndroid)
         {
+            // A maximum of 3 actions are allowed for Android's
+            // compact media notification.
+            assert(androidCompactPlaybackActions.length <= 3);
+
+            // If the number of actions is 3 or less,
+            // then use this list for compact actions.
+            List<int> inferredCompactActions = actions.map((e) => e.index).toList();
+
             _methodChannel?.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "actions": actions.map((e) => e.index).toList(),
-                "compactActions": androidCompactPlaybackActions,
+                "compactActions": actions.length <= 3 ?
+                    inferredCompactActions : androidCompactPlaybackActions,
                 "icon": androidNotificationIconPath
             });
         }
