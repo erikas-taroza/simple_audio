@@ -181,5 +181,5 @@ You will need to update the macOS build versions to ``10.13``
 - Select the ``Runner`` target and set the ``Minimum Deployments`` macOS version to ``10.13``
 
 ### Special Thanks
-- [sanihaq](https://github.com/sanihaq) - Report multiple bugs in `simple_audio`'s first releases.
+- [sanihaq](https://github.com/sanihaq) - Reported multiple bugs in `simple_audio`'s first releases.
   These bugs would not have been fixed for a long time without their help.
