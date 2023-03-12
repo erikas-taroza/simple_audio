@@ -165,8 +165,8 @@ def code_gen():
     print("Generating code with flutter_rust_bridge...\n")
 
     os.system("cargo install flutter_rust_bridge_codegen --version 1.65.0")
-    os.system('CPATH="$(clang -v 2>&1 | grep "Selected GCC installation" | rev | cut -d\' \' -f1 | rev)/include" \
-        flutter_rust_bridge_codegen \
+    os.system('flutter_rust_bridge_codegen \
+        --llvm-compiler-opts="-I/usr/lib/gcc/x86_64-redhat-linux/12/include" \
         --rust-input ./rust/src/lib.rs \
         --dart-output ./lib/src/bridge_generated.dart \
         --dart-decl-output ./lib/src/bridge_definitions.dart \
