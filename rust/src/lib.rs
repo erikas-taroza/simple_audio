@@ -97,31 +97,12 @@ impl Player
     pub fn dispose()
     {
         // Stop the working thread.
-        Self::signal_to_stop();
+        TXRX.read().unwrap().0.send(ThreadMessage::Dispose).unwrap();
         // Reset the controls in `controls.rs` to default values.
         reset_controls_to_default();
         audio::streaming::streamable::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         metadata::dispose();
-    }
-
-    fn signal_to_stop()
-    {
-        // If there are any threads in existence that were spawned when calling open(),
-        // they will read this value and break the decode loop.
-        // This closes the thread and the cpal stream.
-        TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
-
-        // Wait for the decoder thread to stop before proceeding.
-        // if let Some(txrx) = &*TXRX2.read().unwrap()
-        // { let _ = txrx.1.recv_timeout(std::time::Duration::from_millis(100)); }
-
-        // // Create new TXRXs to clear the messages.
-        // let mut txrx = TXRX.write().unwrap();
-        // *txrx = unbounded();
-
-        // let mut txrx2 = TXRX2.write().unwrap();
-        // *txrx2 = Some(unbounded());
     }
 
     // ---------------------------------
@@ -169,12 +150,6 @@ impl Player
         if autoplay { Self::internal_play(); }
         else { Self::internal_pause(); }
 
-        // In case the user hasn't called stop before opening the first track.
-        if TXRX2.read().unwrap().is_none() {
-            let mut txrx2 = TXRX2.write().unwrap();
-            *txrx2 = Some(unbounded());
-        }
-
         Ok(())
     }
 
@@ -216,7 +191,7 @@ impl Player
     {
         if IS_STOPPED.load(std::sync::atomic::Ordering::SeqCst) { return; }
 
-        Self::signal_to_stop();
+        TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
         update_playback_state_stream(PlaybackState::Pause);
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };

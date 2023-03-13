@@ -29,11 +29,6 @@ lazy_static!
     /// Use this to communicate between the main thread and the decoder thread.
     /// Ex: play/pause commands.
     pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
-
-    /// Use this to communicate from the decoder to the main thread.
-    /// Ex: Tell the main thread this thread is done.
-    // This is an option because we don't want to wait for a non existent thread on the first run.
-    pub static ref TXRX2: RwLock<Option<(Sender<bool>, Receiver<bool>)>> = RwLock::new(None);
 }
 
 pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
@@ -57,11 +52,13 @@ pub fn reset_controls_to_default()
 
 pub enum ThreadMessage
 {
+    /// Stops the current running thread.
+    Dispose,
     Open(Box<dyn MediaSource>),
     Play,
     Pause,
     Stop,
     /// Called by `cpal_output` in the event the device outputting
     /// audio was changed/disconnected.
-    DeviceChanged
+    DeviceChanged,
 }

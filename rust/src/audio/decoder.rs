@@ -26,6 +26,7 @@ use super::{cpal_output::CpalOutput, controls::*};
 pub struct Decoder
 {
     rx: Receiver<ThreadMessage>,
+    state: DecoderState,
     cpal_output: Option<CpalOutput>,
     playback: Option<Playback>
 }
@@ -39,6 +40,7 @@ impl Decoder
 
         Decoder {
             rx,
+            state: DecoderState::Idle,
             cpal_output: None,
             playback: None
         }
@@ -54,72 +56,24 @@ impl Decoder
     /// where it waits for a message to come.
     pub fn start(&mut self)
     {
-        let mut state = DecoderState::Idle;
-
         loop
         {
-            // If the player is paused, then block this thread until a message comes in
-            // to save the CPU.
-            let recv: Option<ThreadMessage> = if state.is_idle() || state.is_paused() {
-                self.rx.recv().ok()
-            } else {
-                self.rx.try_recv().ok()
-            };
-
-            // TODO: Error handling for the thread messages.
-            match recv
-            {
-                None => (),
-                Some(message) => match message
-                {
-                    ThreadMessage::Open(source) => {
-                        self.playback = Some(self.open(source).unwrap());
-                    },
-                    ThreadMessage::Play => {
-                        state = DecoderState::Playing;
-
-                        // Windows handles play/pause differently.
-                        if cfg!(not(target_os = "windows")) {
-                            if let Some(cpal_output) = &self.cpal_output {
-                                cpal_output.stream.play();
-                            }
-                        }
-                    },
-                    ThreadMessage::Pause => {
-                        state = DecoderState::Paused;
-
-                        // Windows handles play/pause differently.
-                        if cfg!(not(target_os = "windows")) {
-                            if let Some(cpal_output) = &self.cpal_output {
-                                cpal_output.stream.pause();
-                            }
-                        }
-                    },
-                    ThreadMessage::Stop => {
-                        state = DecoderState::Idle;
-                        self.cpal_output = None;
-                        self.playback = None;
-                    },
-                    // When the device is changed/disconnected,
-                    // then we should reestablish a connection.
-                    // To make a new connection, dispose of the current cpal_output
-                    // and pause playback. Once the user is ready, they can start
-                    // playback themselves.
-                    ThreadMessage::DeviceChanged => {
-                        self.cpal_output = None;
-                        crate::Player::internal_pause();
-                    },
+            match self.listen_for_message() {
+                Ok(should_break) => if should_break {
+                    break;
+                },
+                Err(err) => {
+                    todo!("Handle error");
                 }
             }
 
-            if state.is_idle() || state.is_paused() { continue; }
+            if self.state.is_idle() || self.state.is_paused() { continue; }
 
             let result = self.do_playback();
 
             match result {
-                // The playback has finished.
-                Ok(result) => if let Some(_) = result {
-                    state = DecoderState::Idle;
+                Ok(playback_complete) => if playback_complete {
+                    self.state = DecoderState::Idle;
                     self.finish_playback();
                 },
                 Err(err) => {
@@ -129,14 +83,79 @@ impl Decoder
         }
     }
 
-    /// Decodes a packet and writes to `cpal_output`. If `self.playback`
-    /// is `None`, then this returns `Ok(None)`.
+    /// Listens to `self.rx` for any incoming messages.
     /// 
-    /// Returns `None` if there is nothing else to do.
-    /// Returns `Some(PlaybackComplete)` when the playback is complete.
-    fn do_playback(&mut self) -> anyhow::Result<Option<PlaybackComplete>>
+    /// Blocks if the `self.state` is `Idle` or `Paused`.
+    /// 
+    /// Returns true if the `Dispose` message was received.
+    /// Returns false otherwise.
+    fn listen_for_message(&mut self) -> anyhow::Result<bool>
     {
-        if self.playback.is_none() { return Ok(None); }
+        // If the player is paused, then block this thread until a message comes in
+        // to save the CPU.
+        let recv: Option<ThreadMessage> = if self.state.is_idle() || self.state.is_paused() {
+            self.rx.recv().ok()
+        } else {
+            self.rx.try_recv().ok()
+        };
+
+        match recv
+        {
+            None => (),
+            Some(message) => match message
+            {
+                ThreadMessage::Dispose => return Ok(true),
+                ThreadMessage::Open(source) => {
+                    self.cpal_output = None;
+                    self.playback = Some(self.open(source)?);
+                },
+                ThreadMessage::Play => {
+                    self.state = DecoderState::Playing;
+
+                    // Windows handles play/pause differently.
+                    if cfg!(not(target_os = "windows")) {
+                        if let Some(cpal_output) = &self.cpal_output {
+                            cpal_output.stream.play()?;
+                        }
+                    }
+                },
+                ThreadMessage::Pause => {
+                    self.state = DecoderState::Paused;
+
+                    // Windows handles play/pause differently.
+                    if cfg!(not(target_os = "windows")) {
+                        if let Some(cpal_output) = &self.cpal_output {
+                            cpal_output.stream.pause()?;
+                        }
+                    }
+                },
+                ThreadMessage::Stop => {
+                    self.state = DecoderState::Idle;
+                    self.cpal_output = None;
+                    self.playback = None;
+                },
+                // When the device is changed/disconnected,
+                // then we should reestablish a connection.
+                // To make a new connection, dispose of the current cpal_output
+                // and pause playback. Once the user is ready, they can start
+                // playback themselves.
+                ThreadMessage::DeviceChanged => {
+                    self.cpal_output = None;
+                    crate::Player::internal_pause();
+                },
+            }
+        }
+
+        Ok(false)
+    }
+
+    /// Decodes a packet and writes to `cpal_output`.
+    /// 
+    /// Returns `true` when the playback is complete.
+    /// Returns `false` otherwise.
+    fn do_playback(&mut self) -> anyhow::Result<bool>
+    {
+        if self.playback.is_none() { return Ok(false); }
         let playback = self.playback.as_mut().unwrap();
 
         let seek_ts: u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
@@ -158,7 +177,7 @@ impl Decoder
             // from blocking.
             if let Some(cpal_output) = self.cpal_output.as_ref()
             { cpal_output.ring_buffer_reader.skip_all(); }
-            return Ok(None);
+            return Ok(false);
         }
 
         // Decode the next packet.
@@ -172,19 +191,19 @@ impl Decoder
                 {
                     *SEEK_TS.write().unwrap() = Some(0);
                     crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
-                    return Ok(None);
+                    return Ok(false);
                 }
 
-                return Ok(Some(PlaybackComplete));
+                return Ok(true);
             }
         };
 
-        if packet.track_id() != playback.track_id { return Ok(None); }
+        if packet.track_id() != playback.track_id { return Ok(false); }
 
         let decoded = playback.decoder.decode(&packet)
             .context("Could not decode audio packet.")?;
 
-        if packet.ts() < seek_ts { return Ok(None); }
+        if packet.ts() < seek_ts { return Ok(false); }
             
         // Update the progress stream with calculated times.
         let progress = ProgressState {
@@ -205,7 +224,7 @@ impl Decoder
 
         self.cpal_output.as_mut().unwrap().write(decoded);
 
-        Ok(None)
+        Ok(false)
     }
 
     /// Called when the file is finished playing.
@@ -302,5 +321,3 @@ struct Playback {
     timebase: TimeBase,
     duration: u64
 }
-
-struct PlaybackComplete;
