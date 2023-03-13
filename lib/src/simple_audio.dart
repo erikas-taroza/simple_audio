@@ -179,7 +179,9 @@ class SimpleAudio
     /// 
     /// **[androidCompactPlaybackActions]** A list of numbers that represent the buttons
     /// to show in the compact media notification. The indicies match with the ones
-    /// in [actions].
+    /// in [actions]. You can only have 3 compact actions at most.
+    /// If you have less than 3 [actions], then the default value will not work
+    /// and it will throw an error.
     /// 
     /// For example, to use the middle 3:
     /// 
@@ -222,16 +224,14 @@ class SimpleAudio
             // A maximum of 3 actions are allowed for Android's
             // compact media notification.
             assert(androidCompactPlaybackActions.length <= 3);
-
-            // If the number of actions is 3 or less,
-            // then use this list for compact actions.
-            List<int> inferredCompactActions = actions.map((e) => e.index).toList();
+            // You cannot have more compact actions than all the actions.
+            // Please set the `androidCompactPlaybackActions` parameter.
+            assert(androidCompactPlaybackActions.length <= actions.length);
 
             _methodChannel?.invokeMethod("init", {
                 "showMediaNotification": showMediaNotification,
                 "actions": actions.map((e) => e.index).toList(),
-                "compactActions": actions.length <= 3 ?
-                    inferredCompactActions : androidCompactPlaybackActions,
+                "compactActions": androidCompactPlaybackActions,
                 "icon": androidNotificationIconPath
             });
         }
