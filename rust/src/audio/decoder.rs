@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use anyhow::{Context, anyhow};
+use anyhow::Context;
 use cpal::traits::StreamTrait;
 use crossbeam::channel::Receiver;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::{Time, TimeBase}}, default};
@@ -73,13 +73,7 @@ impl Decoder
                 Some(message) => match message
                 {
                     ThreadMessage::Open(source) => {
-                        if let Ok(playback) = self.open(source) {
-                            let mut lock = PROGRESS.write().unwrap();
-                            *lock = ProgressState { position: 0, duration: playback.duration };
-                            drop(lock);
-
-                            self.playback = Some(playback);
-                        }
+                        self.playback = Some(self.open(source).unwrap());
                     },
                     ThreadMessage::Play => {
                         state = DecoderState::Playing;
@@ -87,7 +81,7 @@ impl Decoder
                         // Windows handles play/pause differently.
                         if cfg!(not(target_os = "windows")) {
                             if let Some(cpal_output) = &self.cpal_output {
-                                let _ = cpal_output.stream.play();
+                                cpal_output.stream.play();
                             }
                         }
                     },
@@ -97,14 +91,14 @@ impl Decoder
                         // Windows handles play/pause differently.
                         if cfg!(not(target_os = "windows")) {
                             if let Some(cpal_output) = &self.cpal_output {
-                                let _ = cpal_output.stream.pause();
+                                cpal_output.stream.pause();
                             }
                         }
-                    }
+                    },
                     ThreadMessage::Stop => {
+                        state = DecoderState::Idle;
                         self.cpal_output = None;
                         self.playback = None;
-                        state = DecoderState::Idle;
                     },
                     // When the device is changed/disconnected,
                     // then we should reestablish a connection.
@@ -118,91 +112,100 @@ impl Decoder
                 }
             }
 
-            if state.is_paused() { continue; }
+            if state.is_idle() || state.is_paused() { continue; }
 
             let result = self.do_playback();
 
-            // The playback has finished.
-            if result.is_err() {
-                self.finish_playback();
-                state = DecoderState::Idle;
+            match result {
+                // The playback has finished.
+                Ok(result) => if let Some(_) = result {
+                    state = DecoderState::Idle;
+                    self.finish_playback();
+                },
+                Err(err) => {
+                    todo!("Handle errors");
+                }
             }
         }
     }
 
-    /// Decodes a packet and writes to `cpal_output`.
-    fn do_playback(&mut self) -> anyhow::Result<()>
+    /// Decodes a packet and writes to `cpal_output`. If `self.playback`
+    /// is `None`, then this returns `Ok(None)`.
+    /// 
+    /// Returns `None` if there is nothing else to do.
+    /// Returns `Some(PlaybackComplete)` when the playback is complete.
+    fn do_playback(&mut self) -> anyhow::Result<Option<PlaybackComplete>>
     {
-        if let Some(playback) = self.playback.as_mut()
+        if self.playback.is_none() { return Ok(None); }
+        let playback = self.playback.as_mut().unwrap();
+
+        let seek_ts: u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
         {
-            let seek_ts: u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
+            let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(playback.track_id) };
+            match playback.reader.seek(SeekMode::Coarse, seek_to)
             {
-                let seek_to = SeekTo::Time { time: Time::from(seek_ts), track_id: Some(playback.track_id) };
-                match playback.reader.seek(SeekMode::Coarse, seek_to)
-                {
-                    Ok(seeked_to) => seeked_to.required_ts,
-                    Err(_) => 0
-                }
-            } else { 0 };
-
-            // Clean up seek stuff.
-            if SEEK_TS.read().unwrap().is_some()
-            {
-                *SEEK_TS.write().unwrap() = None;
-                playback.decoder.reset();
-                // Clear the ring buffer which prevents the writer
-                // from blocking.
-                if let Some(cpal_output) = self.cpal_output.as_ref()
-                { cpal_output.ring_buffer_reader.skip_all(); }
-                return Ok(());
+                Ok(seeked_to) => seeked_to.required_ts,
+                Err(_) => 0
             }
+        } else { 0 };
 
-            // Decode the next packet.
-            let packet = match playback.reader.next_packet()
-            {
-                Ok(packet) => packet,
-                // An error occurs when the stream
-                // has reached the end of the audio.
-                Err(_) => {
-                    if IS_LOOPING.load(std::sync::atomic::Ordering::SeqCst)
-                    {
-                        *SEEK_TS.write().unwrap() = Some(0);
-                        crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
-                        return Ok(());
-                    }
-
-                    return Err(anyhow!("Finished playback."));
-                }
-            };
-
-            if packet.track_id() != playback.track_id { return Ok(()); }
-
-            let decoded = playback.decoder.decode(&packet)
-                .context("Could not decode audio packet.")?;
-
-            if packet.ts() < seek_ts { return Ok(()); }
-                
-            // Update the progress stream with calculated times.
-            let progress = ProgressState {
-                position: playback.timebase.calc_time(packet.ts()).seconds,
-                duration: playback.duration
-            };
-
-            update_progress_state_stream(progress);
-            *PROGRESS.write().unwrap() = progress;
-
-            // Write the decoded packet to CPAL.
-            if self.cpal_output.is_none()
-            {
-                let spec = *decoded.spec();
-                let duration = decoded.capacity() as u64;
-                self.cpal_output.replace(CpalOutput::new(spec, duration)?);
-            }
-
-            self.cpal_output.as_mut().unwrap().write(decoded);
+        // Clean up seek stuff.
+        if SEEK_TS.read().unwrap().is_some()
+        {
+            *SEEK_TS.write().unwrap() = None;
+            playback.decoder.reset();
+            // Clear the ring buffer which prevents the writer
+            // from blocking.
+            if let Some(cpal_output) = self.cpal_output.as_ref()
+            { cpal_output.ring_buffer_reader.skip_all(); }
+            return Ok(None);
         }
 
-        Ok(())
+        // Decode the next packet.
+        let packet = match playback.reader.next_packet()
+        {
+            Ok(packet) => packet,
+            // An error occurs when the stream
+            // has reached the end of the audio.
+            Err(_) => {
+                if IS_LOOPING.load(std::sync::atomic::Ordering::SeqCst)
+                {
+                    *SEEK_TS.write().unwrap() = Some(0);
+                    crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
+                    return Ok(None);
+                }
+
+                return Ok(Some(PlaybackComplete));
+            }
+        };
+
+        if packet.track_id() != playback.track_id { return Ok(None); }
+
+        let decoded = playback.decoder.decode(&packet)
+            .context("Could not decode audio packet.")?;
+
+        if packet.ts() < seek_ts { return Ok(None); }
+            
+        // Update the progress stream with calculated times.
+        let progress = ProgressState {
+            position: playback.timebase.calc_time(packet.ts()).seconds,
+            duration: playback.duration
+        };
+
+        update_progress_state_stream(progress);
+        *PROGRESS.write().unwrap() = progress;
+
+        // Write the decoded packet to CPAL.
+        if self.cpal_output.is_none()
+        {
+            let spec = *decoded.spec();
+            let duration = decoded.capacity() as u64;
+            self.cpal_output.replace(CpalOutput::new(spec, duration)?);
+        }
+
+        self.cpal_output.as_mut().unwrap().write(decoded);
+
+        Ok(None)
     }
 
     /// Called when the file is finished playing.
@@ -244,7 +247,8 @@ impl Decoder
             .context("Cannot start playback. There are no tracks present in the file.").unwrap();
         let track_id = track.id;
 
-        let decoder = default::get_codecs().make(&track.codec_params, &Default::default())
+        let decoder = default::get_codecs()
+            .make(&track.codec_params, &Default::default())
             .unwrap();
 
         // Used only for outputting the current position and duration.
@@ -298,3 +302,5 @@ struct Playback {
     timebase: TimeBase,
     duration: u64
 }
+
+struct PlaybackComplete;
