@@ -175,8 +175,9 @@ impl Decoder
             playback.decoder.reset();
             // Clear the ring buffer which prevents the writer
             // from blocking.
-            if let Some(cpal_output) = self.cpal_output.as_ref()
-            { cpal_output.ring_buffer_reader.skip_all(); }
+            if let Some(cpal_output) = self.cpal_output.as_ref() {
+                cpal_output.ring_buffer_reader.skip_all();
+            }
             return Ok(false);
         }
 
@@ -232,8 +233,9 @@ impl Decoder
     /// Flushes `cpal_output` and sends a `Done` message to Dart.
     fn finish_playback(&mut self)
     {
-        if let Some(cpal_output) = self.cpal_output.as_mut()
-        { cpal_output.flush(); }
+        if let Some(cpal_output) = self.cpal_output.as_mut() {
+            cpal_output.flush();
+        }
 
         // Send the done message once cpal finishes flushing.
         // There may be samples left over and we don't want to
@@ -263,12 +265,11 @@ impl Decoder
         let reader = probed.format;
 
         let track = reader.default_track()
-            .context("Cannot start playback. There are no tracks present in the file.").unwrap();
+            .context("Cannot start playback. There are no tracks present in the file.")?;
         let track_id = track.id;
 
         let decoder = default::get_codecs()
-            .make(&track.codec_params, &Default::default())
-            .unwrap();
+            .make(&track.codec_params, &Default::default())?;
 
         // Used only for outputting the current position and duration.
         let timebase = track.codec_params.time_base.unwrap();
