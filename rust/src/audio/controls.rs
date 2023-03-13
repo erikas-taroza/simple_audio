@@ -20,6 +20,7 @@ use std::sync::{RwLock, atomic::AtomicBool};
 
 use crossbeam::channel::{Sender, Receiver, unbounded};
 use lazy_static::lazy_static;
+use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
 
@@ -56,6 +57,7 @@ pub fn reset_controls_to_default()
 
 pub enum ThreadMessage
 {
+    Open(Box<dyn MediaSource>),
     Play,
     Pause,
     Stop,

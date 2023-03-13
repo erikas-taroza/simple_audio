@@ -76,6 +76,19 @@ impl Player
             }
         );
 
+        let mut txrx = TXRX.write().unwrap();
+        *txrx = unbounded();
+
+        // Start the decoding thread.
+        thread::spawn(|| {
+            let mut decoder = Decoder::new();
+            decoder.start();
+
+            // if result.is_err() {
+            //     update_callback_stream(Callback::DecodeError);
+            // }
+        });
+
         Player { }
     }
 
@@ -100,15 +113,15 @@ impl Player
         TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
 
         // Wait for the decoder thread to stop before proceeding.
-        if let Some(txrx) = &*TXRX2.read().unwrap()
-        { let _ = txrx.1.recv_timeout(std::time::Duration::from_millis(100)); }
+        // if let Some(txrx) = &*TXRX2.read().unwrap()
+        // { let _ = txrx.1.recv_timeout(std::time::Duration::from_millis(100)); }
 
-        // Create new TXRXs to clear the messages.
-        let mut txrx = TXRX.write().unwrap();
-        *txrx = unbounded();
+        // // Create new TXRXs to clear the messages.
+        // let mut txrx = TXRX.write().unwrap();
+        // *txrx = unbounded();
 
-        let mut txrx2 = TXRX2.write().unwrap();
-        *txrx2 = Some(unbounded());
+        // let mut txrx2 = TXRX2.write().unwrap();
+        // *txrx2 = Some(unbounded());
     }
 
     // ---------------------------------
@@ -151,6 +164,8 @@ impl Player
             )
         };
 
+        TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
+
         if autoplay { Self::internal_play(); }
         else { Self::internal_pause(); }
 
@@ -159,14 +174,6 @@ impl Player
             let mut txrx2 = TXRX2.write().unwrap();
             *txrx2 = Some(unbounded());
         }
-
-        thread::spawn(move || {
-            let result = Decoder::default().decode(source);
-
-            if result.is_err() {
-                update_callback_stream(Callback::DecodeError);
-            }
-        });
 
         Ok(())
     }
