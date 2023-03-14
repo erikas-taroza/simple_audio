@@ -192,7 +192,7 @@ impl CpalOutput
         }
 
         while let Some(written) = self.ring_buffer_writer.write(samples) {
-            samples = &samples[written..]
+            samples = &samples[written..];
         }
     }
 
