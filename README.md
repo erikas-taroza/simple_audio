@@ -29,6 +29,8 @@ To see a sample player project, please check the [example](https://github.com/er
 ```dart
 // Initialize SimpleAudio
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Initialize with default values.
   await SimpleAudio.init(
     showMediaNotification: true,

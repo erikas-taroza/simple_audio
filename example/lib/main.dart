@@ -7,6 +7,8 @@ import 'package:simple_audio/simple_audio.dart';
 
 void main() async
 {
+    WidgetsFlutterBinding.ensureInitialized();
+
     // Initialize with default values.
     await SimpleAudio.init(
         showMediaNotification: true,
