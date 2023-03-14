@@ -141,6 +141,7 @@ impl Player
             )
         };
 
+        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
 
         if autoplay { Self::internal_play(); }
@@ -160,7 +161,6 @@ impl Player
 
         update_playback_state_stream(PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
-        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Play);
     }
     
@@ -175,7 +175,6 @@ impl Player
 
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 
