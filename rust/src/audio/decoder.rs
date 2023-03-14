@@ -19,7 +19,7 @@ use cpal::traits::StreamTrait;
 use crossbeam::channel::Receiver;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::{Time, TimeBase}}, default};
 
-use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream, types::*};
+use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream, types::*, callback_stream::update_callback_stream};
 
 use super::{cpal_output::CpalOutput, controls::*};
 
@@ -54,7 +54,7 @@ impl Decoder
     /// 
     /// If stopped, the decoder goes into an idle state
     /// where it waits for a message to come.
-    pub fn start(&mut self)
+    pub fn start(mut self)
     {
         loop
         {
@@ -62,22 +62,20 @@ impl Decoder
                 Ok(should_break) => if should_break {
                     break;
                 },
-                Err(err) => {
-                    todo!("Handle error");
+                Err(_) => {
+                    update_callback_stream(Callback::DecodeError);
                 }
             }
 
             if self.state.is_idle() || self.state.is_paused() { continue; }
 
-            let result = self.do_playback();
-
-            match result {
+            match self.do_playback() {
                 Ok(playback_complete) => if playback_complete {
                     self.state = DecoderState::Idle;
                     self.finish_playback();
                 },
-                Err(err) => {
-                    todo!("Handle errors");
+                Err(_) => {
+                    update_callback_stream(Callback::DecodeError);
                 }
             }
         }

@@ -81,12 +81,8 @@ impl Player
 
         // Start the decoding thread.
         thread::spawn(|| {
-            let mut decoder = Decoder::new();
+            let decoder = Decoder::new();
             decoder.start();
-
-            // if result.is_err() {
-            //     update_callback_stream(Callback::DecodeError);
-            // }
         });
 
         Player { }
@@ -192,6 +188,7 @@ impl Player
         if IS_STOPPED.load(std::sync::atomic::Ordering::SeqCst) { return; }
 
         TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
+
         update_progress_state_stream(ProgressState { position: 0, duration: 0 });
         update_playback_state_stream(PlaybackState::Pause);
         *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
