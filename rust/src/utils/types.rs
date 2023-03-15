@@ -14,17 +14,25 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+/// The playback state of the player.
 pub enum PlaybackState
 {
+    /// The player is currently playing the file.
     Play = 0,
+    /// The player is currently paused and there is no output.
     Pause = 1,
+    /// The player has finished playing the file.
     Done = 2
 }
 
+/// Provides the current progress of the player.
 #[derive(Clone, Copy)]
 pub struct ProgressState
 {
+    /// The position, in seconds, of the player.
     pub position: u64,
+    /// The duration, in seconds, of the file that
+    /// is being played.
     pub duration: u64
 }
 

@@ -16,40 +16,21 @@
 
 use crate::utils::types::PlaybackState;
 
+/// The metadata of the currently playing file
+/// that will be shown in the OS's media controller.
 #[derive(Default)]
 pub struct Metadata
 {
+    /// The title of the file.
     pub title: Option<String>,
+    /// The artist/creator of the file.
     pub artist: Option<String>,
+    /// The album that the song is in.
     pub album: Option<String>,
+    /// A URI that points to the art for this song.
     pub art_uri: Option<String>,
+    /// The song's art in the form of a byte array.
     pub art_bytes: Option<Vec<u8>>
-}
-
-/// Callback events from the media notification.
-#[derive(Clone, Copy, Debug)]
-pub enum Event
-{
-    Next,
-    Previous,
-    Play,
-    Pause,
-    Stop,
-    PlayPause,
-    /// `i64`: Position.
-    /// 
-    /// `bool`: Is absolute.
-    /// If `true`, the position is between `0-duration`.
-    /// If false, the position can be negative to indicate going backwards.
-    Seek(i64, bool)
-}
-
-/// Commands to be sent via the thread's channels.
-pub enum Command
-{
-    SetMetadata(Metadata),
-    SetPlaybackState(PlaybackState),
-    Stop
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -76,4 +57,30 @@ impl From<i32> for Actions
             _ => panic!("ERR: This action is not supported.")
         } 
     }
+}
+
+/// Callback events from the media notification.
+#[derive(Clone, Copy, Debug)]
+pub enum Event
+{
+    Next,
+    Previous,
+    Play,
+    Pause,
+    Stop,
+    PlayPause,
+    /// `i64`: Position.
+    /// 
+    /// `bool`: Is absolute.
+    /// If `true`, the position is between `0-duration`.
+    /// If false, the position can be negative to indicate going backwards.
+    Seek(i64, bool)
+}
+
+/// Commands to be sent via the thread's channels.
+pub enum Command
+{
+    SetMetadata(Metadata),
+    SetPlaybackState(PlaybackState),
+    Stop
 }

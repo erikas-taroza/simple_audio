@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-export 'types.dart' hide progressStateFromInner, metadataFromInner;
-import 'types.dart' as types;
-import 'types.dart' hide ProgressState, Metadata;
+export 'types.dart';
+export 'bridge_definitions.dart' show Metadata, ProgressState, PlaybackState;
 
 import 'dart:io';
 
@@ -25,6 +24,8 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 import './ffi.dart' hide PlaybackState;
+import 'types.dart';
+import 'bridge_definitions.dart';
 
 late final Player _player;
 
@@ -37,15 +38,11 @@ class SimpleAudio
 
     /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
-        // Map the int event to a dart enum.
-        .map((event) => PlaybackState.values[event.index])
         .asBroadcastStream();
 
     /// A stream that returns a [ProgressState] when the progress of the player
     /// or duration of the file is changed.
-    late Stream<types.ProgressState> progressStateStream = Player.progressStateStream(bridge: api)
-        // Convert the inner ProgressState to the public ProgressState (public provides docs)
-        .map((event) => types.progressStateFromInner(event))
+    late Stream<ProgressState> progressStateStream = Player.progressStateStream(bridge: api)
         .asBroadcastStream();
 
     /// Returns `true` if the player is playing.
@@ -85,22 +82,22 @@ class SimpleAudio
         Player.callbackStream(bridge: api).listen((event) {
             switch(event)
             {
-                case Callback.NotificationActionSkipPrev:
+                case Callback.notificationActionSkipPrev:
                     onSkipPrevious?.call(this);
                     break;
-                case Callback.NotificationActionSkipNext:
+                case Callback.notificationActionSkipNext:
                     onSkipNext?.call(this);
                     break;
-                case Callback.NetworkStreamError:
+                case Callback.networkStreamError:
                     onNetworkStreamError?.call(this);
                     break;
-                case Callback.DecodeError:
+                case Callback.decodeError:
                     onDecodeError?.call(this);
                     break;
                 // This isn't a callback for the user to handle.
                 // Instead, it is used to communicate via MethodChannel
                 // with Dart being the middleman.
-                case Callback.PlaybackLooped:
+                case Callback.playbackLooped:
                     _methodChannel?.invokeMethod("setPlaybackState", {
                         "state": PlaybackState.play.index,
                         "position": 0
@@ -341,7 +338,7 @@ class SimpleAudio
     /// Set the metadata of the OS's media controller.
     /// 
     /// **[metadata]** The metadata information to display.
-    Future<void> setMetadata(types.Metadata metadata) async
+    Future<void> setMetadata(Metadata metadata) async
     {
         if(metadata.artUri != null || metadata.artBytes != null)
         {
@@ -381,15 +378,7 @@ class SimpleAudio
 
         if(Platform.isLinux || Platform.isWindows)
         {
-            Metadata m = Metadata(
-                title: metadata.title,
-                artist: metadata.artist,
-                album: metadata.album,
-                artUri: metadata.artUri,
-                artBytes: metadata.artBytes
-            );
-
-            _player.setMetadata(metadata: m);
+            _player.setMetadata(metadata: metadata);
         }
         // The method channel is only available for Android, iOS, macOS.
         else if(_methodChannel != null)

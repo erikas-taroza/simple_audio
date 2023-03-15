@@ -255,9 +255,21 @@ impl NewWithNullPtr for wire_Metadata {
     }
 }
 
+impl Default for wire_Metadata {
+    fn default() -> Self {
+        Self::new_with_null_ptr()
+    }
+}
+
 impl NewWithNullPtr for wire_Player {
     fn new_with_null_ptr() -> Self {
         Self {}
+    }
+}
+
+impl Default for wire_Player {
+    fn default() -> Self {
+        Self::new_with_null_ptr()
     }
 }
 
