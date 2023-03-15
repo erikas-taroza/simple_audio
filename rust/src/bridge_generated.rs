@@ -19,6 +19,7 @@ use std::sync::Arc;
 
 // Section: imports
 
+use crate::metadata::types::MediaControlAction;
 use crate::metadata::types::Metadata;
 use crate::utils::types::Callback;
 use crate::utils::types::PlaybackState;
@@ -32,6 +33,7 @@ fn wire_new__static_method__Player_impl(
     actions: impl Wire2Api<Vec<i32>> + UnwindSafe,
     dbus_name: impl Wire2Api<String> + UnwindSafe,
     hwnd: impl Wire2Api<Option<i64>> + UnwindSafe,
+    _dummy: impl Wire2Api<MediaControlAction> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -43,7 +45,15 @@ fn wire_new__static_method__Player_impl(
             let api_actions = actions.wire2api();
             let api_dbus_name = dbus_name.wire2api();
             let api_hwnd = hwnd.wire2api();
-            move |task_callback| Ok(Player::new(api_actions, api_dbus_name, api_hwnd))
+            let api__dummy = _dummy.wire2api();
+            move |task_callback| {
+                Ok(Player::new(
+                    api_actions,
+                    api_dbus_name,
+                    api_hwnd,
+                    api__dummy,
+                ))
+            }
         },
     )
 }
@@ -313,6 +323,19 @@ impl Wire2Api<i64> for i64 {
     }
 }
 
+impl Wire2Api<MediaControlAction> for i32 {
+    fn wire2api(self) -> MediaControlAction {
+        match self {
+            0 => MediaControlAction::Rewind,
+            1 => MediaControlAction::SkipPrev,
+            2 => MediaControlAction::PlayPause,
+            3 => MediaControlAction::SkipNext,
+            4 => MediaControlAction::FastForward,
+            _ => unreachable!("Invalid variant for MediaControlAction: {}", self),
+        }
+    }
+}
+
 impl Wire2Api<u64> for u64 {
     fn wire2api(self) -> u64 {
         self
@@ -329,8 +352,8 @@ impl Wire2Api<u8> for u8 {
 impl support::IntoDart for Callback {
     fn into_dart(self) -> support::DartAbi {
         match self {
-            Self::NotificationActionSkipPrev => 0,
-            Self::NotificationActionSkipNext => 1,
+            Self::MediaControlSkipPrev => 0,
+            Self::MediaControlSkipNext => 1,
             Self::NetworkStreamError => 2,
             Self::DecodeError => 3,
             Self::PlaybackLooped => 4,

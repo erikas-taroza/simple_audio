@@ -81,8 +81,8 @@ class SimpleAudioServiceCallback: MediaSessionCompat.Callback()
     {
         when(action)
         {
-            PlaybackActions.FastForward.data.notificationAction -> onFastForward()
-            PlaybackActions.Rewind.data.notificationAction -> onRewind()
+            MediaControlAction.FastForward.data.notificationAction -> onFastForward()
+            MediaControlAction.Rewind.data.notificationAction -> onRewind()
             else -> {}
         }
 

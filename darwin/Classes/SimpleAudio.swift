@@ -29,7 +29,7 @@ public class SimpleAudio
     var channel: FlutterMethodChannel
     var currentMetadata: [String: Any] = [:]
     
-    var showMediaNotification: Bool = true
+    var useMediaController: Bool = true
 
     init(channel: FlutterMethodChannel?)
     {
@@ -43,19 +43,19 @@ public class SimpleAudio
             case "init":
                 let args: [String: Any] = call.arguments as! [String: Any]
             
-                showMediaNotification = args["showMediaNotification"] as! Bool
-                if(!showMediaNotification) { return }
+                useMediaController = args["useMediaController"] as! Bool
+                if(!useMediaController) { return }
 
                 let actions = args["actions"] as! [Int]
                 let preferSkipButtons = args["preferSkipButtons"] as! Bool
             
-                initialize(actions: actions.map { try! Actions.fromInt(i: $0) }, preferSkipButtons: preferSkipButtons)
+                initialize(actions: actions.map { try! MediaControlAction.fromInt(i: $0) }, preferSkipButtons: preferSkipButtons)
             case "dispose":
                 dispose()
             case "setMetadata":
                 let args: [String: Any] = call.arguments as! [String: Any]
                     
-                if(!showMediaNotification) { return }
+                if(!useMediaController) { return }
             
                 setMetadata(
                     title: args["title"] as? String,
@@ -68,7 +68,7 @@ public class SimpleAudio
             case "setPlaybackState":
                 let args: [String: Any] = call.arguments as! [String: Any]
                     
-                if(!showMediaNotification) { return }
+                if(!useMediaController) { return }
             
                 setPlaybackState(
                     state: args["state"] as? Int,
@@ -79,7 +79,7 @@ public class SimpleAudio
         }
     }
     
-    func initialize(actions: [Actions], preferSkipButtons: Bool)
+    func initialize(actions: [MediaControlAction], preferSkipButtons: Bool)
     {
         #if os(iOS)
         let session = AVAudioSession.sharedInstance()
@@ -89,7 +89,7 @@ public class SimpleAudio
         
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        if(actions.contains(Actions.playPause))
+        if(actions.contains(MediaControlAction.playPause))
         {
             commandCenter.playCommand.isEnabled = true
             commandCenter.playCommand.addTarget { event in
@@ -104,7 +104,7 @@ public class SimpleAudio
             }
         }
         
-        if(actions.contains(Actions.skipPrev))
+        if(actions.contains(MediaControlAction.skipPrev))
         {
             commandCenter.previousTrackCommand.isEnabled = true
             commandCenter.previousTrackCommand.addTarget { event in
@@ -113,7 +113,7 @@ public class SimpleAudio
             }
         }
         
-        if(actions.contains(Actions.skipNext))
+        if(actions.contains(MediaControlAction.skipNext))
         {
             commandCenter.nextTrackCommand.isEnabled = true
             commandCenter.nextTrackCommand.addTarget { event in
@@ -122,7 +122,7 @@ public class SimpleAudio
             }
         }
         
-        if(actions.contains(Actions.fastForward) && !preferSkipButtons)
+        if(actions.contains(MediaControlAction.fastForward) && !preferSkipButtons)
         {
             commandCenter.skipForwardCommand.isEnabled = true
             commandCenter.skipForwardCommand.preferredIntervals = [10.0]
@@ -132,7 +132,7 @@ public class SimpleAudio
             }
         }
         
-        if(actions.contains(Actions.rewind) && !preferSkipButtons)
+        if(actions.contains(MediaControlAction.rewind) && !preferSkipButtons)
         {
             commandCenter.skipBackwardCommand.isEnabled = true
             commandCenter.skipBackwardCommand.preferredIntervals = [10.0]
@@ -281,7 +281,7 @@ public class SimpleAudio
     }
 }
 
-enum Actions
+enum MediaControlAction
 {
     case rewind
     case skipPrev
@@ -289,7 +289,7 @@ enum Actions
     case skipNext
     case fastForward
                 
-    static func fromInt(i: Int) throws -> Actions
+    static func fromInt(i: Int) throws -> MediaControlAction
     {
         switch(i)
         {

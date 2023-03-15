@@ -38,10 +38,10 @@ pub struct ProgressState
 
 pub enum Callback
 {
-    /// The media notification trigged the SkipPrev action.
-    NotificationActionSkipPrev,
-    /// The media notification trigged the SkipNext action.
-    NotificationActionSkipNext,
+    /// The media controller trigged the SkipPrev action.
+    MediaControlSkipPrev,
+    /// The media controller trigged the SkipNext action.
+    MediaControlSkipNext,
     /// An error occurred when trying to fetch more bytes for
     /// a network stream.
     NetworkStreamError,

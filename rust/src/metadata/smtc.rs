@@ -22,7 +22,7 @@ use windows::{Win32::{System::WinRT::ISystemMediaTransportControlsInterop, Found
 
 use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
-use super::types::{Event, Metadata, Actions};
+use super::types::{Event, Metadata, MediaControlAction};
 
 pub static HANDLER: RwLock<Option<Smtc>> = RwLock::new(None);
 
@@ -37,7 +37,7 @@ pub struct Smtc
 
 impl Smtc
 {
-    pub fn new<C>(actions: Vec<Actions>, hwnd: isize, callback: C) -> Self
+    pub fn new<C>(actions: Vec<MediaControlAction>, hwnd: isize, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
@@ -59,14 +59,14 @@ impl Smtc
         {
             match action
             {
-                Actions::Rewind => controls.SetIsRewindEnabled(true).unwrap(),
-                Actions::SkipPrev => controls.SetIsPreviousEnabled(true).unwrap(),
-                Actions::PlayPause => {
+                MediaControlAction::Rewind => controls.SetIsRewindEnabled(true).unwrap(),
+                MediaControlAction::SkipPrev => controls.SetIsPreviousEnabled(true).unwrap(),
+                MediaControlAction::PlayPause => {
                     controls.SetIsPlayEnabled(true).unwrap();
                     controls.SetIsPauseEnabled(true).unwrap();
                 },
-                Actions::SkipNext => controls.SetIsNextEnabled(true).unwrap(),
-                Actions::FastForward => controls.SetIsFastForwardEnabled(true).unwrap(),
+                MediaControlAction::SkipNext => controls.SetIsNextEnabled(true).unwrap(),
+                MediaControlAction::FastForward => controls.SetIsFastForwardEnabled(true).unwrap(),
             }
         }
 

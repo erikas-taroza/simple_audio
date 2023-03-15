@@ -25,7 +25,7 @@ use anyhow::Context;
 use audio::{decoder::Decoder, controls::*, streaming::{http::HttpStream, hls::HlsStream}};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
-use metadata::types::{Metadata, Actions};
+use metadata::types::{Metadata, MediaControlAction};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 
@@ -38,20 +38,21 @@ impl Player
     pub fn new(
         actions: Vec<i32>,
         dbus_name: String,
-        hwnd: Option<i64>
+        hwnd: Option<i64>,
+        _dummy: MediaControlAction
     ) -> Player
     {
         crate::metadata::init(
             actions.iter().map(|i| {
-                Actions::from(*i)
-            }).collect::<Vec<Actions>>(),
+                MediaControlAction::from(*i)
+            }).collect::<Vec<MediaControlAction>>(),
             dbus_name,
             hwnd,
             |e| {
                 match e
                 {
-                    metadata::types::Event::Previous => update_callback_stream(Callback::NotificationActionSkipPrev),
-                    metadata::types::Event::Next => update_callback_stream(Callback::NotificationActionSkipNext),
+                    metadata::types::Event::Previous => update_callback_stream(Callback::MediaControlSkipPrev),
+                    metadata::types::Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
                     metadata::types::Event::Play => Self::internal_play(),
                     metadata::types::Event::Pause => Self::internal_pause(),
                     metadata::types::Event::Stop => Self::internal_stop(),
@@ -240,7 +241,8 @@ impl Default for Player
         crate::Player::new(
             vec![0, 1, 2, 3, 4],
             "com.erikas.SimpleAudio".to_string(),
-            None
+            None,
+            MediaControlAction::PlayPause
         )
     }
 }
@@ -250,7 +252,7 @@ mod tests
 {
     use std::{thread, time::Duration};
 
-    use crate::metadata::types::Metadata;
+    use crate::metadata::types::{Metadata, MediaControlAction};
 
     #[test]
     fn open_and_play() -> anyhow::Result<()>
@@ -362,7 +364,8 @@ mod tests
         let player = crate::Player::new(
             vec![2],
             "SimpleAudio".to_string(),
-            None
+            None,
+            MediaControlAction::PlayPause
         );
         player.set_volume(0.5);
 

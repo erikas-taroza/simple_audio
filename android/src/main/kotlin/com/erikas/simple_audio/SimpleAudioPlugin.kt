@@ -76,16 +76,16 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "init" -> {
-                if(call.argument<Boolean>("showMediaNotification") == false) return
+                if(call.argument<Boolean>("useMediaController") == false) return
 
-                val actions = ArrayList<PlaybackActions>()
+                val actions = ArrayList<MediaControlAction>()
                 for(action in call.argument<List<Int>>("actions")!!)
-                { actions.add(PlaybackActions.values()[action]) }
+                { actions.add(MediaControlAction.values()[action]) }
 
                 val intent = Intent(appContext, SimpleAudioService::class.java).apply {
                     putExtra("iconPath", call.argument<String>("icon")!!)
-                    putExtra("playbackActions", actions)
-                    putExtra("compactPlaybackActions", call.argument<List<Int>>("compactActions")!!.toIntArray())
+                    putExtra("actions", actions)
+                    putExtra("compactActions", call.argument<List<Int>>("compactActions")!!.toIntArray())
                     putExtra("notificationClickedIntent", Intent(appContext, appActivity!!::class.java))
                 }
 
@@ -116,16 +116,16 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     }
 }
 
-enum class PlaybackActions(val data: PlaybackActionsMapping)
+enum class MediaControlAction(val data: MediaControlActionMapping)
 {
-    Rewind(PlaybackActionsMapping(R.drawable.rewind, "Rewind", PlaybackStateCompat.ACTION_REWIND, ACTION_REWIND)),
-    SkipPrev(PlaybackActionsMapping(R.drawable.skip_prev, "Skip Prev", PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, ACTION_PREV)),
-    PlayPause(PlaybackActionsMapping(0, "PlayPause", PlaybackStateCompat.ACTION_PLAY_PAUSE, "")),
-    SkipNext(PlaybackActionsMapping(R.drawable.skip_next, "Skip Next", PlaybackStateCompat.ACTION_SKIP_TO_NEXT, ACTION_NEXT)),
-    FastForward(PlaybackActionsMapping(R.drawable.fast_forward, "Fast Forward", PlaybackStateCompat.ACTION_FAST_FORWARD, ACTION_FAST_FORWARD))
+    Rewind(MediaControlActionMapping(R.drawable.rewind, "Rewind", PlaybackStateCompat.ACTION_REWIND, ACTION_REWIND)),
+    SkipPrev(MediaControlActionMapping(R.drawable.skip_prev, "Skip Prev", PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, ACTION_PREV)),
+    PlayPause(MediaControlActionMapping(0, "PlayPause", PlaybackStateCompat.ACTION_PLAY_PAUSE, "")),
+    SkipNext(MediaControlActionMapping(R.drawable.skip_next, "Skip Next", PlaybackStateCompat.ACTION_SKIP_TO_NEXT, ACTION_NEXT)),
+    FastForward(MediaControlActionMapping(R.drawable.fast_forward, "Fast Forward", PlaybackStateCompat.ACTION_FAST_FORWARD, ACTION_FAST_FORWARD))
 }
 
-class PlaybackActionsMapping(
+class MediaControlActionMapping(
     val icon: Int,
     val name: String,
     // The action used by MediaSession.

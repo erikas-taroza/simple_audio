@@ -1,3 +1,14 @@
+## 1.4.5
+- **BREAKING**: These names are more generic since not every OS has a notification as a media controller.
+    - Renamed `showMediaNotification` to `useMediaController` in `SimpleAudio.init()`
+    - Renamed `androidCompactPlaybackActions` to `androidCompactActions` in `SimpleAudio.init()`
+    - Renamed `NotificationActions` to `MediaControlAction`
+- Update `flutter_rust_bridge`
+    - Enums are generated in camelCase.
+- Refactored decoder
+    - Prevent multiple playbacks happening after spamming `open()`
+- Update example/docs
+
 ## 1.4.4
 - Handle hot restarts.
 

@@ -42,8 +42,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
     private var mediaSession: MediaSessionCompat? = null
     private var playbackState: PlaybackStateCompat.Builder? = null
     private var iconPath: String = "mipmap/ic_launcher"
-    private var playbackActions: List<PlaybackActions> = PlaybackActions.values().toList()
-    private var compactPlaybackActions: List<Int> = listOf()
+    private var actions: List<MediaControlAction> = MediaControlAction.values().toList()
+    private var compactActions: List<Int> = listOf()
 
     var exitProcessOnDestroy = true
     var isPlaying: Boolean = false
@@ -72,8 +72,8 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             @Suppress("UNCHECKED_CAST")
             init(
                 intent.getStringExtra("iconPath")!!,
-                intent.getSerializableExtra("playbackActions")!! as List<PlaybackActions>,
-                intent.getIntArrayExtra("compactPlaybackActions")!!.toList(),
+                intent.getSerializableExtra("actions")!! as List<MediaControlAction>,
+                intent.getIntArrayExtra("compactActions")!!.toList(),
                 intent.getParcelableExtra("notificationClickedIntent")!!
             )
         }
@@ -111,26 +111,26 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
     private fun init(
         iconPath: String,
-        playbackActions: List<PlaybackActions>,
-        compactPlaybackActions: List<Int>,
+        actions: List<MediaControlAction>,
+        compactActions: List<Int>,
         notificationClickedIntent: Intent
     )
     {
         if(mediaSession != null) return
 
         this.iconPath = iconPath
-        this.playbackActions = playbackActions
-        this.compactPlaybackActions = compactPlaybackActions
+        this.actions = actions
+        this.compactActions = compactActions
 
         // Create the media session which defines the
         // controls and registers the callbacks.
         mediaSession = MediaSessionCompat(baseContext, "SimpleAudio").apply {
-            var actions: Long = 0
-            for(action in playbackActions)
-            { actions = actions or action.data.sessionAction }
+            var controllerActions: Long = 0
+            for(action in actions)
+            { controllerActions = controllerActions or action.data.sessionAction }
 
             playbackState = PlaybackStateCompat.Builder()
-                .setActions(actions
+                .setActions(controllerActions
                         or PlaybackStateCompat.ACTION_PLAY_PAUSE
                         or PlaybackStateCompat.ACTION_SEEK_TO
                         or PlaybackStateCompat.ACTION_PLAY
@@ -143,12 +143,12 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             // SEE: https://developer.android.com/about/versions/13/behavior-changes-13#playback-controls
             if(packageManager.getApplicationInfo(packageName, 0).targetSdkVersion >= 33)
             {
-                for(action in playbackActions)
+                for(action in actions)
                 {
                     // These are already handled by Android 13.
-                    if(action == PlaybackActions.PlayPause
-                        || action == PlaybackActions.SkipPrev
-                        || action == PlaybackActions.SkipNext) continue
+                    if(action == MediaControlAction.PlayPause
+                        || action == MediaControlAction.SkipPrev
+                        || action == MediaControlAction.SkipNext) continue
 
                     playbackState?.addCustomAction(
                         action.data.notificationAction,
@@ -212,9 +212,9 @@ class SimpleAudioService : MediaBrowserServiceCompat()
 
         val actions: ArrayList<NotificationCompat.Action> = arrayListOf()
 
-        for(action in playbackActions)
+        for(action in this.actions)
         {
-            if(action == PlaybackActions.PlayPause)
+            if(action == MediaControlAction.PlayPause)
             {
                 actions.add(buildAction(
                     if(!isPlaying) R.drawable.play else R.drawable.pause,
@@ -262,7 +262,7 @@ class SimpleAudioService : MediaBrowserServiceCompat()
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession!!.sessionToken)
-                .setShowActionsInCompactView(*compactPlaybackActions.toIntArray()))
+                .setShowActionsInCompactView(*compactActions.toIntArray()))
         }.build()
     }
 

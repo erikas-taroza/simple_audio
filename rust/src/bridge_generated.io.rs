@@ -7,8 +7,9 @@ pub extern "C" fn wire_new__static_method__Player(
     actions: *mut wire_int_32_list,
     dbus_name: *mut wire_uint_8_list,
     hwnd: *mut i64,
+    _dummy: i32,
 ) {
-    wire_new__static_method__Player_impl(port_, actions, dbus_name, hwnd)
+    wire_new__static_method__Player_impl(port_, actions, dbus_name, hwnd, _dummy)
 }
 
 #[no_mangle]
@@ -175,6 +176,7 @@ impl Wire2Api<Vec<i32>> for *mut wire_int_32_list {
         }
     }
 }
+
 impl Wire2Api<Metadata> for wire_Metadata {
     fn wire2api(self) -> Metadata {
         Metadata {

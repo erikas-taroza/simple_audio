@@ -33,17 +33,25 @@ pub struct Metadata
     pub art_bytes: Option<Vec<u8>>
 }
 
+// NOTE: When updating the enum values, they need to be updated
+// in Kotlin and Swift.
+/// The actions that an OS's media controller can support.
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub enum Actions
+pub enum MediaControlAction
 {
+    /// Seeks backwards by 10 seconds.
     Rewind,
+    /// Skip to the previous playing file (you will implement this functionality).
     SkipPrev,
+    /// Play/pause the player.
     PlayPause,
+    /// Skip to the next file to be played (you will implement this functionality).
     SkipNext,
+    /// Seeks forwards by 10 seconds.
     FastForward
 }
 
-impl From<i32> for Actions
+impl From<i32> for MediaControlAction
 {
     fn from(i: i32) -> Self
     {

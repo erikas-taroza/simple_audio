@@ -11,18 +11,18 @@ void main() async
 
     // Initialize with default values.
     await SimpleAudio.init(
-        showMediaNotification: true,
+        useMediaController: true,
         shouldNormalizeVolume: false,
         dbusName: "com.erikas.SimpleAudio",
         actions: [
-            NotificationActions.rewind,
-            NotificationActions.skipPrev,
-            NotificationActions.playPause,
-            NotificationActions.skipNext,
-            NotificationActions.fastForward
+            MediaControlAction.rewind,
+            MediaControlAction.skipPrev,
+            MediaControlAction.playPause,
+            MediaControlAction.skipNext,
+            MediaControlAction.fastForward
         ],
         androidNotificationIconPath: "mipmap/ic_launcher",
-        androidCompactPlaybackActions: [1, 2, 3],
+        androidCompactActions: [1, 2, 3],
         applePreferSkipButtons: true
     );
 

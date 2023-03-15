@@ -12,6 +12,7 @@ abstract class SimpleAudio {
       {required Int32List actions,
       required String dbusName,
       int? hwnd,
+      required MediaControlAction dummy,
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
@@ -93,11 +94,11 @@ abstract class SimpleAudio {
 }
 
 enum Callback {
-  /// The media notification trigged the SkipPrev action.
-  notificationActionSkipPrev,
+  /// The media controller trigged the SkipPrev action.
+  mediaControlSkipPrev,
 
-  /// The media notification trigged the SkipNext action.
-  notificationActionSkipNext,
+  /// The media controller trigged the SkipNext action.
+  mediaControlSkipNext,
 
   /// An error occurred when trying to fetch more bytes for
   /// a network stream.
@@ -109,6 +110,24 @@ enum Callback {
   /// The player is in the looping mode and the playback
   /// just looped to the beginning.
   playbackLooped,
+}
+
+/// The actions that an OS's media controller can support.
+enum MediaControlAction {
+  /// Seeks backwards by 10 seconds.
+  rewind,
+
+  /// Skip to the previous playing file (you will implement this functionality).
+  skipPrev,
+
+  /// Play/pause the player.
+  playPause,
+
+  /// Skip to the next file to be played (you will implement this functionality).
+  skipNext,
+
+  /// Seeks forwards by 10 seconds.
+  fastForward,
 }
 
 /// The metadata of the currently playing file
@@ -162,9 +181,14 @@ class Player {
           required Int32List actions,
           required String dbusName,
           int? hwnd,
+          required MediaControlAction dummy,
           dynamic hint}) =>
       bridge.newStaticMethodPlayer(
-          actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
+          actions: actions,
+          dbusName: dbusName,
+          hwnd: hwnd,
+          dummy: dummy,
+          hint: hint);
 
   /// Stops any old players/threads and resets the
   /// static variables in `controls.rs`.

@@ -26,7 +26,7 @@ use dbus_crossroads::{Crossroads, IfaceBuilder};
 
 use crate::{utils::types::PlaybackState, audio::controls::PROGRESS};
 
-use super::types::{Metadata, Event, Command, Actions};
+use super::types::{Metadata, Event, Command, MediaControlAction};
 
 pub static HANDLER: RwLock<Option<Mpris>> = RwLock::new(None);
 
@@ -38,7 +38,7 @@ pub struct Mpris
 
 impl Mpris
 {
-    pub fn new<C>(actions: Vec<Actions>, dbus_name: String, callback: C) -> Self
+    pub fn new<C>(actions: Vec<MediaControlAction>, dbus_name: String, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static
     {
@@ -63,7 +63,7 @@ impl Mpris
         let _ = self.handle.join();
     }
 
-    fn run<C>(actions: Vec<Actions>, dbus_name: String, rx: Receiver<Command>, callback: C) -> Result<(), dbus::Error>
+    fn run<C>(actions: Vec<MediaControlAction>, dbus_name: String, rx: Receiver<Command>, callback: C) -> Result<(), dbus::Error>
     where
         C: Fn(Event) + Send + 'static
     {
@@ -152,7 +152,7 @@ impl Mpris
                     let offset = offset * 1_000_000;
 
                     //TODO: This needs testing.
-                    if actions.contains(&Actions::Rewind) || actions.contains(&Actions::FastForward)
+                    if actions.contains(&MediaControlAction::Rewind) || actions.contains(&MediaControlAction::FastForward)
                     { callback.lock().unwrap()(Event::Seek(offset, false)); }
 
                     ctx.push_msg(ctx.make_signal("Seeked", ()));
@@ -175,19 +175,18 @@ impl Mpris
             });
 
             // The following actions can be tweaked by the user.
-
             for action in &actions
             {
                 match action
                 {
-                    Actions::SkipPrev => {
+                    MediaControlAction::SkipPrev => {
                         register_method(e, &callback, "Previous", Event::Previous);
 
                         e.property("CanGoPrevious")
                             .get(|_, _| Ok(true))
                             .emits_changed_true();
                     },
-                    Actions::PlayPause => {
+                    MediaControlAction::PlayPause => {
                         register_method(e, &callback, "Play", Event::Play);
                         register_method(e, &callback, "Pause", Event::Pause);
                         register_method(e, &callback, "PlayPause", Event::PlayPause);
@@ -199,7 +198,7 @@ impl Mpris
                             .get(|_, _| Ok(true))
                             .emits_changed_true();
                     },
-                    Actions::SkipNext => {
+                    MediaControlAction::SkipNext => {
                         register_method(e, &callback, "Next", Event::Next);
 
                         e.property("CanGoNext")

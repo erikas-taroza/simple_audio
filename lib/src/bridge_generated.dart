@@ -28,16 +28,18 @@ class SimpleAudioImpl implements SimpleAudio {
       {required Int32List actions,
       required String dbusName,
       int? hwnd,
+      required MediaControlAction dummy,
       dynamic hint}) {
     var arg0 = _platform.api2wire_int_32_list(actions);
     var arg1 = _platform.api2wire_String(dbusName);
     var arg2 = _platform.api2wire_opt_box_autoadd_i64(hwnd);
+    var arg3 = api2wire_media_control_action(dummy);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner
-          .wire_new__static_method__Player(port_, arg0, arg1, arg2),
+          .wire_new__static_method__Player(port_, arg0, arg1, arg2, arg3),
       parseSuccessData: (d) => _wire2api_player(d),
       constMeta: kNewStaticMethodPlayerConstMeta,
-      argValues: [actions, dbusName, hwnd],
+      argValues: [actions, dbusName, hwnd, dummy],
       hint: hint,
     ));
   }
@@ -45,7 +47,7 @@ class SimpleAudioImpl implements SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "new__static_method__Player",
-        argNames: ["actions", "dbusName", "hwnd"],
+        argNames: ["actions", "dbusName", "hwnd", "dummy"],
       );
 
   Future<void> disposeStaticMethodPlayer({dynamic hint}) {
@@ -401,6 +403,11 @@ int api2wire_i32(int raw) {
 }
 
 @protected
+int api2wire_media_control_action(MediaControlAction raw) {
+  return api2wire_i32(raw.index);
+}
+
+@protected
 int api2wire_u8(int raw) {
   return raw;
 }
@@ -593,12 +600,14 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
     ffi.Pointer<wire_int_32_list> actions,
     ffi.Pointer<wire_uint_8_list> dbus_name,
     ffi.Pointer<ffi.Int64> hwnd,
+    int _dummy,
   ) {
     return _wire_new__static_method__Player(
       port_,
       actions,
       dbus_name,
       hwnd,
+      _dummy,
     );
   }
 
@@ -608,11 +617,12 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
               ffi.Int64,
               ffi.Pointer<wire_int_32_list>,
               ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<ffi.Int64>)>>('wire_new__static_method__Player');
+              ffi.Pointer<ffi.Int64>,
+              ffi.Int32)>>('wire_new__static_method__Player');
   late final _wire_new__static_method__Player =
       _wire_new__static_method__PlayerPtr.asFunction<
           void Function(int, ffi.Pointer<wire_int_32_list>,
-              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<ffi.Int64>)>();
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<ffi.Int64>, int)>();
 
   void wire_dispose__static_method__Player(
     int port_,

@@ -48,7 +48,8 @@ intptr_t init_frb_dart_api_dl(void *obj);
 void wire_new__static_method__Player(int64_t port_,
                                      struct wire_int_32_list *actions,
                                      struct wire_uint_8_list *dbus_name,
-                                     int64_t *hwnd);
+                                     int64_t *hwnd,
+                                     int32_t _dummy);
 
 void wire_dispose__static_method__Player(int64_t port_);
 

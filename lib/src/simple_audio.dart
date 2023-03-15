@@ -14,8 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-export 'types.dart';
-export 'bridge_definitions.dart' show Metadata, ProgressState, PlaybackState;
+export 'bridge_definitions.dart' show
+    Metadata,
+    ProgressState,
+    PlaybackState,
+    MediaControlAction;
 
 import 'dart:io';
 
@@ -24,7 +27,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 import './ffi.dart' hide PlaybackState;
-import 'types.dart';
 import 'bridge_definitions.dart';
 
 late final Player _player;
@@ -50,9 +52,9 @@ class SimpleAudio
     /// Returns the current progress state.
     Future<ProgressState> get _progress => _player.getProgress();
 
-    /// The callback for when the [NotificationActions.skipPrev] action is called.
+    /// The callback for when the [MediaControlAction.skipPrev] action is called.
     void Function(SimpleAudio player)? onSkipPrevious;
-    /// The callback for when the [NotificationActions.skipNext] action is called.
+    /// The callback for when the [MediaControlAction.skipNext] action is called.
     void Function(SimpleAudio player)? onSkipNext;
 
     /// The callback for when an error occurs when trying to fetch
@@ -64,9 +66,9 @@ class SimpleAudio
     /// Each callback has a reference to the instantiated `SimpleAudio` object
     /// if you need to access its members to implement the callbacks.
     /// 
-    /// **[onSkipPrevious]** The callback for when the [NotificationActions.skipPrev] action is called.
+    /// **[onSkipPrevious]** The callback for when the [MediaControlAction.skipPrev] action is called.
     /// 
-    /// **[onSkipNext]** The callback for when the [NotificationActions.skipNext] action is called.
+    /// **[onSkipNext]** The callback for when the [MediaControlAction.skipNext] action is called.
     /// 
     /// **[onNetworkStreamError]** The callback for when an error occurs when trying to fetch
     /// more bytes for a network stream.
@@ -82,10 +84,10 @@ class SimpleAudio
         Player.callbackStream(bridge: api).listen((event) {
             switch(event)
             {
-                case Callback.notificationActionSkipPrev:
+                case Callback.mediaControlSkipPrev:
                     onSkipPrevious?.call(this);
                     break;
-                case Callback.notificationActionSkipNext:
+                case Callback.mediaControlSkipNext:
                     onSkipNext?.call(this);
                     break;
                 case Callback.networkStreamError:
@@ -145,8 +147,8 @@ class SimpleAudio
     /// This method should be awaited to make sure that the player is created
     /// before the app runs.
     /// 
-    /// **[showMediaNotification]** Whether or not to show the media notification when playing
-    /// audio.
+    /// **[useMediaController]** Whether or not to use the OS's media controller
+    /// when playing audio.
     /// 
     /// **[shouldNormalizeVolume]** Whether or not to normalize the volume
     /// of the playback. You can also change this by calling [normalizeVolume]
@@ -162,9 +164,9 @@ class SimpleAudio
     /// 
     /// MPRIS is a D-Bus interface for controlling media players. See: https://wiki.archlinux.org/title/MPRIS
     /// 
-    /// **[actions]** A list of actions that the media notification will use.
-    /// If [showMediaNotification] is false, this value does not matter. Otherwise, you will
-    /// need to include [NotificationActions.playPause] in the list.
+    /// **[actions]** A list of actions that the OS's media controller will use.
+    /// If [useMediaController] is false, this value does not matter. Otherwise, you will
+    /// need to include [MediaControlAction.playPause] in the list.
     /// 
     /// **[androidNotificationIconPath]** A path that points to the icon the Android media
     /// notification will use. This icon should be stored in `./android/app/src/main/res/mipmap-xxx`.
@@ -174,7 +176,7 @@ class SimpleAudio
     /// 
     /// To create an icon, see: https://developer.android.com/studio/write/image-asset-studio#create-adaptive
     /// 
-    /// **[androidCompactPlaybackActions]** A list of numbers that represent the buttons
+    /// **[androidCompactActions]** A list of numbers that represent the buttons
     /// to show in the compact media notification. The indicies match with the ones
     /// in [actions]. You can only have 3 compact actions at most.
     /// If you have less than 3 [actions], then the default value will not work
@@ -182,36 +184,37 @@ class SimpleAudio
     /// 
     /// For example, to use the middle 3:
     /// 
-    /// androidPlaybackActions = [Rewind, SkipPrev, PlayPause, SkipNext, FastForward]
+    /// actions = [Rewind, SkipPrev, PlayPause, SkipNext, FastForward]
     /// 
-    /// androidCompactPlaybackActions = [1, 2, 3]
+    /// androidCompactActions = [1, 2, 3]
     /// 
     /// **[applePreferSkipButtons]** For the macOS and iOS media notifications. If set to true,
-    /// the notification will show [NotificationActions.skipPrev] and [NotificationActions.skipNext]
-    /// instead of [NotificationActions.rewind] and [NotificationActions.fastForward]
+    /// the notification will show [MediaControlAction.skipPrev] and [MediaControlAction.skipNext]
+    /// instead of [MediaControlAction.rewind] and [MediaControlAction.fastForward]
     /// when all 4 values are provided in [actions].
     static Future<void> init({
-        bool showMediaNotification = true,
+        bool useMediaController = true,
         bool shouldNormalizeVolume = false,
         String dbusName = "com.erikas.SimpleAudio",
-        List<NotificationActions> actions = NotificationActions.values,
+        List<MediaControlAction> actions = MediaControlAction.values,
         String androidNotificationIconPath = "mipmap/ic_launcher",
-        List<int> androidCompactPlaybackActions = const [1, 2, 3],
+        List<int> androidCompactActions = const [1, 2, 3],
         bool applePreferSkipButtons = true
     }) async
     {
         await _dispose();
 
         // You must include this action.
-        if(showMediaNotification) assert(actions.contains(NotificationActions.playPause));
+        if(useMediaController) assert(actions.contains(MediaControlAction.playPause));
 
         _player = await Player.newPlayer(
             bridge: api,
-            actions: showMediaNotification ?
+            actions: useMediaController ?
                 Int32List.fromList(actions.map((e) => e.index).toList())
                 : Int32List(0),
             dbusName: dbusName,
-            hwnd: Platform.isWindows ? getHWND() : null
+            hwnd: Platform.isWindows ? getHWND() : null,
+            dummy: MediaControlAction.playPause
         );
 
         _player.normalizeVolume(shouldNormalize: shouldNormalizeVolume);
@@ -220,22 +223,22 @@ class SimpleAudio
         {
             // A maximum of 3 actions are allowed for Android's
             // compact media notification.
-            assert(androidCompactPlaybackActions.length <= 3);
+            assert(androidCompactActions.length <= 3);
             // You cannot have more compact actions than all the actions.
-            // Please set the `androidCompactPlaybackActions` parameter.
-            assert(androidCompactPlaybackActions.length <= actions.length);
+            // Please set the `androidCompactActions` parameter.
+            assert(androidCompactActions.length <= actions.length);
 
             _methodChannel?.invokeMethod("init", {
-                "showMediaNotification": showMediaNotification,
+                "useMediaController": useMediaController,
                 "actions": actions.map((e) => e.index).toList(),
-                "compactActions": androidCompactPlaybackActions,
+                "compactActions": androidCompactActions,
                 "icon": androidNotificationIconPath
             });
         }
         else if(Platform.isIOS || Platform.isMacOS)
         {
             _methodChannel?.invokeMethod("init", {
-                "showMediaNotification": showMediaNotification,
+                "useMediaController": useMediaController,
                 "actions": actions.map((e) => e.index).toList(),
                 "preferSkipButtons": applePreferSkipButtons
             });

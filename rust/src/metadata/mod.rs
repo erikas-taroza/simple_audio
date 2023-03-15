@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use self::types::{Event, Metadata, Actions};
+use self::types::{Event, Metadata, MediaControlAction};
 
 use crate::utils::types::PlaybackState;
 
@@ -24,7 +24,7 @@ pub mod types;
 
 /// Initialize a platform specific metadata handler.
 #[allow(unused_variables)]
-pub fn init<C>(actions: Vec<Actions>, dbus_name: String, hwnd: Option<i64>, callback: C)
+pub fn init<C>(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>, callback: C)
 where
     C: Fn(Event) + Send + 'static
 {
