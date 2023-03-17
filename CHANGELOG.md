@@ -5,6 +5,7 @@
     - Renamed `NotificationActions` to `MediaControlAction`
 - Update `flutter_rust_bridge`
     - Enums are generated in camelCase.
+    - Rust can take a list of `MediaControlAction` instead of ints.
 - Refactored decoder
     - Prevent multiple playbacks happening after spamming `open()`
 - Update example/docs

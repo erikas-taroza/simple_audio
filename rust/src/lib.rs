@@ -36,16 +36,13 @@ pub struct Player { }
 impl Player
 {
     pub fn new(
-        actions: Vec<i32>,
+        actions: Vec<MediaControlAction>,
         dbus_name: String,
-        hwnd: Option<i64>,
-        _dummy: MediaControlAction
+        hwnd: Option<i64>
     ) -> Player
     {
         crate::metadata::init(
-            actions.iter().map(|i| {
-                MediaControlAction::from(*i)
-            }).collect::<Vec<MediaControlAction>>(),
+            actions,
             dbus_name,
             hwnd,
             |e| {
@@ -239,10 +236,15 @@ impl Default for Player
 {
     fn default() -> Self {
         crate::Player::new(
-            vec![0, 1, 2, 3, 4],
+            vec![
+                MediaControlAction::Rewind,
+                MediaControlAction::SkipPrev,
+                MediaControlAction::PlayPause,
+                MediaControlAction::SkipNext,
+                MediaControlAction::FastForward
+            ],
             "com.erikas.SimpleAudio".to_string(),
-            None,
-            MediaControlAction::PlayPause
+            None
         )
     }
 }
@@ -362,10 +364,9 @@ mod tests
     fn mpris() -> anyhow::Result<()>
     {
         let player = crate::Player::new(
-            vec![2],
+            vec![MediaControlAction::PlayPause],
             "SimpleAudio".to_string(),
-            None,
-            MediaControlAction::PlayPause
+            None
         );
         player.set_volume(0.5);
 

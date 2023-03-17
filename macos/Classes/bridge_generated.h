@@ -11,10 +11,10 @@ typedef int64_t DartPort;
 
 typedef bool (*DartPostCObjectFnType)(DartPort port_id, void *message);
 
-typedef struct wire_int_32_list {
+typedef struct wire_list_media_control_action {
   int32_t *ptr;
   int32_t len;
-} wire_int_32_list;
+} wire_list_media_control_action;
 
 typedef struct wire_uint_8_list {
   uint8_t *ptr;
@@ -46,10 +46,9 @@ uintptr_t new_dart_opaque(Dart_Handle handle);
 intptr_t init_frb_dart_api_dl(void *obj);
 
 void wire_new__static_method__Player(int64_t port_,
-                                     struct wire_int_32_list *actions,
+                                     struct wire_list_media_control_action *actions,
                                      struct wire_uint_8_list *dbus_name,
-                                     int64_t *hwnd,
-                                     int32_t _dummy);
+                                     int64_t *hwnd);
 
 void wire_dispose__static_method__Player(int64_t port_);
 
@@ -94,7 +93,7 @@ struct wire_Metadata *new_box_autoadd_metadata_0(void);
 
 struct wire_Player *new_box_autoadd_player_0(void);
 
-struct wire_int_32_list *new_int_32_list_0(int32_t len);
+struct wire_list_media_control_action *new_list_media_control_action_0(int32_t len);
 
 struct wire_uint_8_list *new_uint_8_list_0(int32_t len);
 
@@ -121,7 +120,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_i64_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_metadata_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_player_0);
-    dummy_var ^= ((int64_t) (void*) new_int_32_list_0);
+    dummy_var ^= ((int64_t) (void*) new_list_media_control_action_0);
     dummy_var ^= ((int64_t) (void*) new_uint_8_list_0);
     dummy_var ^= ((int64_t) (void*) free_WireSyncReturn);
     dummy_var ^= ((int64_t) (void*) store_dart_post_cobject);

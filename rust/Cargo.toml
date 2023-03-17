@@ -8,7 +8,7 @@ crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 cpal = "0.15.0"
-flutter_rust_bridge = "1.70.0"
+flutter_rust_bridge = "1.71.0"
 reqwest = { version = "0", features = ["blocking", "native-tls-vendored"] }
 # symphonia = { version = "0.5.2", features = ["all"] }
 symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements", features = ["all"] }

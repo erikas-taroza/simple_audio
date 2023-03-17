@@ -209,12 +209,9 @@ class SimpleAudio
 
         _player = await Player.newPlayer(
             bridge: api,
-            actions: useMediaController ?
-                Int32List.fromList(actions.map((e) => e.index).toList())
-                : Int32List(0),
+            actions: useMediaController ? actions : [],
             dbusName: dbusName,
-            hwnd: Platform.isWindows ? getHWND() : null,
-            dummy: MediaControlAction.playPause
+            hwnd: Platform.isWindows ? getHWND() : null
         );
 
         _player.normalizeVolume(shouldNormalize: shouldNormalizeVolume);

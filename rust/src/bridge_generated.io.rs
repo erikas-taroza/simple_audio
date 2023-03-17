@@ -4,12 +4,11 @@ use super::*;
 #[no_mangle]
 pub extern "C" fn wire_new__static_method__Player(
     port_: i64,
-    actions: *mut wire_int_32_list,
+    actions: *mut wire_list_media_control_action,
     dbus_name: *mut wire_uint_8_list,
     hwnd: *mut i64,
-    _dummy: i32,
 ) {
-    wire_new__static_method__Player_impl(port_, actions, dbus_name, hwnd, _dummy)
+    wire_new__static_method__Player_impl(port_, actions, dbus_name, hwnd)
 }
 
 #[no_mangle]
@@ -122,12 +121,12 @@ pub extern "C" fn new_box_autoadd_player_0() -> *mut wire_Player {
 }
 
 #[no_mangle]
-pub extern "C" fn new_int_32_list_0(len: i32) -> *mut wire_int_32_list {
-    let ans = wire_int_32_list {
+pub extern "C" fn new_list_media_control_action_0(len: i32) -> *mut wire_list_media_control_action {
+    let wrap = wire_list_media_control_action {
         ptr: support::new_leak_vec_ptr(Default::default(), len),
         len,
     };
-    support::new_leak_box_ptr(ans)
+    support::new_leak_box_ptr(wrap)
 }
 
 #[no_mangle]
@@ -168,12 +167,13 @@ impl Wire2Api<Player> for *mut wire_Player {
     }
 }
 
-impl Wire2Api<Vec<i32>> for *mut wire_int_32_list {
-    fn wire2api(self) -> Vec<i32> {
-        unsafe {
+impl Wire2Api<Vec<MediaControlAction>> for *mut wire_list_media_control_action {
+    fn wire2api(self) -> Vec<MediaControlAction> {
+        let vec = unsafe {
             let wrap = support::box_from_leak_ptr(self);
             support::vec_from_leak_ptr(wrap.ptr, wrap.len)
-        }
+        };
+        vec.into_iter().map(Wire2Api::wire2api).collect()
     }
 }
 
@@ -207,7 +207,7 @@ impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
 
 #[repr(C)]
 #[derive(Clone)]
-pub struct wire_int_32_list {
+pub struct wire_list_media_control_action {
     ptr: *mut i32,
     len: i32,
 }
