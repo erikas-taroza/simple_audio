@@ -425,7 +425,7 @@ class SimpleAudio
         await _player.queue(path: path);
     }
 
-    /// Plays the preloaded item from [queue].
+    /// Plays the preloaded item from [queue]. The file starts playing automatically.
     Future<void> playQueue() async {
         await _player.playQueue();
 

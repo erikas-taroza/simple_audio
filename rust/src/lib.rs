@@ -173,7 +173,7 @@ impl Player
         Ok(())
     }
 
-    /// Plays the preloaded item from `queue`.
+    /// Plays the preloaded item from `queue`. The file starts playing automatically.
     pub fn play_queue(&self) -> anyhow::Result<()>
     {
         TXRX.read().unwrap().0.send(ThreadMessage::PlayQueue)?;

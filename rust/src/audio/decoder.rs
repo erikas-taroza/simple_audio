@@ -156,7 +156,7 @@ impl Decoder
                     IS_FILE_QUEUED.store(true, std::sync::atomic::Ordering::SeqCst);
                 },
                 ThreadMessage::PlayQueue => {
-                    self.state = DecoderState::Playing;
+                    crate::Player::internal_play();
 
                     self.cpal_output = None;
                     self.playback = self.queued_playback.take();
