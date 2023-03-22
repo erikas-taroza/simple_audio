@@ -35,6 +35,7 @@ pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
 pub static IS_STOPPED: AtomicBool = AtomicBool::new(true);
 pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
 pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
+pub static IS_FILE_QUEUED: AtomicBool = AtomicBool::new(false);
 pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
 pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
 pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState { position: 0, duration: 0 });
@@ -55,6 +56,7 @@ pub enum ThreadMessage
     /// Stops the current running thread.
     Dispose,
     Open(Box<dyn MediaSource>),
+    Queue(Box<dyn MediaSource>),
     Play,
     Pause,
     Stop,

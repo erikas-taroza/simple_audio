@@ -110,6 +110,10 @@ impl Player
     pub fn is_playing(&self) -> bool
     { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }
 
+    /// Returns `true` if there is a file queued for playback.
+    pub fn has_queue(&self) -> bool
+    { IS_FILE_QUEUED.load(std::sync::atomic::Ordering::SeqCst) }
+
     pub fn get_progress(&self) -> ProgressState
     { *PROGRESS.read().unwrap() }
 
@@ -117,8 +121,8 @@ impl Player
     //            PLAYBACK
     // ---------------------------------
 
-    /// Opens a file or network resource for reading and playing.
-    pub fn open(&self, path: String, autoplay: bool) -> anyhow::Result<()>
+    /// Returns a Symphonia `MediaSource` for playback.
+    fn source_from_path(path: String) -> anyhow::Result<Box<dyn MediaSource>>
     {
         let path2 = path.clone();
 
@@ -139,11 +143,32 @@ impl Player
             )
         };
 
+        Ok(source)
+    }
+
+    /// Opens a file or network resource for reading and playing.
+    pub fn open(&self, path: String, autoplay: bool) -> anyhow::Result<()>
+    {
+        let source = Self::source_from_path(path)?;
+
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
 
         if autoplay { Self::internal_play(); }
         else { Self::internal_pause(); }
+
+        Ok(())
+    }
+
+    /// Preloads a file or network resource for reading and playing.
+    /// 
+    /// Use this method if you want gapless playback. It reduces
+    /// the time spent loading between tracks (especially important
+    /// for streaming network files).
+    pub fn queue(&self, path: String) -> anyhow::Result<()>
+    {
+        let source = Self::source_from_path(path)?;
+        TXRX.read().unwrap().0.send(ThreadMessage::Queue(source))?;
 
         Ok(())
     }
