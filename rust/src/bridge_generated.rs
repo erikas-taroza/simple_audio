@@ -104,6 +104,22 @@ fn wire_is_playing__method__Player_impl(
         },
     )
 }
+fn wire_has_queue__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "has_queue__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Ok(Player::has_queue(&api_that))
+        },
+    )
+}
 fn wire_get_progress__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,
@@ -137,6 +153,40 @@ fn wire_open__method__Player_impl(
             let api_path = path.wire2api();
             let api_autoplay = autoplay.wire2api();
             move |task_callback| Player::open(&api_that, api_path, api_autoplay)
+        },
+    )
+}
+fn wire_queue__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+    path: impl Wire2Api<String> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "queue__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            let api_path = path.wire2api();
+            move |task_callback| Player::queue(&api_that, api_path)
+        },
+    )
+}
+fn wire_play_queue__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "play_queue__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Player::play_queue(&api_that)
         },
     )
 }

@@ -56,11 +56,12 @@ pub enum ThreadMessage
     /// Stops the current running thread.
     Dispose,
     Open(Box<dyn MediaSource>),
-    Queue(Box<dyn MediaSource>),
     Play,
     Pause,
     Stop,
     /// Called by `cpal_output` in the event the device outputting
     /// audio was changed/disconnected.
     DeviceChanged,
+    Queue(Box<dyn MediaSource>),
+    PlayQueue,
 }

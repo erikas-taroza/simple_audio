@@ -28,7 +28,8 @@ pub struct Decoder
     rx: Receiver<ThreadMessage>,
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
-    playback: Option<Playback>
+    playback: Option<Playback>,
+    queued_playback: Option<Playback>
 }
 
 impl Decoder
@@ -42,7 +43,8 @@ impl Decoder
             rx,
             state: DecoderState::Idle,
             cpal_output: None,
-            playback: None
+            playback: None,
+            queued_playback: None
         }
     }
 
@@ -105,7 +107,7 @@ impl Decoder
                 ThreadMessage::Dispose => return Ok(true),
                 ThreadMessage::Open(source) => {
                     self.cpal_output = None;
-                    self.playback = Some(self.open(source)?);
+                    self.playback = Some(Self::open(source)?);
                 },
                 ThreadMessage::Play => {
                     self.state = DecoderState::Playing;
@@ -141,6 +143,25 @@ impl Decoder
                     self.cpal_output = None;
                     crate::Player::internal_pause();
                 },
+                ThreadMessage::Queue(source) => {
+                    let mut playback = Self::open(source)?;
+                    // Preload
+                    playback.reader.next_packet()?;
+
+                    // Seek back to the beginning.
+                    let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
+                    playback.reader.seek(SeekMode::Coarse, seek_to)?;
+
+                    self.queued_playback = Some(playback);
+                    IS_FILE_QUEUED.store(true, std::sync::atomic::Ordering::SeqCst);
+                },
+                ThreadMessage::PlayQueue => {
+                    self.state = DecoderState::Playing;
+
+                    self.cpal_output = None;
+                    self.playback = self.queued_playback.take();
+                    IS_FILE_QUEUED.store(false, std::sync::atomic::Ordering::SeqCst);
+                }
             }
         }
 
@@ -247,7 +268,7 @@ impl Decoder
 
     /// Opens the given source for playback. Returns a `Playback`
     /// for the source.
-    fn open(&mut self, source: Box<dyn MediaSource>) -> anyhow::Result<Playback>
+    fn open(source: Box<dyn MediaSource>) -> anyhow::Result<Playback>
     {
         let mss = MediaSourceStream::new(source, Default::default());
         let format_options = FormatOptions { enable_gapless: true, ..Default::default() };

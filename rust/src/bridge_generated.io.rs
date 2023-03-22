@@ -37,6 +37,11 @@ pub extern "C" fn wire_is_playing__method__Player(port_: i64, that: *mut wire_Pl
 }
 
 #[no_mangle]
+pub extern "C" fn wire_has_queue__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_has_queue__method__Player_impl(port_, that)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_get_progress__method__Player(port_: i64, that: *mut wire_Player) {
     wire_get_progress__method__Player_impl(port_, that)
 }
@@ -49,6 +54,20 @@ pub extern "C" fn wire_open__method__Player(
     autoplay: bool,
 ) {
     wire_open__method__Player_impl(port_, that, path, autoplay)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_queue__method__Player(
+    port_: i64,
+    that: *mut wire_Player,
+    path: *mut wire_uint_8_list,
+) {
+    wire_queue__method__Player_impl(port_, that, path)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_play_queue__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_play_queue__method__Player_impl(port_, that)
 }
 
 #[no_mangle]

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -79,7 +80,13 @@ class _MyAppState extends State<MyApp>
     {
         super.initState();
 
-        player.playbackStateStream.listen((event) {
+        player.playbackStateStream.listen((event) async {
+            if(await player.hasQueue && event == PlaybackState.done) {
+                debugPrint("Playing queued item.");
+                player.playQueue();
+                return;
+            }
+
             setState(() => playbackState = event);
         });
 
@@ -131,7 +138,7 @@ class _MyAppState extends State<MyApp>
                                     // final PlatformFile pickedFile = file.files.single;
                                     // path = pickedFile.path!;
 
-                                    player.setMetadata(Metadata(
+                                    player.setMetadata(const Metadata(
                                         title: "Title",
                                         artist: "Artist",
                                         album: "Album",
@@ -139,6 +146,21 @@ class _MyAppState extends State<MyApp>
                                     ));
                                     await player.stop();
                                     await player.open(path);
+                                },
+                            ),
+                            ElevatedButton(
+                                child: const Text("Queue File"),
+                                onPressed: () async {
+                                    // FilePickerResult? file = await FilePicker.platform.pickFiles(
+                                    //     dialogTitle: "Pick file to play.",
+                                    //     //type: FileType.audio
+                                    // );
+
+                                    // if(file == null) return;
+
+                                    // final PlatformFile pickedFile = file.files.single;
+                                    // path = pickedFile.path!;
+                                    await player.queue(path);
                                 },
                             ),
                             const SizedBox(height: 20),
@@ -258,7 +280,7 @@ class _MyAppState extends State<MyApp>
                                             child: ConstrainedBox(
                                                 constraints: const BoxConstraints(maxWidth: 450),
                                                 child: Slider(
-                                                    value: position,
+                                                    value: min(position, duration),
                                                     max: duration,
                                                     onChanged: (value) {
                                                         player.seek(value.floor());

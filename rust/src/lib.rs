@@ -173,6 +173,13 @@ impl Player
         Ok(())
     }
 
+    /// Plays the preloaded item from `queue`.
+    pub fn play_queue(&self) -> anyhow::Result<()>
+    {
+        TXRX.read().unwrap().0.send(ThreadMessage::PlayQueue)?;
+        Ok(())
+    }
+
     /// Allows for access in other places
     /// where we would want to update the stream and
     /// the `IS_PLAYING` AtomicBool.

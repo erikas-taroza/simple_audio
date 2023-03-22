@@ -40,6 +40,11 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta;
 
+  /// Returns `true` if there is a file queued for playback.
+  Future<bool> hasQueueMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kHasQueueMethodPlayerConstMeta;
+
   Future<ProgressState> getProgressMethodPlayer(
       {required Player that, dynamic hint});
 
@@ -53,6 +58,21 @@ abstract class SimpleAudio {
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kOpenMethodPlayerConstMeta;
+
+  /// Preloads a file or network resource for reading and playing.
+  ///
+  /// Use this method if you want gapless playback. It reduces
+  /// the time spent loading between tracks (especially important
+  /// for streaming network files).
+  Future<void> queueMethodPlayer(
+      {required Player that, required String path, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kQueueMethodPlayerConstMeta;
+
+  /// Plays the preloaded item from `queue`.
+  Future<void> playQueueMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kPlayQueueMethodPlayerConstMeta;
 
   Future<void> playMethodPlayer({required Player that, dynamic hint});
 
@@ -205,6 +225,11 @@ class Player {
         that: this,
       );
 
+  /// Returns `true` if there is a file queued for playback.
+  Future<bool> hasQueue({dynamic hint}) => bridge.hasQueueMethodPlayer(
+        that: this,
+      );
+
   Future<ProgressState> getProgress({dynamic hint}) =>
       bridge.getProgressMethodPlayer(
         that: this,
@@ -217,6 +242,22 @@ class Player {
         that: this,
         path: path,
         autoplay: autoplay,
+      );
+
+  /// Preloads a file or network resource for reading and playing.
+  ///
+  /// Use this method if you want gapless playback. It reduces
+  /// the time spent loading between tracks (especially important
+  /// for streaming network files).
+  Future<void> queue({required String path, dynamic hint}) =>
+      bridge.queueMethodPlayer(
+        that: this,
+        path: path,
+      );
+
+  /// Plays the preloaded item from `queue`.
+  Future<void> playQueue({dynamic hint}) => bridge.playQueueMethodPlayer(
+        that: this,
       );
 
   Future<void> play({dynamic hint}) => bridge.playMethodPlayer(
