@@ -422,4 +422,23 @@ mod tests
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }
+
+    #[test]
+    fn queue() -> anyhow::Result<()>
+    {
+        let path = "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string();
+
+        let player = crate::Player::default();
+        player.open(path.clone(), true)?;
+        player.set_volume(0.5);
+        thread::sleep(Duration::from_secs(10));
+        println!("Queuing");
+        player.queue(path)?;
+        thread::sleep(Duration::from_secs(5));
+        println!("Playing from queue.");
+        player.play_queue()?;
+        thread::sleep(Duration::from_secs(10));
+
+        Ok(())
+    }
 }

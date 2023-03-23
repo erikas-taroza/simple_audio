@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use anyhow::Context;
+use std::thread::{JoinHandle, self};
+
+use anyhow::{Context, anyhow};
 use cpal::traits::StreamTrait;
 use crossbeam::channel::Receiver;
 use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::{Time, TimeBase}}, default};
@@ -29,7 +31,9 @@ pub struct Decoder
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
     playback: Option<Playback>,
-    queued_playback: Option<Playback>
+    queued_playback: Option<Playback>,
+    /// The `JoinHandle` for the thread that preloads a file.
+    queue_thread: Option<JoinHandle<anyhow::Result<Playback>>>
 }
 
 impl Decoder
@@ -44,7 +48,8 @@ impl Decoder
             state: DecoderState::Idle,
             cpal_output: None,
             playback: None,
-            queued_playback: None
+            queued_playback: None,
+            queue_thread: None
         }
     }
 
@@ -60,6 +65,15 @@ impl Decoder
     {
         loop
         {
+            // Check if the queue thread is done.
+            match self.poll_queue_thread() {
+                Err(_) => {
+                    update_callback_stream(Callback::DecodeError);
+                },
+                _ => ()
+            }
+
+            // Check for incoming `ThreadMessage`s.
             match self.listen_for_message() {
                 Ok(should_break) => if should_break {
                     break;
@@ -71,6 +85,7 @@ impl Decoder
 
             if self.state.is_idle() || self.state.is_paused() { continue; }
 
+            // Decode and output the samples.
             match self.do_playback() {
                 Ok(playback_complete) => if playback_complete {
                     self.state = DecoderState::Idle;
@@ -144,18 +159,25 @@ impl Decoder
                     crate::Player::internal_pause();
                 },
                 ThreadMessage::Queue(source) => {
-                    let mut playback = Self::open(source)?;
-                    // Preload
-                    playback.reader.next_packet()?;
+                    let handle: JoinHandle<anyhow::Result<Playback>> = thread::spawn(move || {
+                        let mut playback = Self::open(source)?;
+                        // Preload
+                        playback.reader.next_packet()?;
 
-                    // Seek back to the beginning.
-                    let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
-                    playback.reader.seek(SeekMode::Coarse, seek_to)?;
+                        // Seek back to the beginning.
+                        let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
+                        playback.reader.seek(SeekMode::Coarse, seek_to)?;
 
-                    self.queued_playback = Some(playback);
-                    IS_FILE_QUEUED.store(true, std::sync::atomic::Ordering::SeqCst);
+                        Ok(playback)
+                    });
+
+                    self.queue_thread = Some(handle);
                 },
                 ThreadMessage::PlayQueue => {
+                    if self.queued_playback.is_none() {
+                        return Ok(false);
+                    }
+
                     crate::Player::internal_play();
 
                     self.cpal_output = None;
@@ -302,6 +324,23 @@ impl Decoder
             timebase,
             duration,
         })
+    }
+
+    /// Polls the `queue_thread`. If it is finished, the 
+    /// preloaded file is then placed in `queued_playback`.
+    fn poll_queue_thread(&mut self) -> anyhow::Result<()>
+    {
+        if self.queue_thread.is_none() || !self.queue_thread.as_ref().unwrap().is_finished() {
+            return Ok(());
+        }
+
+        let handle = self.queue_thread.take().unwrap();
+        let result = handle.join()
+            .unwrap_or(Err(anyhow!("Could not join queue thread.")))?;
+
+        self.queued_playback.replace(result);
+
+        Ok(())
     }
 }
 
