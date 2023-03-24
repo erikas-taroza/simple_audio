@@ -159,6 +159,9 @@ impl Decoder
                     crate::Player::internal_pause();
                 },
                 ThreadMessage::Queue(source) => {
+                    self.queued_playback = None;
+                    IS_FILE_QUEUED.store(false, std::sync::atomic::Ordering::SeqCst);
+
                     let handle: JoinHandle<anyhow::Result<Playback>> = thread::spawn(move || {
                         let mut playback = Self::open(source)?;
                         // Preload
@@ -339,6 +342,7 @@ impl Decoder
             .unwrap_or(Err(anyhow!("Could not join queue thread.")))?;
 
         self.queued_playback.replace(result);
+        IS_FILE_QUEUED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         Ok(())
     }
