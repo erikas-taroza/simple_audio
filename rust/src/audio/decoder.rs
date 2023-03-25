@@ -249,10 +249,16 @@ impl Decoder
             .context("Could not decode audio packet.")?;
 
         if packet.ts() < seek_ts { return Ok(false); }
-            
+        
+        let position = if let Some(timebase) = playback.timebase {
+            timebase.calc_time(packet.ts()).seconds
+        } else {
+            0
+        };
+
         // Update the progress stream with calculated times.
         let progress = ProgressState {
-            position: playback.timebase.calc_time(packet.ts()).seconds,
+            position,
             duration: playback.duration
         };
 
@@ -316,9 +322,14 @@ impl Decoder
             .make(&track.codec_params, &Default::default())?;
 
         // Used only for outputting the current position and duration.
-        let timebase = track.codec_params.time_base.unwrap();
-        let ts = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames).unwrap();
-        let duration = timebase.calc_time(ts).seconds;
+        let timebase = track.codec_params.time_base;
+        let ts = track.codec_params.n_frames.map(|frames| track.codec_params.start_ts + frames);
+
+        let duration = if let Some(timebase) = timebase {
+            timebase.calc_time(ts.unwrap()).seconds
+        } else {
+            0
+        };
 
         Ok(Playback {
             reader,
@@ -381,6 +392,6 @@ struct Playback {
     reader: Box<dyn FormatReader>,
     track_id: u32,
     decoder: Box<dyn symphonia::core::codecs::Decoder>,
-    timebase: TimeBase,
+    timebase: Option<TimeBase>,
     duration: u64
 }
