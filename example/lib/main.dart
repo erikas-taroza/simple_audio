@@ -81,9 +81,9 @@ class _MyAppState extends State<MyApp>
         super.initState();
 
         player.playbackStateStream.listen((event) async {
-            if(await player.hasQueue && event == PlaybackState.done) {
-                debugPrint("Playing queued item.");
-                player.playQueue();
+            if(await player.hasPreloaded && event == PlaybackState.done) {
+                debugPrint("Playing preloaded item.");
+                player.playPreload();
                 return;
             }
 
@@ -149,7 +149,7 @@ class _MyAppState extends State<MyApp>
                                 },
                             ),
                             ElevatedButton(
-                                child: const Text("Queue File"),
+                                child: const Text("Preload File"),
                                 onPressed: () async {
                                     // FilePickerResult? file = await FilePicker.platform.pickFiles(
                                     //     dialogTitle: "Pick file to play.",
@@ -160,7 +160,7 @@ class _MyAppState extends State<MyApp>
 
                                     // final PlatformFile pickedFile = file.files.single;
                                     // path = pickedFile.path!;
-                                    await player.queue(path);
+                                    await player.preload(path);
                                 },
                             ),
                             const SizedBox(height: 20),

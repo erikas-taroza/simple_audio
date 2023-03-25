@@ -137,21 +137,21 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that"],
       );
 
-  Future<bool> hasQueueMethodPlayer({required Player that, dynamic hint}) {
+  Future<bool> hasPreloadedMethodPlayer({required Player that, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
-          _platform.inner.wire_has_queue__method__Player(port_, arg0),
+          _platform.inner.wire_has_preloaded__method__Player(port_, arg0),
       parseSuccessData: _wire2api_bool,
-      constMeta: kHasQueueMethodPlayerConstMeta,
+      constMeta: kHasPreloadedMethodPlayerConstMeta,
       argValues: [that],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kHasQueueMethodPlayerConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kHasPreloadedMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "has_queue__method__Player",
+        debugName: "has_preloaded__method__Player",
         argNames: ["that"],
       );
 
@@ -198,41 +198,41 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that", "path", "autoplay"],
       );
 
-  Future<void> queueMethodPlayer(
+  Future<void> preloadMethodPlayer(
       {required Player that, required String path, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
     var arg1 = _platform.api2wire_String(path);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
-          _platform.inner.wire_queue__method__Player(port_, arg0, arg1),
+          _platform.inner.wire_preload__method__Player(port_, arg0, arg1),
       parseSuccessData: _wire2api_unit,
-      constMeta: kQueueMethodPlayerConstMeta,
+      constMeta: kPreloadMethodPlayerConstMeta,
       argValues: [that, path],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kQueueMethodPlayerConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kPreloadMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "queue__method__Player",
+        debugName: "preload__method__Player",
         argNames: ["that", "path"],
       );
 
-  Future<void> playQueueMethodPlayer({required Player that, dynamic hint}) {
+  Future<void> playPreloadMethodPlayer({required Player that, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
-          _platform.inner.wire_play_queue__method__Player(port_, arg0),
+          _platform.inner.wire_play_preload__method__Player(port_, arg0),
       parseSuccessData: _wire2api_unit,
-      constMeta: kPlayQueueMethodPlayerConstMeta,
+      constMeta: kPlayPreloadMethodPlayerConstMeta,
       argValues: [that],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kPlayQueueMethodPlayerConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kPlayPreloadMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "play_queue__method__Player",
+        debugName: "play_preload__method__Player",
         argNames: ["that"],
       );
 
@@ -755,22 +755,22 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
       _wire_is_playing__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
-  void wire_has_queue__method__Player(
+  void wire_has_preloaded__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
   ) {
-    return _wire_has_queue__method__Player(
+    return _wire_has_preloaded__method__Player(
       port_,
       that,
     );
   }
 
-  late final _wire_has_queue__method__PlayerPtr = _lookup<
+  late final _wire_has_preloaded__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_Player>)>>('wire_has_queue__method__Player');
-  late final _wire_has_queue__method__Player =
-      _wire_has_queue__method__PlayerPtr
+              ffi.Pointer<wire_Player>)>>('wire_has_preloaded__method__Player');
+  late final _wire_has_preloaded__method__Player =
+      _wire_has_preloaded__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
   void wire_get_progress__method__Player(
@@ -817,43 +817,43 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
           void Function(int, ffi.Pointer<wire_Player>,
               ffi.Pointer<wire_uint_8_list>, bool)>();
 
-  void wire_queue__method__Player(
+  void wire_preload__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
     ffi.Pointer<wire_uint_8_list> path,
   ) {
-    return _wire_queue__method__Player(
+    return _wire_preload__method__Player(
       port_,
       that,
       path,
     );
   }
 
-  late final _wire_queue__method__PlayerPtr = _lookup<
+  late final _wire_preload__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
-              ffi.Pointer<wire_uint_8_list>)>>('wire_queue__method__Player');
-  late final _wire_queue__method__Player =
-      _wire_queue__method__PlayerPtr.asFunction<
+              ffi.Pointer<wire_uint_8_list>)>>('wire_preload__method__Player');
+  late final _wire_preload__method__Player =
+      _wire_preload__method__PlayerPtr.asFunction<
           void Function(
               int, ffi.Pointer<wire_Player>, ffi.Pointer<wire_uint_8_list>)>();
 
-  void wire_play_queue__method__Player(
+  void wire_play_preload__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
   ) {
-    return _wire_play_queue__method__Player(
+    return _wire_play_preload__method__Player(
       port_,
       that,
     );
   }
 
-  late final _wire_play_queue__method__PlayerPtr = _lookup<
+  late final _wire_play_preload__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_Player>)>>('wire_play_queue__method__Player');
-  late final _wire_play_queue__method__Player =
-      _wire_play_queue__method__PlayerPtr
+              ffi.Pointer<wire_Player>)>>('wire_play_preload__method__Player');
+  late final _wire_play_preload__method__Player =
+      _wire_play_preload__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
   void wire_play__method__Player(

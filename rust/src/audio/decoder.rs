@@ -31,9 +31,9 @@ pub struct Decoder
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
     playback: Option<Playback>,
-    queued_playback: Option<Playback>,
+    preload_playback: Option<Playback>,
     /// The `JoinHandle` for the thread that preloads a file.
-    queue_thread: Option<JoinHandle<anyhow::Result<Playback>>>
+    preload_thread: Option<JoinHandle<anyhow::Result<Playback>>>
 }
 
 impl Decoder
@@ -48,8 +48,8 @@ impl Decoder
             state: DecoderState::Idle,
             cpal_output: None,
             playback: None,
-            queued_playback: None,
-            queue_thread: None
+            preload_playback: None,
+            preload_thread: None
         }
     }
 
@@ -65,8 +65,8 @@ impl Decoder
     {
         loop
         {
-            // Check if the queue thread is done.
-            match self.poll_queue_thread() {
+            // Check if the preload thread is done.
+            match self.poll_preload_thread() {
                 Err(_) => {
                     update_callback_stream(Callback::DecodeError);
                 },
@@ -158,22 +158,22 @@ impl Decoder
                     self.cpal_output = None;
                     crate::Player::internal_pause();
                 },
-                ThreadMessage::Queue(source) => {
-                    self.queued_playback = None;
-                    IS_FILE_QUEUED.store(false, std::sync::atomic::Ordering::SeqCst);
+                ThreadMessage::Preload(source) => {
+                    self.preload_playback = None;
+                    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
                     let handle = Self::preload(source);
-                    self.queue_thread = Some(handle);
+                    self.preload_thread = Some(handle);
                 },
-                ThreadMessage::PlayQueue => {
-                    if self.queued_playback.is_none() {
+                ThreadMessage::PlayPreload => {
+                    if self.preload_playback.is_none() {
                         return Ok(false);
                     }
 
                     crate::Player::internal_play();
 
                     self.cpal_output = None;
-                    self.playback = self.queued_playback.take();
-                    IS_FILE_QUEUED.store(false, std::sync::atomic::Ordering::SeqCst);
+                    self.playback = self.preload_playback.take();
+                    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
                 }
             }
         }
@@ -368,20 +368,20 @@ impl Decoder
         })
     }
 
-    /// Polls the `queue_thread`. If it is finished, the 
-    /// preloaded file is then placed in `queued_playback`.
-    fn poll_queue_thread(&mut self) -> anyhow::Result<()>
+    /// Polls the `preload_thread`. If it is finished, the 
+    /// preloaded file is then placed in `preload_playback`.
+    fn poll_preload_thread(&mut self) -> anyhow::Result<()>
     {
-        if self.queue_thread.is_none() || !self.queue_thread.as_ref().unwrap().is_finished() {
+        if self.preload_thread.is_none() || !self.preload_thread.as_ref().unwrap().is_finished() {
             return Ok(());
         }
 
-        let handle = self.queue_thread.take().unwrap();
+        let handle = self.preload_thread.take().unwrap();
         let result = handle.join()
-            .unwrap_or(Err(anyhow!("Could not join queue thread.")))?;
+            .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
-        self.queued_playback.replace(result);
-        IS_FILE_QUEUED.store(true, std::sync::atomic::Ordering::SeqCst);
+        self.preload_playback.replace(result);
+        IS_FILE_PRELOADED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         Ok(())
     }

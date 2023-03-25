@@ -48,8 +48,8 @@ class SimpleAudio
 
     /// Returns `true` if the player is playing.
     Future<bool> get isPlaying => _player.isPlaying();
-    /// Returns `true` if the player has a file queued.
-    Future<bool> get hasQueue => _player.hasQueue();
+    /// Returns `true` if the player has a file preloaded.
+    Future<bool> get hasPreloaded => _player.hasPreloaded();
     /// Returns the current progress state.
     Future<ProgressState> get _progress => _player.getProgress();
 
@@ -421,13 +421,13 @@ class SimpleAudio
     /// Use this method if you want gapless playback. It reduces
     /// the time spent loading between tracks (especially important
     /// for streaming network files).
-    Future<void> queue(String path) async {
-        await _player.queue(path: path);
+    Future<void> preload(String path) async {
+        await _player.preload(path: path);
     }
 
-    /// Plays the preloaded item from [queue]. The file starts playing automatically.
-    Future<void> playQueue() async {
-        await _player.playQueue();
+    /// Plays the preloaded item from [preload]. The file starts playing automatically.
+    Future<void> playPreload() async {
+        await _player.playPreload();
 
         _methodChannel?.invokeMethod("setPlaybackState", {
             "state": PlaybackState.play.index,

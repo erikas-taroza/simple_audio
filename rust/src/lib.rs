@@ -110,9 +110,9 @@ impl Player
     pub fn is_playing(&self) -> bool
     { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }
 
-    /// Returns `true` if there is a file queued for playback.
-    pub fn has_queue(&self) -> bool
-    { IS_FILE_QUEUED.load(std::sync::atomic::Ordering::SeqCst) }
+    /// Returns `true` if there is a file preloaded for playback.
+    pub fn has_preloaded(&self) -> bool
+    { IS_FILE_PRELOADED.load(std::sync::atomic::Ordering::SeqCst) }
 
     pub fn get_progress(&self) -> ProgressState
     { *PROGRESS.read().unwrap() }
@@ -165,18 +165,18 @@ impl Player
     /// Use this method if you want gapless playback. It reduces
     /// the time spent loading between tracks (especially important
     /// for streaming network files).
-    pub fn queue(&self, path: String) -> anyhow::Result<()>
+    pub fn preload(&self, path: String) -> anyhow::Result<()>
     {
         let source = Self::source_from_path(path)?;
-        TXRX.read().unwrap().0.send(ThreadMessage::Queue(source))?;
+        TXRX.read().unwrap().0.send(ThreadMessage::Preload(source))?;
 
         Ok(())
     }
 
-    /// Plays the preloaded item from `queue`. The file starts playing automatically.
-    pub fn play_queue(&self) -> anyhow::Result<()>
+    /// Plays the preloaded item from `preload`. The file starts playing automatically.
+    pub fn play_preload(&self) -> anyhow::Result<()>
     {
-        TXRX.read().unwrap().0.send(ThreadMessage::PlayQueue)?;
+        TXRX.read().unwrap().0.send(ThreadMessage::PlayPreload)?;
         Ok(())
     }
 
@@ -424,7 +424,7 @@ mod tests
     }
 
     #[test]
-    fn queue() -> anyhow::Result<()>
+    fn preload() -> anyhow::Result<()>
     {
         let path = "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string();
 
@@ -432,11 +432,11 @@ mod tests
         player.open(path.clone(), true)?;
         player.set_volume(0.5);
         thread::sleep(Duration::from_secs(10));
-        println!("Queuing");
-        player.queue(path)?;
+        println!("Preloading");
+        player.preload(path)?;
         thread::sleep(Duration::from_secs(5));
-        println!("Playing from queue.");
-        player.play_queue()?;
+        println!("Playing preloaded file.");
+        player.play_preload()?;
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }

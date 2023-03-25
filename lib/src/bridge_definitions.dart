@@ -40,10 +40,10 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta;
 
-  /// Returns `true` if there is a file queued for playback.
-  Future<bool> hasQueueMethodPlayer({required Player that, dynamic hint});
+  /// Returns `true` if there is a file preloaded for playback.
+  Future<bool> hasPreloadedMethodPlayer({required Player that, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kHasQueueMethodPlayerConstMeta;
+  FlutterRustBridgeTaskConstMeta get kHasPreloadedMethodPlayerConstMeta;
 
   Future<ProgressState> getProgressMethodPlayer(
       {required Player that, dynamic hint});
@@ -64,15 +64,15 @@ abstract class SimpleAudio {
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
   /// for streaming network files).
-  Future<void> queueMethodPlayer(
+  Future<void> preloadMethodPlayer(
       {required Player that, required String path, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kQueueMethodPlayerConstMeta;
+  FlutterRustBridgeTaskConstMeta get kPreloadMethodPlayerConstMeta;
 
-  /// Plays the preloaded item from `queue`.
-  Future<void> playQueueMethodPlayer({required Player that, dynamic hint});
+  /// Plays the preloaded item from `preload`. The file starts playing automatically.
+  Future<void> playPreloadMethodPlayer({required Player that, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kPlayQueueMethodPlayerConstMeta;
+  FlutterRustBridgeTaskConstMeta get kPlayPreloadMethodPlayerConstMeta;
 
   Future<void> playMethodPlayer({required Player that, dynamic hint});
 
@@ -225,8 +225,8 @@ class Player {
         that: this,
       );
 
-  /// Returns `true` if there is a file queued for playback.
-  Future<bool> hasQueue({dynamic hint}) => bridge.hasQueueMethodPlayer(
+  /// Returns `true` if there is a file preloaded for playback.
+  Future<bool> hasPreloaded({dynamic hint}) => bridge.hasPreloadedMethodPlayer(
         that: this,
       );
 
@@ -249,14 +249,14 @@ class Player {
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
   /// for streaming network files).
-  Future<void> queue({required String path, dynamic hint}) =>
-      bridge.queueMethodPlayer(
+  Future<void> preload({required String path, dynamic hint}) =>
+      bridge.preloadMethodPlayer(
         that: this,
         path: path,
       );
 
-  /// Plays the preloaded item from `queue`.
-  Future<void> playQueue({dynamic hint}) => bridge.playQueueMethodPlayer(
+  /// Plays the preloaded item from `preload`. The file starts playing automatically.
+  Future<void> playPreload({dynamic hint}) => bridge.playPreloadMethodPlayer(
         that: this,
       );
 
