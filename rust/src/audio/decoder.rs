@@ -161,27 +161,7 @@ impl Decoder
                 ThreadMessage::Queue(source) => {
                     self.queued_playback = None;
                     IS_FILE_QUEUED.store(false, std::sync::atomic::Ordering::SeqCst);
-
-                    let handle: JoinHandle<anyhow::Result<Playback>> = thread::spawn(move || {
-                        let mut playback = Self::open(source)?;
-                        // Preload
-                        let packet = playback.reader.next_packet()?;
-                        let buf_ref = playback.decoder.decode(&packet)?;
-
-                        let spec = *buf_ref.spec();
-                        let duration = buf_ref.capacity() as u64;
-
-                        let mut buf = AudioBuffer::new(duration, spec);
-                        buf_ref.convert(&mut buf);
-                        playback.preload = Some(buf);
-
-                        // Seek back to the beginning.
-                        let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
-                        playback.reader.seek(SeekMode::Coarse, seek_to)?;
-
-                        Ok(playback)
-                    });
-
+                    let handle = Self::preload(source);
                     self.queue_thread = Some(handle);
                 },
                 ThreadMessage::PlayQueue => {
@@ -363,6 +343,32 @@ impl Decoder
             timebase,
             duration,
             preload: None
+        })
+    }
+
+    /// Spawns a thread that decodes the first packet of the source.
+    /// 
+    /// Returns a preloaded `Playback` when complete.
+    fn preload(source: Box<dyn MediaSource>) -> JoinHandle<anyhow::Result<Playback>>
+    {
+        thread::spawn(move || {
+            let mut playback = Self::open(source)?;
+            // Preload
+            let packet = playback.reader.next_packet()?;
+            let buf_ref = playback.decoder.decode(&packet)?;
+
+            let spec = *buf_ref.spec();
+            let duration = buf_ref.capacity() as u64;
+
+            let mut buf = AudioBuffer::new(duration, spec);
+            buf_ref.convert(&mut buf);
+            playback.preload = Some(buf);
+
+            // Seek back to the beginning.
+            let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
+            playback.reader.seek(SeekMode::Coarse, seek_to)?;
+
+            Ok(playback)
         })
     }
 
