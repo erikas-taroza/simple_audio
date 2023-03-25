@@ -390,4 +390,15 @@ mod tests
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }
+
+    /// SEE: https://github.com/erikas-taroza/simple_audio/issues/19
+    #[test]
+    fn silent_adts_file() -> anyhow::Result<()>
+    {
+        let player = crate::Player::default();
+        player.set_volume(0.1);
+        player.open("/home/erikas/Downloads/silent.aac".to_string(), true)?;
+        thread::sleep(Duration::from_secs(3));
+        Ok(())
+    }
 }
