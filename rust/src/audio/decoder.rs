@@ -364,10 +364,6 @@ impl Decoder
             buf_ref.convert(&mut buf);
             playback.preload = Some(buf);
 
-            // Seek back to the beginning.
-            let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
-            playback.reader.seek(SeekMode::Coarse, seek_to)?;
-
             Ok(playback)
         })
     }
