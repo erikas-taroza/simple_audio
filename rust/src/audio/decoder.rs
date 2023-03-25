@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::thread::{JoinHandle, self};
+use std::{thread::{JoinHandle, self}, borrow::Cow};
 
 use anyhow::{Context, anyhow};
 use cpal::traits::StreamTrait;
 use crossbeam::channel::Receiver;
-use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::{Time, TimeBase}}, default};
+use symphonia::{core::{formats::{FormatOptions, FormatReader, SeekTo, SeekMode}, meta::MetadataOptions, io::{MediaSourceStream, MediaSource}, probe::Hint, units::{Time, TimeBase}, audio::{AudioBufferRef, AudioBuffer}}, default};
 
 use crate::utils::{progress_state_stream::*, playback_state_stream::update_playback_state_stream, types::*, callback_stream::update_callback_stream};
 
@@ -165,7 +165,15 @@ impl Decoder
                     let handle: JoinHandle<anyhow::Result<Playback>> = thread::spawn(move || {
                         let mut playback = Self::open(source)?;
                         // Preload
-                        playback.reader.next_packet()?;
+                        let packet = playback.reader.next_packet()?;
+                        let buf_ref = playback.decoder.decode(&packet)?;
+
+                        let spec = *buf_ref.spec();
+                        let duration = buf_ref.capacity() as u64;
+
+                        let mut buf = AudioBuffer::new(duration, spec);
+                        buf_ref.convert(&mut buf);
+                        playback.preload = Some(buf);
 
                         // Seek back to the beginning.
                         let seek_to = SeekTo::Time { time: Time::from(0u32), track_id: Some(playback.track_id) };
@@ -201,6 +209,23 @@ impl Decoder
     {
         if self.playback.is_none() { return Ok(false); }
         let playback = self.playback.as_mut().unwrap();
+
+        // If there is audio already decoded from preloading,
+        // then output that instead.
+        if let Some(preload) = playback.preload.take() {
+            // Write the decoded packet to CPAL.
+            if self.cpal_output.is_none()
+            {
+                let spec = *preload.spec();
+                let duration = preload.capacity() as u64;
+                self.cpal_output.replace(CpalOutput::new(spec, duration)?);
+            }
+
+            let buffer_ref = AudioBufferRef::F32(Cow::Borrowed(&preload));
+            self.cpal_output.as_mut().unwrap().write(buffer_ref);
+
+            return Ok(false);
+        }
 
         let seek_ts: u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap()
         {
@@ -337,6 +362,7 @@ impl Decoder
             track_id,
             timebase,
             duration,
+            preload: None
         })
     }
 
@@ -388,10 +414,13 @@ impl DecoderState
 /// Holds the items related to playback.
 /// 
 /// Ex: The Symphonia decoder, timebase, duration.
-struct Playback {
+struct Playback
+{
     reader: Box<dyn FormatReader>,
     track_id: u32,
     decoder: Box<dyn symphonia::core::codecs::Decoder>,
     timebase: Option<TimeBase>,
-    duration: u64
+    duration: u64,
+    /// A buffer of already decoded samples.
+    preload: Option<AudioBuffer<f32>>
 }
