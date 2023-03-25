@@ -69,7 +69,7 @@ impl HttpStream
     }
 }
 
-impl Streamable<Self> for HttpStream
+impl Streamable for HttpStream
 {
     /// Gets the next chunk in the sequence.
     /// 

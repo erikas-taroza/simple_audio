@@ -20,7 +20,7 @@ use symphonia::core::io::MediaSource;
 
 pub const CHUNK_SIZE: usize = 1024 * 128;
 
-pub trait Streamable<T: Read + Seek + Send + Sync + MediaSource>
+pub trait Streamable: Read + Seek + Send + Sync + MediaSource
 {
     fn read_chunk(
         tx: Sender<(usize, Vec<u8>)>,

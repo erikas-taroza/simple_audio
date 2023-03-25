@@ -89,7 +89,7 @@ impl HlsStream
     }
 }
 
-impl Streamable<Self> for HlsStream
+impl Streamable for HlsStream
 {
     fn read_chunk(
         tx: Sender<(usize, Vec<u8>)>,
