@@ -14,12 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::{io::{Read, Seek}, sync::{atomic::AtomicBool, mpsc::Sender}};
+use std::{io::{Read, Seek}, sync::mpsc::Sender};
 
 use symphonia::core::io::MediaSource;
 
-// Used in cpal_output.rs to mute the stream when buffering.
-pub static IS_STREAM_BUFFERING: AtomicBool = AtomicBool::new(false);
 pub const CHUNK_SIZE: usize = 1024 * 128;
 
 pub trait Streamable<T: Read + Seek + Send + Sync + MediaSource>

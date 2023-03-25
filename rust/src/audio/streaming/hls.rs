@@ -16,6 +16,7 @@
 
 use std::io::{Read, Seek};
 use std::ops::Range;
+use std::sync::MutexGuard;
 use std::thread;
 use std::sync::mpsc::{channel, Sender};
 
@@ -27,7 +28,7 @@ use symphonia::core::io::MediaSource;
 use crate::utils::callback_stream::update_callback_stream;
 use crate::utils::types::Callback;
 
-use super::{streamable::*, Receiver};
+use super::{streamable::*, Receiver, IS_STREAM_BUFFERING};
 
 // NOTE: Most of the implementation is the same as HttpStream.
 // Most comments can be found in HttpStream. Only the HLS specific
@@ -41,7 +42,8 @@ pub struct HlsStream
     read_position: usize,
     downloaded: RangeSet<usize>,
     requested: RangeSet<usize>,
-    receivers: Vec<Receiver>
+    receivers: Vec<Receiver>,
+    active_lock: Option<MutexGuard<'static, ()>>
 }
 
 impl HlsStream
@@ -81,7 +83,8 @@ impl HlsStream
             read_position: 0,
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
-            receivers: Vec::new()
+            receivers: Vec::new(),
+            active_lock: super::try_get_active_lock()
         })
     }
 }
@@ -158,6 +161,11 @@ impl Read for HlsStream
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
+        // Try to make this source active.
+        if self.active_lock.is_none() {
+            self.active_lock = super::try_get_active_lock();
+        }
+
         if self.read_position >= self.buffer.len() {
             return Ok(0);
         }
@@ -207,7 +215,10 @@ impl Read for HlsStream
         }
 
         let should_buffer = !self.downloaded.contains(&self.read_position);
-        IS_STREAM_BUFFERING.store(should_buffer, std::sync::atomic::Ordering::SeqCst);
+        // If this source is active, then allow buffering in `cpal_output`.
+        if self.active_lock.is_some() {
+            IS_STREAM_BUFFERING.store(should_buffer, std::sync::atomic::Ordering::SeqCst);
+        }
         self.try_write_chunk(should_buffer);
 
         let bytes = &self.buffer[self.read_position..read_max];

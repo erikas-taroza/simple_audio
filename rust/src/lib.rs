@@ -22,7 +22,7 @@ mod metadata;
 use std::{fs::File, thread};
 
 use anyhow::Context;
-use audio::{decoder::Decoder, controls::*, streaming::{http::HttpStream, hls::HlsStream}};
+use audio::{decoder::Decoder, controls::*, streaming::{http::HttpStream, hls::HlsStream, local::Local}};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{Metadata, MediaControlAction};
@@ -94,7 +94,7 @@ impl Player
         TXRX.read().unwrap().0.send(ThreadMessage::Dispose).unwrap();
         // Reset the controls in `controls.rs` to default values.
         reset_controls_to_default();
-        audio::streaming::streamable::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
+        audio::streaming::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         metadata::dispose();
     }
@@ -138,9 +138,9 @@ impl Player
                 )
             }
         } else {
-            Box::new(File::open(path)
-                .context(format!("Could not open file at \"{path2}\""))?
-            )
+            let file = File::open(path)
+                .context(format!("Could not open file at \"{path2}\""))?;
+            Box::new(Local::new(file))
         };
 
         Ok(source)

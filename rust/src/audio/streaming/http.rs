@@ -15,6 +15,7 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 use std::io::{Read, Seek};
+use std::sync::MutexGuard;
 use std::thread;
 use std::sync::mpsc::{channel, Sender};
 
@@ -26,7 +27,7 @@ use symphonia::core::io::MediaSource;
 use crate::utils::callback_stream::update_callback_stream;
 use crate::utils::types::Callback;
 
-use super::{streamable::*, Receiver};
+use super::{streamable::*, Receiver, IS_STREAM_BUFFERING};
 
 pub struct HttpStream
 {
@@ -35,7 +36,8 @@ pub struct HttpStream
     read_position: usize,
     downloaded: RangeSet<usize>,
     requested: RangeSet<usize>,
-    receivers: Vec<Receiver>
+    receivers: Vec<Receiver>,
+    active_lock: Option<MutexGuard<'static, ()>>
 }
 
 impl HttpStream
@@ -61,7 +63,8 @@ impl HttpStream
             read_position: 0,
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
-            receivers: Vec::new()
+            receivers: Vec::new(),
+            active_lock: super::try_get_active_lock()
         })
     }
 }
@@ -169,6 +172,11 @@ impl Read for HttpStream
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
+        // Try to make this source active.
+        if self.active_lock.is_none() {
+            self.active_lock = super::try_get_active_lock();
+        }
+
         // If we are reading after the buffer,
         // then return early with 0 written bytes.
         if self.read_position >= self.buffer.len() {
@@ -207,7 +215,10 @@ impl Read for HttpStream
 
         // Write any new bytes.
         let should_buffer = !self.downloaded.contains(&self.read_position);
-        IS_STREAM_BUFFERING.store(should_buffer, std::sync::atomic::Ordering::SeqCst);
+        // If this source is active, then allow buffering in `cpal_output`.
+        if self.active_lock.is_some() {
+            IS_STREAM_BUFFERING.store(should_buffer, std::sync::atomic::Ordering::SeqCst);
+        }
         self.try_write_chunk(should_buffer);
 
         // These are the bytes that we want to read.
