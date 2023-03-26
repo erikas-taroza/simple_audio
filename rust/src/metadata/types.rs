@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -30,7 +30,7 @@ pub struct Metadata
     /// A URI that points to the art for this song.
     pub art_uri: Option<String>,
     /// The song's art in the form of a byte array.
-    pub art_bytes: Option<Vec<u8>>
+    pub art_bytes: Option<Vec<u8>>,
 }
 
 // NOTE: When updating the enum values, they need to be updated
@@ -48,22 +48,21 @@ pub enum MediaControlAction
     /// Skip to the next file to be played (you will implement this functionality).
     SkipNext,
     /// Seeks forwards by 10 seconds.
-    FastForward
+    FastForward,
 }
 
 impl From<i32> for MediaControlAction
 {
     fn from(i: i32) -> Self
     {
-        match i
-        {
+        match i {
             0 => Self::Rewind,
             1 => Self::SkipPrev,
             2 => Self::PlayPause,
             3 => Self::SkipNext,
             4 => Self::FastForward,
-            _ => panic!("ERR: This action is not supported.")
-        } 
+            _ => panic!("ERR: This action is not supported."),
+        }
     }
 }
 
@@ -78,11 +77,11 @@ pub enum Event
     Stop,
     PlayPause,
     /// `i64`: Position.
-    /// 
+    ///
     /// `bool`: Is absolute.
     /// If `true`, the position is between `0-duration`.
     /// If false, the position can be negative to indicate going backwards.
-    Seek(i64, bool)
+    Seek(i64, bool),
 }
 
 /// Commands to be sent via the thread's channels.
@@ -90,5 +89,5 @@ pub enum Command
 {
     SetMetadata(Metadata),
     SetPlaybackState(PlaybackState),
-    Stop
+    Stop,
 }

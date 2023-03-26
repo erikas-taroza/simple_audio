@@ -7,18 +7,21 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{Mutex, Arc, Condvar};
+use std::sync::{Arc, Condvar, Mutex};
 
 use anyhow::Context;
-use cpal::{Stream, traits::{HostTrait, DeviceTrait, StreamTrait}, Device, StreamConfig};
-use symphonia::core::audio::{SignalSpec, SampleBuffer, AudioBufferRef};
+use cpal::{
+    traits::{DeviceTrait, HostTrait, StreamTrait},
+    Device, Stream, StreamConfig,
+};
+use symphonia::core::audio::{AudioBufferRef, SampleBuffer, SignalSpec};
 
 use crate::utils::blocking_rb::*;
 
@@ -38,7 +41,7 @@ pub struct CpalOutput
     sample_buffer: SampleBuffer<f32>,
     resampler: Option<Resampler<f32>>,
     is_stream_done: Arc<(Mutex<bool>, Condvar)>,
-    normalizer: Normalizer
+    normalizer: Normalizer,
 }
 
 impl CpalOutput
@@ -51,9 +54,17 @@ impl CpalOutput
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
-        let resampler: Option<Resampler<f32>> = if cfg!(target_os = "windows") &&
-            spec.rate != config.sample_rate.0 { Some(Resampler::new(spec, config.sample_rate.0 as usize, duration)) }
-            else { None };
+        let resampler: Option<Resampler<f32>> =
+            if cfg!(target_os = "windows") && spec.rate != config.sample_rate.0 {
+                Some(Resampler::new(
+                    spec,
+                    config.sample_rate.0 as usize,
+                    duration,
+                ))
+            }
+            else {
+                None
+            };
 
         // Create a ring buffer with a capacity for up-to 200ms of audio.
         let channels = spec.channels.count();
@@ -81,10 +92,11 @@ impl CpalOutput
                 // CPAL states that `stream.pause()` may not work for all devices.
                 // `stream.pause()` is the ideal way to play/pause.
                 if (!IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
-                    && cfg!(target_os = "windows")) || buffering
+                    && cfg!(target_os = "windows"))
+                    || buffering
                 {
                     data.iter_mut().for_each(|s| *s = 0.0);
-                    
+
                     if buffering {
                         ring_buffer_reader.skip_all();
                     }
@@ -101,63 +113,65 @@ impl CpalOutput
                     cvar.notify_one();
                     return;
                 }
-                
+
                 // Set the volume.
-                data[0..written.unwrap()].iter_mut()
+                data[0..written.unwrap()]
+                    .iter_mut()
                     .for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
             },
             move |err| {
-                match err
-                {
+                match err {
                     cpal::StreamError::DeviceNotAvailable => {
                         // Tell the decoder that there is no longer a valid device.
                         // The decoder will make a new `cpal_output`.
                         let tx = TXRX.read().unwrap().0.clone();
                         tx.send(ThreadMessage::DeviceChanged).unwrap();
                         ring_buffer_writer.cancel_write();
-                    },
+                    }
                     cpal::StreamError::BackendSpecific { err } => {
                         // This should never happen.
                         panic!("Unknown error occurred during playback: {err}");
-                    },
+                    }
                 }
-            }, None
+            },
+            None,
         );
 
-        let stream = stream
-            .context("Could not build the stream.")?;
-
+        let stream = stream.context("Could not build the stream.")?;
         stream.play()?;
 
         let sample_rate = config.sample_rate.0;
 
-        Ok(CpalOutput
-        {
+        Ok(CpalOutput {
             stream,
             ring_buffer_writer: rb_clone.0,
             ring_buffer_reader: rb_clone.1,
             sample_buffer,
             resampler,
             is_stream_done,
-            normalizer: Normalizer::new(spec.channels.count(), sample_rate)
+            normalizer: Normalizer::new(spec.channels.count(), sample_rate),
         })
     }
 
     fn get_config(spec: SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
     {
         let host = cpal::default_host();
-        let device = host.default_output_device()
+        let device = host
+            .default_output_device()
             .context("Failed to get default output device.")?;
 
         let config;
 
         #[cfg(target_os = "windows")]
         {
-            let mut supported_configs = device.supported_output_configs()
+            let mut supported_configs = device
+                .supported_output_configs()
                 .context("Failed to get supported output configs.")?;
-            config = supported_configs.next()
+            config = supported_configs
+                .next()
                 .context("Failed to get a config.")?
-                .with_max_sample_rate().config();
+                .with_max_sample_rate()
+                .config();
         }
 
         #[cfg(not(target_os = "windows"))]
@@ -176,13 +190,16 @@ impl CpalOutput
     /// Write the `AudioBufferRef` to the buffers.
     pub fn write(&mut self, decoded: AudioBufferRef)
     {
-        if decoded.frames() == 0 { return; }
+        if decoded.frames() == 0 {
+            return;
+        }
 
         let mut samples = if let Some(resampler) = &mut self.resampler {
             // If there is a resampler, then write resampled values
             // instead of the normal `samples`.
             resampler.resample(decoded).unwrap_or(&[])
-        } else {
+        }
+        else {
             self.sample_buffer.copy_interleaved_ref(decoded);
             self.sample_buffer.samples()
         };

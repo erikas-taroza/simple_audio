@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -16,11 +16,13 @@
 
 use std::sync::RwLock;
 
-use flutter_rust_bridge::{StreamSink, support::lazy_static};
+use flutter_rust_bridge::{support::lazy_static, StreamSink};
 
 use super::types::Callback;
 
-lazy_static! { static ref CALLBACK_STREAM: RwLock<Option<StreamSink<Callback>>> = RwLock::new(None); }
+lazy_static! {
+    static ref CALLBACK_STREAM: RwLock<Option<StreamSink<Callback>>> = RwLock::new(None);
+}
 
 /// Creates a new stream for sending callbacks to Dart.
 pub fn callback_stream(stream: StreamSink<Callback>)
@@ -32,6 +34,7 @@ pub fn callback_stream(stream: StreamSink<Callback>)
 /// Updates/adds to the stream with the given value.
 pub fn update_callback_stream(value: Callback)
 {
-    if let Some(stream) = &*CALLBACK_STREAM.read().unwrap()
-    { stream.add(value); }
+    if let Some(stream) = &*CALLBACK_STREAM.read().unwrap() {
+        stream.add(value);
+    }
 }

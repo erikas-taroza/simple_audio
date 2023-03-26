@@ -7,15 +7,15 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+pub mod blocking_rb;
+pub mod callback_stream;
 pub mod playback_state_stream;
 pub mod progress_state_stream;
-pub mod callback_stream;
 pub mod types;
-pub mod blocking_rb;

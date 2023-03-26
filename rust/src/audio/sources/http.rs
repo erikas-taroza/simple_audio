@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -45,19 +45,16 @@ impl HttpStream
     pub fn new(url: String) -> anyhow::Result<Self>
     {
         // Get the size of the file we are streaming.
-        let res = Client::new().head(&url)
-            .send()?.error_for_status()?;
+        let res = Client::new().head(&url).send()?.error_for_status()?;
 
         let header = res
-            .headers().get("Content-Length")
+            .headers()
+            .get("Content-Length")
             .context("Could not get \"Content-Length\" header for HTTP stream.")?;
 
-        let size: usize = header
-            .to_str()?
-            .parse()?;
+        let size: usize = header.to_str()?.parse()?;
 
-        Ok(HttpStream
-        {
+        Ok(HttpStream {
             url,
             buffer: vec![0; size],
             read_position: 0,
@@ -72,47 +69,50 @@ impl HttpStream
 impl Streamable for HttpStream
 {
     /// Gets the next chunk in the sequence.
-    /// 
+    ///
     /// Returns the received bytes by sending them via `tx`.
     fn read_chunk(
         tx: Sender<(usize, Vec<u8>)>,
         url: String,
         start: usize,
-        file_size: usize
+        file_size: usize,
     ) -> anyhow::Result<()>
     {
         let end = (start + CHUNK_SIZE).min(file_size) - 1;
 
-        let chunk = Client::new().get(url)
+        let chunk = Client::new()
+            .get(url)
             .header("Range", format!("bytes={start}-{end}"))
             .send()?
             .error_for_status()?
-            .bytes()?.to_vec();
-        
+            .bytes()?
+            .to_vec();
+
         // We don't care if the data was sent or not.
         let _ = tx.send((start, chunk));
         Ok(())
     }
 
     /// Polls all receivers.
-    /// 
+    ///
     /// If there is data to receive, then write it to the buffer.
-    /// 
+    ///
     /// Changes made are commited to `downloaded`.
     fn try_write_chunk(&mut self, should_buffer: bool)
     {
         let mut completed_downloads = Vec::new();
 
-        for Receiver { id, receiver } in &self.receivers
-        {
+        for Receiver { id, receiver } in &self.receivers {
             // Block on the first chunk or when buffering.
             // Buffering fixes the issue with seeking on MP3 (no blocking on data).
             let result = if self.downloaded.is_empty() || should_buffer {
                 receiver.recv().ok()
-            } else { receiver.try_recv().ok() };
+            }
+            else {
+                receiver.try_recv().ok()
+            };
 
-            match result
-            {
+            match result {
                 None => (),
                 Some((position, chunk)) => {
                     // Write the data.
@@ -130,12 +130,13 @@ impl Streamable for HttpStream
         }
 
         // Remove completed receivers.
-        self.receivers.retain(|receiver| !completed_downloads.contains(&receiver.id));
+        self.receivers
+            .retain(|receiver| !completed_downloads.contains(&receiver.id));
     }
 
     /// Determines if a chunk should be downloaded by getting
     /// the downloaded range that contains `self.read_position`.
-    /// 
+    ///
     /// Returns `true` and the start index of the chunk
     /// if one should be downloaded.
     fn should_get_chunk(&self) -> (bool, usize)
@@ -147,7 +148,7 @@ impl Streamable for HttpStream
         }
 
         let closest_range = closest_range.unwrap();
-        
+
         // Make sure that the same chunk isn't being downloaded again.
         // This may happen because the next `read` call happens
         // before the chunk has finished downloading. In that case,
@@ -163,7 +164,7 @@ impl Streamable for HttpStream
         let should_get_chunk = prefetch_pos >= closest_range.end
             && !is_already_downloading
             && closest_range.end != self.buffer.len();
-        
+
         (should_get_chunk, closest_range.end)
     }
 }
@@ -190,18 +191,20 @@ impl Read for HttpStream
         // If the position we are reading at is close
         // to the last downloaded chunk, then fetch more.
         let (should_get_chunk, chunk_write_pos) = self.should_get_chunk();
-        
+
         // println!("Read: read_pos[{}] read_max[{read_max}] buf[{}] write_pos[{chunk_write_pos}] download[{should_get_chunk}]", self.read_position, buf.len());
-        if should_get_chunk
-        {
-            self.requested.insert(chunk_write_pos..chunk_write_pos + CHUNK_SIZE + 1);
+        if should_get_chunk {
+            self.requested
+                .insert(chunk_write_pos..chunk_write_pos + CHUNK_SIZE + 1);
 
             let url = self.url.clone();
             let file_size = self.buffer.len();
             let (tx, receiver) = channel();
 
-            let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
-                .unwrap().as_millis();
+            let id = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis();
             self.receivers.push(Receiver { id, receiver });
 
             thread::spawn(move || {
@@ -234,27 +237,26 @@ impl Seek for HttpStream
 {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64>
     {
-        let seek_position:usize = match pos
-        {
+        let seek_position: usize = match pos {
             std::io::SeekFrom::Start(pos) => pos as usize,
             std::io::SeekFrom::Current(pos) => {
                 let pos = self.read_position as i64 + pos;
                 pos.try_into().map_err(|_| {
                     std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput, 
-                        format!("Invalid seek: {pos}")
+                        std::io::ErrorKind::InvalidInput,
+                        format!("Invalid seek: {pos}"),
                     )
                 })?
-            },
+            }
             std::io::SeekFrom::End(pos) => {
                 let pos = self.buffer.len() as i64 + pos;
                 pos.try_into().map_err(|_| {
                     std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput, 
-                        format!("Invalid seek: {pos}")
+                        std::io::ErrorKind::InvalidInput,
+                        format!("Invalid seek: {pos}"),
                     )
                 })?
-            },
+            }
         };
 
         if seek_position > self.buffer.len() {
@@ -274,11 +276,13 @@ unsafe impl Sync for HttpStream {}
 
 impl MediaSource for HttpStream
 {
-    fn is_seekable(&self) -> bool {
+    fn is_seekable(&self) -> bool
+    {
         true
     }
 
-    fn byte_len(&self) -> Option<u64> {
+    fn byte_len(&self) -> Option<u64>
+    {
         Some(self.buffer.len() as u64)
     }
 }

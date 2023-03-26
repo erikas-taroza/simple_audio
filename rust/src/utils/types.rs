@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -22,7 +22,7 @@ pub enum PlaybackState
     /// The player is currently paused and there is no output.
     Pause = 1,
     /// The player has finished playing the file.
-    Done = 2
+    Done = 2,
 }
 
 /// Provides the current progress of the player.
@@ -33,7 +33,7 @@ pub struct ProgressState
     pub position: u64,
     /// The duration, in seconds, of the file that
     /// is being played.
-    pub duration: u64
+    pub duration: u64,
 }
 
 pub enum Callback
@@ -47,7 +47,7 @@ pub enum Callback
     NetworkStreamError,
     /// An error occurred when decoding the file.
     DecodeError,
-    /// The player is in the looping mode and the playback 
+    /// The player is in the looping mode and the playback
     /// just looped to the beginning.
-    PlaybackLooped
+    PlaybackLooped,
 }

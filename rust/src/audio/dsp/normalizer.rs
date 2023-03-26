@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -22,26 +22,27 @@ const NORMALIZE_TO: f64 = -15.0;
 pub struct Normalizer
 {
     ebur128: EbuR128,
-    buffer: Vec<f32>
+    buffer: Vec<f32>,
 }
 
 impl Normalizer
 {
     pub fn new(channels: usize, sample_rate: u32) -> Self
     {
-        let ebur128 = EbuR128::new(
-            channels as u32,
-            sample_rate,
-            Mode::I.union(Mode::M)
-        ).unwrap();
+        let ebur128 = EbuR128::new(channels as u32, sample_rate, Mode::I.union(Mode::M)).unwrap();
 
-        Normalizer { ebur128, buffer: Vec::new() }
+        Normalizer {
+            ebur128,
+            buffer: Vec::new(),
+        }
     }
 
     pub fn normalize(&mut self, input: &[f32]) -> &[f32]
     {
         // Completely quiet inputs cause a crackling sound to be made.
-        if !input.iter().any(|x| *x != 0.0) { return &[];}
+        if !input.iter().any(|x| *x != 0.0) {
+            return &[];
+        }
 
         let _ = self.ebur128.add_frames_f32(input);
 
@@ -54,7 +55,7 @@ impl Normalizer
         else {
             self.ebur128.loudness_momentary().unwrap()
         };
-        
+
         let gain = (loudness / NORMALIZE_TO).clamp(0.35, 1.0) as f32;
 
         self.buffer.clear();

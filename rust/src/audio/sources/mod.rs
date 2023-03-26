@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -43,5 +43,5 @@ fn try_get_active_lock() -> Option<MutexGuard<'static, ()>> {
 struct Receiver
 {
     id: u128,
-    receiver: std::sync::mpsc::Receiver<(usize, Vec<u8>)>
+    receiver: std::sync::mpsc::Receiver<(usize, Vec<u8>)>,
 }

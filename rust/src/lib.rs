@@ -7,17 +7,17 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod utils;
 mod audio;
+mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 mod metadata;
+mod utils;
 
 use std::{fs::File, thread};
 
@@ -25,54 +25,51 @@ use anyhow::Context;
 use audio::{decoder::Decoder, controls::*, sources::{http::HttpStream, hls::HlsStream, local::Local}};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
-use metadata::types::{Metadata, MediaControlAction};
+use metadata::types::{MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 
-use crate::utils::{playback_state_stream::*, progress_state_stream::*, callback_stream::*};
+use crate::utils::{callback_stream::*, playback_state_stream::*, progress_state_stream::*};
 
-pub struct Player { }
+pub struct Player {}
 
 impl Player
 {
-    pub fn new(
-        actions: Vec<MediaControlAction>,
-        dbus_name: String,
-        hwnd: Option<i64>
-    ) -> Player
+    pub fn new(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>) -> Player
     {
-        crate::metadata::init(
-            actions,
-            dbus_name,
-            hwnd,
-            |e| {
-                match e
-                {
-                    metadata::types::Event::Previous => update_callback_stream(Callback::MediaControlSkipPrev),
-                    metadata::types::Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
-                    metadata::types::Event::Play => Self::internal_play(),
-                    metadata::types::Event::Pause => Self::internal_pause(),
-                    metadata::types::Event::Stop => Self::internal_stop(),
-                    metadata::types::Event::PlayPause => {
-                        if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
-                        { Self::internal_pause(); }
-                        else { Self::internal_play(); }
-                    },
-                    metadata::types::Event::Seek(position, is_absolute) => {
-                        if is_absolute
-                        { Self::internal_seek(position as u64); }
-                        else
-                        {
-                            let progress = PROGRESS.read().unwrap();
-                            if position.is_negative()
-                            { Self::internal_seek(progress.position.saturating_sub(position.unsigned_abs())); }
-                            else
-                            { Self::internal_seek(progress.position + position as u64); }
-                        }
+        crate::metadata::init(actions, dbus_name, hwnd, |e| match e {
+            metadata::types::Event::Previous => {
+                update_callback_stream(Callback::MediaControlSkipPrev)
+            }
+            metadata::types::Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
+            metadata::types::Event::Play => Self::internal_play(),
+            metadata::types::Event::Pause => Self::internal_pause(),
+            metadata::types::Event::Stop => Self::internal_stop(),
+            metadata::types::Event::PlayPause => {
+                if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
+                    Self::internal_pause();
+                }
+                else {
+                    Self::internal_play();
+                }
+            }
+            metadata::types::Event::Seek(position, is_absolute) => {
+                if is_absolute {
+                    Self::internal_seek(position as u64);
+                }
+                else {
+                    let progress = PROGRESS.read().unwrap();
+                    if position.is_negative() {
+                        Self::internal_seek(
+                            progress.position.saturating_sub(position.unsigned_abs()),
+                        );
+                    }
+                    else {
+                        Self::internal_seek(progress.position + position as u64);
                     }
                 }
             }
-        );
+        });
 
         let mut txrx = TXRX.write().unwrap();
         *txrx = unbounded();
@@ -83,7 +80,7 @@ impl Player
             decoder.start();
         });
 
-        Player { }
+        Player {}
     }
 
     /// Stops any old players/threads and resets the
@@ -103,19 +100,32 @@ impl Player
     //          SETTERS/GETTERS
     // ---------------------------------
 
-    pub fn playback_state_stream(stream: StreamSink<PlaybackState>) { playback_state_stream(stream); }
-    pub fn progress_state_stream(stream: StreamSink<ProgressState>) { progress_state_stream(stream); }
-    pub fn callback_stream(stream: StreamSink<Callback>) { callback_stream(stream); }
+    pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
+    {
+        playback_state_stream(stream);
+    }
+    pub fn progress_state_stream(stream: StreamSink<ProgressState>)
+    {
+        progress_state_stream(stream);
+    }
+    pub fn callback_stream(stream: StreamSink<Callback>)
+    {
+        callback_stream(stream);
+    }
 
     pub fn is_playing(&self) -> bool
-    { IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) }
+    {
+        IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+    }
 
     /// Returns `true` if there is a file preloaded for playback.
     pub fn has_preloaded(&self) -> bool
     { IS_FILE_PRELOADED.load(std::sync::atomic::Ordering::SeqCst) }
 
     pub fn get_progress(&self) -> ProgressState
-    { *PROGRESS.read().unwrap() }
+    {
+        *PROGRESS.read().unwrap()
+    }
 
     // ---------------------------------
     //            PLAYBACK
@@ -128,13 +138,15 @@ impl Player
 
         let source: Box<dyn MediaSource> = if path.contains("http") {
             if path.contains("m3u") {
-                Box::new(HlsStream::new(path)
-                    .context(format!("Could not open HLS stream at \"{path2}\""))?
+                Box::new(
+                    HlsStream::new(path)
+                        .context(format!("Could not open HLS stream at \"{path2}\""))?,
                 )
             }
             else {
-                Box::new(HttpStream::new(path)
-                    .context(format!("Could not open HTTP stream at \"{path2}\""))?
+                Box::new(
+                    HttpStream::new(path)
+                        .context(format!("Could not open HTTP stream at \"{path2}\""))?,
                 )
             }
         } else {
@@ -154,8 +166,12 @@ impl Player
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
 
-        if autoplay { Self::internal_play(); }
-        else { Self::internal_pause(); }
+        if autoplay {
+            Self::internal_play();
+        }
+        else {
+            Self::internal_pause();
+        }
 
         Ok(())
     }
@@ -185,7 +201,9 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play()
     {
-        if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { return; }
+        if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
+            return;
+        }
 
         TXRX.read().unwrap().0.send(ThreadMessage::Play).unwrap();
 
@@ -193,13 +211,15 @@ impl Player
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Play);
     }
-    
+
     /// Allows for access in other places
     /// where we would want to update the stream and
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause()
     {
-        if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) { return; }
+        if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
+            return;
+        }
 
         TXRX.read().unwrap().0.send(ThreadMessage::Pause).unwrap();
 
@@ -214,24 +234,32 @@ impl Player
     /// This stops all threads that are streaming.
     fn internal_stop()
     {
-        if IS_STOPPED.load(std::sync::atomic::Ordering::SeqCst) { return; }
+        if IS_STOPPED.load(std::sync::atomic::Ordering::SeqCst) {
+            return;
+        }
 
         TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
 
-        update_progress_state_stream(ProgressState { position: 0, duration: 0 });
+        update_progress_state_stream(ProgressState {
+            position: 0,
+            duration: 0,
+        });
         update_playback_state_stream(PlaybackState::Pause);
-        *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
+        *PROGRESS.write().unwrap() = ProgressState {
+            position: 0,
+            duration: 0,
+        };
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 
-    fn internal_seek(seconds:u64)
+    fn internal_seek(seconds: u64)
     {
         *SEEK_TS.write().unwrap() = Some(seconds);
         update_progress_state_stream(ProgressState {
             position: seconds,
-            duration: PROGRESS.read().unwrap().duration
+            duration: PROGRESS.read().unwrap().duration,
         });
     }
 
@@ -240,43 +268,60 @@ impl Player
     // ---------------------------------
 
     pub fn play(&self)
-    { Self::internal_play(); }
+    {
+        Self::internal_play();
+    }
 
     pub fn pause(&self)
-    { Self::internal_pause(); }
+    {
+        Self::internal_pause();
+    }
 
     pub fn stop(&self)
-    { Self::internal_stop(); }
+    {
+        Self::internal_stop();
+    }
 
     pub fn loop_playback(&self, should_loop: bool)
-    { IS_LOOPING.store(should_loop, std::sync::atomic::Ordering::SeqCst); }
+    {
+        IS_LOOPING.store(should_loop, std::sync::atomic::Ordering::SeqCst);
+    }
 
     pub fn set_volume(&self, volume: f32)
-    { *VOLUME.write().unwrap() = volume; }
+    {
+        *VOLUME.write().unwrap() = volume;
+    }
 
     pub fn seek(&self, seconds: u64)
-    { Self::internal_seek(seconds); }
+    {
+        Self::internal_seek(seconds);
+    }
 
     pub fn set_metadata(&self, metadata: Metadata)
-    { crate::metadata::set_metadata(metadata); }
+    {
+        crate::metadata::set_metadata(metadata);
+    }
 
     pub fn normalize_volume(&self, should_normalize: bool)
-    { IS_NORMALIZING.store(should_normalize, std::sync::atomic::Ordering::SeqCst); }
+    {
+        IS_NORMALIZING.store(should_normalize, std::sync::atomic::Ordering::SeqCst);
+    }
 }
 
 impl Default for Player
 {
-    fn default() -> Self {
+    fn default() -> Self
+    {
         crate::Player::new(
             vec![
                 MediaControlAction::Rewind,
                 MediaControlAction::SkipPrev,
                 MediaControlAction::PlayPause,
                 MediaControlAction::SkipNext,
-                MediaControlAction::FastForward
+                MediaControlAction::FastForward,
             ],
             "com.erikas.SimpleAudio".to_string(),
-            None
+            None,
         )
     }
 }
@@ -286,7 +331,7 @@ mod tests
 {
     use std::{thread, time::Duration};
 
-    use crate::metadata::types::{Metadata, MediaControlAction};
+    use crate::metadata::types::{MediaControlAction, Metadata};
 
     #[test]
     fn open_and_play() -> anyhow::Result<()>
@@ -304,7 +349,10 @@ mod tests
         let player = crate::Player::default();
         // You can change the file extension here for different formats ------v
         // https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/audio-samples.html
-        player.open("https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string(), true)?;
+        player.open(
+            "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string(),
+            true,
+        )?;
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
         player.seek(90);
@@ -398,7 +446,7 @@ mod tests
         let player = crate::Player::new(
             vec![MediaControlAction::PlayPause],
             "SimpleAudio".to_string(),
-            None
+            None,
         );
         player.set_volume(0.5);
 
@@ -409,7 +457,7 @@ mod tests
             album: Some("My Album".to_string()),
             ..Default::default()
         });
-        
+
         thread::sleep(Duration::from_secs(2));
 
         player.set_metadata(Metadata {

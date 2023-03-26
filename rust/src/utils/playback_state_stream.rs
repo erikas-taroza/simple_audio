@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -16,11 +16,13 @@
 
 use std::sync::RwLock;
 
-use flutter_rust_bridge::{StreamSink, support::lazy_static};
+use flutter_rust_bridge::{support::lazy_static, StreamSink};
 
 use super::types::PlaybackState;
 
-lazy_static! { static ref PLAYBACK_STATE_STREAM: RwLock<Option<StreamSink<PlaybackState>>> = RwLock::new(None); }
+lazy_static! {
+    static ref PLAYBACK_STATE_STREAM: RwLock<Option<StreamSink<PlaybackState>>> = RwLock::new(None);
+}
 
 /// Creates a new playback stream.
 pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
@@ -32,6 +34,7 @@ pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
 /// Updates the playback stream with the given value.
 pub fn update_playback_state_stream(value: PlaybackState)
 {
-    if let Some(stream) = &*PLAYBACK_STATE_STREAM.read().unwrap()
-    { stream.add(value); }
+    if let Some(stream) = &*PLAYBACK_STATE_STREAM.read().unwrap() {
+        stream.add(value);
+    }
 }

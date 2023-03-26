@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -15,7 +15,7 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 #[allow(dead_code)]
-fn add_lib(name:impl AsRef<str>, _static:bool)
+fn add_lib(name: impl AsRef<str>, _static: bool)
 {
     #[cfg(not(feature = "test"))]
     println!(
@@ -27,11 +27,9 @@ fn add_lib(name:impl AsRef<str>, _static:bool)
 
 fn main()
 {
-    let target = std::env::var("TARGET")
-        .expect("ERR: Could not check the target for the build.");
+    let target = std::env::var("TARGET").expect("ERR: Could not check the target for the build.");
 
-    if target.contains("android")
-    {
+    if target.contains("android") {
         add_lib("c++_shared", false);
     }
 }

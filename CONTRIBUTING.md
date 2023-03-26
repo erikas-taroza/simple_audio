@@ -79,6 +79,16 @@ will not need to run the codegen (ex. method body was not modified). If you are 
 Depending on what you write, some changes may have to be made the the Dart side. In this case, please create
 an easy to use public API and make sure that any new types are exported if they are needed.
 
+## Formatting Rust Code
+This project contains a `.rustfmt.toml` file. Some of the configurations require the
+`nightly` channel to be installed.
+
+To install:
+```rustup toolchain install nightly```
+
+To run the formatter:
+```cargo +nightly fmt```
+
 ## Code Guidelines
 - Readable
 - Proper naming
