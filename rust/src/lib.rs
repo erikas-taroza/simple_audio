@@ -22,7 +22,11 @@ mod utils;
 use std::{fs::File, thread};
 
 use anyhow::Context;
-use audio::{decoder::Decoder, controls::*, sources::{http::HttpStream, hls::HlsStream, local::Local}};
+use audio::{
+    controls::*,
+    decoder::Decoder,
+    sources::{hls::HlsStream, http::HttpStream, local::Local},
+};
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
 use metadata::types::{MediaControlAction, Metadata};
@@ -120,7 +124,9 @@ impl Player
 
     /// Returns `true` if there is a file preloaded for playback.
     pub fn has_preloaded(&self) -> bool
-    { IS_FILE_PRELOADED.load(std::sync::atomic::Ordering::SeqCst) }
+    {
+        IS_FILE_PRELOADED.load(std::sync::atomic::Ordering::SeqCst)
+    }
 
     pub fn get_progress(&self) -> ProgressState
     {
@@ -149,9 +155,9 @@ impl Player
                         .context(format!("Could not open HTTP stream at \"{path2}\""))?,
                 )
             }
-        } else {
-            let file = File::open(path)
-                .context(format!("Could not open file at \"{path2}\""))?;
+        }
+        else {
+            let file = File::open(path).context(format!("Could not open file at \"{path2}\""))?;
             Box::new(Local::new(file))
         };
 
@@ -177,14 +183,17 @@ impl Player
     }
 
     /// Preloads a file or network resource for reading and playing.
-    /// 
+    ///
     /// Use this method if you want gapless playback. It reduces
     /// the time spent loading between tracks (especially important
     /// for streaming network files).
     pub fn preload(&self, path: String) -> anyhow::Result<()>
     {
         let source = Self::source_from_path(path)?;
-        TXRX.read().unwrap().0.send(ThreadMessage::Preload(source))?;
+        TXRX.read()
+            .unwrap()
+            .0
+            .send(ThreadMessage::Preload(source))?;
 
         Ok(())
     }

@@ -16,8 +16,8 @@
 
 use std::sync::{atomic::AtomicBool, Mutex, MutexGuard};
 
-pub mod http;
 pub mod hls;
+pub mod http;
 pub mod local;
 pub mod streamable;
 
@@ -31,7 +31,8 @@ pub static ACTIVE_LOCK: Mutex<()> = Mutex::new(());
 
 /// Attempts to set this source as active by returning a guard.
 /// If another source already has a lock, this returns `None`.
-fn try_get_active_lock() -> Option<MutexGuard<'static, ()>> {
+fn try_get_active_lock() -> Option<MutexGuard<'static, ()>>
+{
     match ACTIVE_LOCK.try_lock() {
         Ok(lock) => Some(lock),
         Err(_) => None,

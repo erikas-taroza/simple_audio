@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::{io::{Read, Seek}, sync::mpsc::Sender};
+use std::{
+    io::{Read, Seek},
+    sync::mpsc::Sender,
+};
 
 use symphonia::core::io::MediaSource;
 

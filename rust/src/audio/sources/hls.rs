@@ -16,9 +16,9 @@
 
 use std::io::{Read, Seek};
 use std::ops::Range;
+use std::sync::mpsc::{channel, Sender};
 use std::sync::MutexGuard;
 use std::thread;
-use std::sync::mpsc::{channel, Sender};
 
 use anyhow::Context;
 use rangemap::RangeSet;
@@ -43,7 +43,7 @@ pub struct HlsStream
     downloaded: RangeSet<usize>,
     requested: RangeSet<usize>,
     receivers: Vec<Receiver>,
-    active_lock: Option<MutexGuard<'static, ()>>
+    active_lock: Option<MutexGuard<'static, ()>>,
 }
 
 impl HlsStream
@@ -81,7 +81,7 @@ impl HlsStream
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
             receivers: Vec::new(),
-            active_lock: super::try_get_active_lock()
+            active_lock: super::try_get_active_lock(),
         })
     }
 }

@@ -25,7 +25,11 @@ use symphonia::core::audio::{AudioBufferRef, SampleBuffer, SignalSpec};
 
 use crate::utils::blocking_rb::*;
 
-use super::{controls::*, dsp::{resampler::Resampler, normalizer::Normalizer}, sources::IS_STREAM_BUFFERING};
+use super::{
+    controls::*,
+    dsp::{normalizer::Normalizer, resampler::Resampler},
+    sources::IS_STREAM_BUFFERING,
+};
 
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number

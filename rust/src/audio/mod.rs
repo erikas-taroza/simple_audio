@@ -15,7 +15,7 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 pub mod controls;
-pub mod sources;
 mod cpal_output;
 pub mod decoder;
 mod dsp;
+pub mod sources;
