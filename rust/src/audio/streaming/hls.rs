@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -16,8 +16,8 @@
 
 use std::io::{Read, Seek};
 use std::ops::Range;
-use std::thread;
 use std::sync::mpsc::{channel, Sender};
+use std::thread;
 
 use anyhow::Context;
 use rangemap::RangeSet;
@@ -41,7 +41,7 @@ pub struct HlsStream
     read_position: usize,
     downloaded: RangeSet<usize>,
     requested: RangeSet<usize>,
-    receivers: Vec<Receiver>
+    receivers: Vec<Receiver>,
 }
 
 impl HlsStream
@@ -51,37 +51,34 @@ impl HlsStream
         let mut urls = Vec::new();
         let mut total_size = 0;
 
-        let file = Client::new().get(url)
-            .send()?.text()?;
+        let file = Client::new().get(url).send()?.text()?;
 
-        for line in file.lines()
-        {
-            if !line.contains("http") { continue; }
+        for line in file.lines() {
+            if !line.contains("http") {
+                continue;
+            }
 
             // Get the size of the part.
-            let res = Client::new().head(line)
-                .send()?.error_for_status()?;
+            let res = Client::new().head(line).send()?.error_for_status()?;
 
             let header = res
-                .headers().get("Content-Length")
+                .headers()
+                .get("Content-Length")
                 .context("Could not get \"Content-Length\" header for a part of HLS stream.")?;
 
-            let size: usize = header
-                .to_str()?
-                .parse()?;
+            let size: usize = header.to_str()?.parse()?;
 
             urls.push((total_size..total_size + size + 1, line.to_string()));
             total_size += size;
         }
 
-        Ok(HlsStream
-        {
+        Ok(HlsStream {
             urls,
             buffer: vec![0; total_size],
             read_position: 0,
             downloaded: RangeSet::new(),
             requested: RangeSet::new(),
-            receivers: Vec::new()
+            receivers: Vec::new(),
         })
     }
 }
@@ -92,14 +89,16 @@ impl Streamable<Self> for HlsStream
         tx: Sender<(usize, Vec<u8>)>,
         url: String,
         start: usize,
-        _: usize
+        _: usize,
     ) -> anyhow::Result<()>
     {
-        let chunk = Client::new().get(url)
+        let chunk = Client::new()
+            .get(url)
             .send()?
             .error_for_status()?
-            .bytes()?.to_vec();
-        
+            .bytes()?
+            .to_vec();
+
         // We don't care if the data was sent or not.
         let _ = tx.send((start, chunk));
         Ok(())
@@ -109,14 +108,15 @@ impl Streamable<Self> for HlsStream
     {
         let mut completed_downloads = Vec::new();
 
-        for Receiver { id, receiver } in &self.receivers
-        {
+        for Receiver { id, receiver } in &self.receivers {
             let result = if self.downloaded.is_empty() || should_buffer {
                 receiver.recv().ok()
-            } else { receiver.try_recv().ok() };
+            }
+            else {
+                receiver.try_recv().ok()
+            };
 
-            match result
-            {
+            match result {
                 None => (),
                 Some((position, chunk)) => {
                     let end = position + chunk.len();
@@ -131,7 +131,8 @@ impl Streamable<Self> for HlsStream
             }
         }
 
-        self.receivers.retain(|receiver| !completed_downloads.contains(&receiver.id));
+        self.receivers
+            .retain(|receiver| !completed_downloads.contains(&receiver.id));
     }
 
     fn should_get_chunk(&self) -> (bool, usize)
@@ -149,7 +150,7 @@ impl Streamable<Self> for HlsStream
         let should_get_chunk = prefetch_pos >= closest_range.end
             && !is_already_downloading
             && closest_range.end != self.buffer.len();
-        
+
         (should_get_chunk, closest_range.end)
     }
 }
@@ -164,17 +165,17 @@ impl Read for HlsStream
 
         let read_max = (self.read_position + buf.len()).min(self.buffer.len());
         let (should_get_chunk, chunk_write_pos) = self.should_get_chunk();
-        
+
         // println!("Read: read_pos[{}] read_max[{read_max}] buf[{}] write_pos[{chunk_write_pos}] download[{should_get_chunk}]", self.read_position, buf.len());
-        if should_get_chunk
-        {
+        if should_get_chunk {
             // Find the correct part by checking if its range contains the
             // `chunk_write_pos`.
-            let part = self.urls.iter()
+            let part = self
+                .urls
+                .iter()
                 .find(|(range, _)| range.contains(&chunk_write_pos));
 
-            if let Some((range, url)) = part
-            {
+            if let Some((range, url)) = part {
                 self.requested.insert(range.clone());
 
                 let url = url.clone();
@@ -182,8 +183,10 @@ impl Read for HlsStream
                 let file_size = self.buffer.len();
                 let (tx, receiver) = channel();
 
-                let id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
-                    .unwrap().as_millis();
+                let id = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis();
                 self.receivers.push(Receiver { id, receiver });
 
                 thread::spawn(move || {
@@ -200,8 +203,7 @@ impl Read for HlsStream
                 // will be written again, but a little later causing a replay.
                 // To prevent this, remove the downloaded
                 // part so that the `find()` call above returns None.
-                let index = self.urls.iter()
-                    .position(|x| x == part.unwrap()).unwrap();
+                let index = self.urls.iter().position(|x| x == part.unwrap()).unwrap();
                 self.urls.remove(index);
             }
         }
@@ -222,27 +224,26 @@ impl Seek for HlsStream
 {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64>
     {
-        let seek_position:usize = match pos
-        {
+        let seek_position: usize = match pos {
             std::io::SeekFrom::Start(pos) => pos as usize,
             std::io::SeekFrom::Current(pos) => {
                 let pos = self.read_position as i64 + pos;
                 pos.try_into().map_err(|_| {
                     std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput, 
-                        format!("Invalid seek: {pos}")
+                        std::io::ErrorKind::InvalidInput,
+                        format!("Invalid seek: {pos}"),
                     )
                 })?
-            },
+            }
             std::io::SeekFrom::End(pos) => {
                 let pos = self.buffer.len() as i64 + pos;
                 pos.try_into().map_err(|_| {
                     std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput, 
-                        format!("Invalid seek: {pos}")
+                        std::io::ErrorKind::InvalidInput,
+                        format!("Invalid seek: {pos}"),
                     )
                 })?
-            },
+            }
         };
 
         if seek_position > self.buffer.len() {
@@ -262,11 +263,13 @@ unsafe impl Sync for HlsStream {}
 
 impl MediaSource for HlsStream
 {
-    fn is_seekable(&self) -> bool {
+    fn is_seekable(&self) -> bool
+    {
         true
     }
 
-    fn byte_len(&self) -> Option<u64> {
+    fn byte_len(&self) -> Option<u64>
+    {
         Some(self.buffer.len() as u64)
     }
 }

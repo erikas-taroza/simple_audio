@@ -7,14 +7,14 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{Mutex, atomic::AtomicUsize, Arc, Condvar};
+use std::sync::{atomic::AtomicUsize, Arc, Condvar, Mutex};
 
 /// Provides the producer methods of the ring buffer.
 #[derive(Clone)]
@@ -33,7 +33,7 @@ pub struct BlockingRb<T, Type = Producer>
     read_pos: Arc<AtomicUsize>,
     write_pos: Arc<AtomicUsize>,
     producer_events: Arc<(Mutex<Event>, Condvar)>,
-    _type: std::marker::PhantomData<Type>
+    _type: std::marker::PhantomData<Type>,
 }
 
 impl<T: Copy + Clone + Default, Type> BlockingRb<T, Type>
@@ -48,26 +48,24 @@ impl<T: Copy + Clone + Default, Type> BlockingRb<T, Type>
         let producer_events = Arc::new((Mutex::new(Event::None), Condvar::new()));
 
         (
-            BlockingRb
-            {
+            BlockingRb {
                 size,
                 num_values: num_values.clone(),
                 buf: buf.clone(),
                 read_pos: read_pos.clone(),
                 write_pos: write_pos.clone(),
                 producer_events: producer_events.clone(),
-                _type: std::marker::PhantomData::<Producer>
+                _type: std::marker::PhantomData::<Producer>,
             },
-            BlockingRb
-            {
+            BlockingRb {
                 size,
                 num_values,
                 buf,
                 read_pos,
                 write_pos,
                 producer_events,
-                _type: std::marker::PhantomData::<Consumer>
-            }
+                _type: std::marker::PhantomData::<Consumer>,
+            },
         )
     }
 
@@ -96,29 +94,29 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Producer>
     /// Blocks the thread until there is space in the
     /// buffer to write to. This operation can be cancelled
     /// by calling `cancel`.
-    /// 
+    ///
     /// Returns the number of items written.
     /// Returns `None` if the given slice is empty
     /// or the operation was cancelled.
     pub fn write(&self, slice: &[T]) -> Option<usize>
     {
-        if slice.is_empty() { return None; }
+        if slice.is_empty() {
+            return None;
+        }
 
         let num_free = self.num_free();
         // Block if the buffer doesn't have space for the slice.
-        if num_free < slice.len() || self.is_full()
-        {
+        if num_free < slice.len() || self.is_full() {
             // Wait for the event to tell us that there free space
             // available or that the operation should be cancelled.
             let (mutex, cvar) = &*self.producer_events;
             let mut event = mutex.lock().unwrap();
             event = cvar.wait(event).unwrap();
 
-            match *event
-            {
+            match *event {
                 Event::CancelWrite => return None,
                 Event::FreeSpace => (),
-                _ => panic!("This event is not supported by `write()`.")
+                _ => panic!("This event is not supported by `write()`."),
             }
         }
 
@@ -131,14 +129,11 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Producer>
 
         let write_pos = self.write_pos.load(std::sync::atomic::Ordering::SeqCst);
 
-        if write_pos + count < self.size
-        {
+        if write_pos + count < self.size {
             // The data can fit in line in the buffer.
-            buf[write_pos..write_pos + count]
-                .copy_from_slice(&slice[..count]);
+            buf[write_pos..write_pos + count].copy_from_slice(&slice[..count]);
         }
-        else
-        {
+        else {
             // How much data can be written before wrapping.
             let num_end = self.size - write_pos;
             // The data is towards the end of the buffer and
@@ -148,8 +143,10 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Producer>
         }
 
         let write_pos = (write_pos + count) % self.size;
-        self.write_pos.store(write_pos, std::sync::atomic::Ordering::SeqCst);
-        self.num_values.fetch_add(count, std::sync::atomic::Ordering::SeqCst);
+        self.write_pos
+            .store(write_pos, std::sync::atomic::Ordering::SeqCst);
+        self.num_values
+            .fetch_add(count, std::sync::atomic::Ordering::SeqCst);
 
         Some(count)
     }
@@ -167,13 +164,15 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Consumer>
 {
     /// Reads from the ring buffer and fills the given slice
     /// with as much data as possible.
-    /// 
+    ///
     /// Returns the number of items written.
     /// Returns `None` if the given slice is empty
     /// or the buffer is empty.
     pub fn read(&self, slice: &mut [T]) -> Option<usize>
     {
-        if slice.is_empty() || self.is_empty() { return None; }
+        if slice.is_empty() || self.is_empty() {
+            return None;
+        }
 
         let buf = self.buf.lock().unwrap();
 
@@ -184,14 +183,11 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Consumer>
 
         let read_pos = self.read_pos.load(std::sync::atomic::Ordering::SeqCst);
 
-        if read_pos + count < self.size
-        {
+        if read_pos + count < self.size {
             // The data can be read in line from the buffer.
-            slice[..count].copy_from_slice(
-                &buf[read_pos..read_pos + count]);
+            slice[..count].copy_from_slice(&buf[read_pos..read_pos + count]);
         }
-        else
-        {
+        else {
             // How much data can be written before wrapping.
             let num_end = self.size - read_pos;
             // The read position is towards the end of the buffer and
@@ -200,10 +196,16 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Consumer>
             slice[num_end..count].copy_from_slice(&buf[..count - num_end]);
         }
 
-        self.read_pos.store((read_pos + count) % self.size, std::sync::atomic::Ordering::SeqCst);
-        
+        self.read_pos.store(
+            (read_pos + count) % self.size,
+            std::sync::atomic::Ordering::SeqCst,
+        );
+
         let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
-        self.num_values.store(num_values.saturating_sub(count), std::sync::atomic::Ordering::SeqCst);
+        self.num_values.store(
+            num_values.saturating_sub(count),
+            std::sync::atomic::Ordering::SeqCst,
+        );
 
         let (mutex, cvar) = &*self.producer_events;
         *mutex.lock().unwrap() = Event::FreeSpace;
@@ -218,11 +220,13 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Consumer>
     pub fn skip_all(&self)
     {
         let write_pos = self.write_pos.load(std::sync::atomic::Ordering::SeqCst);
-        self.read_pos.store(write_pos, std::sync::atomic::Ordering::SeqCst);
+        self.read_pos
+            .store(write_pos, std::sync::atomic::Ordering::SeqCst);
 
         // This method basically "reads" until the write position.
         // When reading, the following has to be done.
-        self.num_values.store(0, std::sync::atomic::Ordering::SeqCst);
+        self.num_values
+            .store(0, std::sync::atomic::Ordering::SeqCst);
 
         let (mutex, cvar) = &*self.producer_events;
         *mutex.lock().unwrap() = Event::FreeSpace;
@@ -238,7 +242,7 @@ enum Event
     /// There is free space in the buffer (sent after the buffer was read).
     FreeSpace,
     /// The write operation has been cancelled.
-    CancelWrite
+    CancelWrite,
 }
 
 #[cfg(test)]
@@ -264,7 +268,7 @@ mod tests
 
     /// Expected output:
     /// [11, 12, 3, 4, 5, 6, 7, 8, 9, 10]
-    /// 
+    ///
     /// *Thread Blocked*
     #[test]
     fn test_write_wrap()

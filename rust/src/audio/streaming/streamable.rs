@@ -7,14 +7,17 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::{io::{Read, Seek}, sync::{atomic::AtomicBool, mpsc::Sender}};
+use std::{
+    io::{Read, Seek},
+    sync::{atomic::AtomicBool, mpsc::Sender},
+};
 
 use symphonia::core::io::MediaSource;
 
@@ -28,9 +31,9 @@ pub trait Streamable<T: Read + Seek + Send + Sync + MediaSource>
         tx: Sender<(usize, Vec<u8>)>,
         url: String,
         start: usize,
-        file_size: usize
+        file_size: usize,
     ) -> anyhow::Result<()>;
-    
+
     fn try_write_chunk(&mut self, should_buffer: bool);
     fn should_get_chunk(&self) -> (bool, usize);
 }

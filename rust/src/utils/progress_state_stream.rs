@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -16,11 +16,13 @@
 
 use std::sync::RwLock;
 
-use flutter_rust_bridge::{StreamSink, support::lazy_static};
+use flutter_rust_bridge::{support::lazy_static, StreamSink};
 
 use super::types::ProgressState;
 
-lazy_static! { static ref PROGRESS_STATE_STREAM: RwLock<Option<StreamSink<ProgressState>>> = RwLock::new(None); }
+lazy_static! {
+    static ref PROGRESS_STATE_STREAM: RwLock<Option<StreamSink<ProgressState>>> = RwLock::new(None);
+}
 
 /// Creates a new progress stream.
 pub fn progress_state_stream(stream: StreamSink<ProgressState>)
@@ -32,6 +34,7 @@ pub fn progress_state_stream(stream: StreamSink<ProgressState>)
 /// Updates the progress stream with the given value.
 pub fn update_progress_state_stream(value: ProgressState)
 {
-    if let Some(stream) = &*PROGRESS_STATE_STREAM.read().unwrap()
-    { stream.add(value); }
+    if let Some(stream) = &*PROGRESS_STATE_STREAM.read().unwrap() {
+        stream.add(value);
+    }
 }

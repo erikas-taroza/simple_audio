@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -16,16 +16,15 @@
 
 // A file that defines controls globally.
 
-use std::sync::{RwLock, atomic::AtomicBool};
+use std::sync::{atomic::AtomicBool, RwLock};
 
-use crossbeam::channel::{Sender, Receiver, unbounded};
+use crossbeam::channel::{unbounded, Receiver, Sender};
 use lazy_static::lazy_static;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
 
-lazy_static!
-{
+lazy_static! {
     /// Use this to communicate between the main thread and the decoder thread.
     /// Ex: play/pause commands.
     pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
@@ -37,7 +36,10 @@ pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
 pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
 pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
 pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
-pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState { position: 0, duration: 0 });
+pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState {
+    position: 0,
+    duration: 0,
+});
 
 pub fn reset_controls_to_default()
 {
@@ -47,7 +49,10 @@ pub fn reset_controls_to_default()
     IS_NORMALIZING.store(false, std::sync::atomic::Ordering::SeqCst);
     *VOLUME.write().unwrap() = 1.0;
     *SEEK_TS.write().unwrap() = None;
-    *PROGRESS.write().unwrap() = ProgressState { position: 0, duration: 0 };
+    *PROGRESS.write().unwrap() = ProgressState {
+        position: 0,
+        duration: 0,
+    };
 }
 
 pub enum ThreadMessage
