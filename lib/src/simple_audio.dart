@@ -22,6 +22,7 @@ export 'bridge_definitions.dart' show
 
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -36,6 +37,8 @@ class SimpleAudio
     static final MethodChannel? _methodChannel =
         Platform.isAndroid || Platform.isIOS || Platform.isMacOS ? const MethodChannel("simple_audio")
         : null;
+
+    CancelableOperation<void>? _debounce;
 
     /// A stream that returns a [PlaybackState] when the state of the player is changed.
     late Stream<PlaybackState> playbackStateStream = Player.playbackStateStream(bridge: api)
@@ -421,8 +424,22 @@ class SimpleAudio
     /// Use this method if you want gapless playback. It reduces
     /// the time spent loading between tracks (especially important
     /// for streaming network files).
-    Future<void> preload(String path) async {
-        await _player.preload(path: path);
+    /// 
+    /// [debounce] Whether or not to add debounce. In the event that
+    /// this method is called multiple times in quick succession, debounce
+    /// will help performance since only the last call will be preloaded.
+    Future<void> preload(String path, {bool debounce = true}) async
+    {
+        if(!debounce) {
+            return await _player.preload(path: path);
+        }
+
+        // Add debounce to prevent fast preload requests.
+        _debounce?.cancel();
+        _debounce = CancelableOperation.fromFuture(Future.delayed(const Duration(seconds: 1)));
+        _debounce?.value.whenComplete(() async {
+            await _player.preload(path: path);
+        });
     }
 
     /// Plays the preloaded item from [preload]. The file starts playing automatically.
