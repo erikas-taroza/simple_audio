@@ -84,10 +84,14 @@ This project contains a `.rustfmt.toml` file. Some of the configurations require
 `nightly` channel to be installed.
 
 To install:
-```rustup toolchain install nightly```
+```
+rustup toolchain install nightly
+```
 
 To run the formatter:
-```cargo +nightly fmt```
+```
+cargo +nightly fmt
+```
 
 ## Code Guidelines
 - Readable
