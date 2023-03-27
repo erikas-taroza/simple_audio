@@ -14,17 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::{
-    borrow::Cow,
-    thread::{self, JoinHandle},
-};
+use std::thread::{self, JoinHandle};
 
 use anyhow::{anyhow, Context};
 use cpal::traits::StreamTrait;
 use crossbeam::channel::Receiver;
 use symphonia::{
     core::{
-        audio::{AudioBuffer, AudioBufferRef},
+        audio::{AsAudioBufferRef, AudioBuffer},
         formats::{FormatOptions, FormatReader, SeekMode, SeekTo},
         io::{MediaSource, MediaSourceStream},
         meta::MetadataOptions,
@@ -222,7 +219,7 @@ impl Decoder
                 self.cpal_output.replace(CpalOutput::new(spec, duration)?);
             }
 
-            let buffer_ref = AudioBufferRef::F32(Cow::Borrowed(&preload));
+            let buffer_ref = preload.as_audio_buffer_ref();
             self.cpal_output.as_mut().unwrap().write(buffer_ref);
 
             return Ok(false);
