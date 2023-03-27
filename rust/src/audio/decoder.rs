@@ -44,7 +44,7 @@ pub struct Decoder
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
     playback: Option<Playback>,
-    preload_playback: Option<Playback>,
+    preload_playback: Option<(CpalOutput, Playback)>,
     /// The `JoinHandle` for the thread that preloads a file.
     preload_thread: Option<JoinHandle<anyhow::Result<Playback>>>,
 }
@@ -95,10 +95,6 @@ impl Decoder
                 Err(_) => {
                     update_callback_stream(Callback::DecodeError);
                 }
-            }
-
-            if self.state.is_idle() || self.state.is_paused() {
-                continue;
             }
 
             // Decode and output the samples.
@@ -187,7 +183,9 @@ impl Decoder
                     }
 
                     self.cpal_output = None;
-                    self.playback = self.preload_playback.take();
+                    let (cpal_output, playback) = self.preload_playback.take().unwrap();
+                    self.playback = Some(playback);
+                    self.cpal_output = Some(cpal_output);
                     IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
 
                     crate::Player::internal_play();
@@ -204,9 +202,11 @@ impl Decoder
     /// Returns `false` otherwise.
     fn do_playback(&mut self) -> anyhow::Result<bool>
     {
-        if self.playback.is_none() {
+        // Nothing to do.
+        if self.playback.is_none() || self.state.is_idle() || self.state.is_paused() {
             return Ok(false);
         }
+
         let playback = self.playback.as_mut().unwrap();
 
         // If there is audio already decoded from preloading,
@@ -416,7 +416,10 @@ impl Decoder
             .join()
             .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
-        self.preload_playback.replace(result);
+        let preload = result.preload.as_ref().unwrap();
+        let cpal_output = CpalOutput::new(*preload.spec(), preload.capacity() as u64)?;
+
+        self.preload_playback.replace((cpal_output, result));
         IS_FILE_PRELOADED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         Ok(())
