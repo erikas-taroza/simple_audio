@@ -186,11 +186,11 @@ impl Decoder
                         return Ok(false);
                     }
 
-                    crate::Player::internal_play();
-
                     self.cpal_output = None;
                     self.playback = self.preload_playback.take();
                     IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
+
+                    crate::Player::internal_play();
                 }
             },
         }
