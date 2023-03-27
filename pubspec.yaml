@@ -16,7 +16,6 @@ dependencies:
   flutter_rust_bridge: ^1.71.0
   meta: ^1.8.0
   path_provider: ^2.0.11
-  async:
 
 dev_dependencies:
   flutter_test:
