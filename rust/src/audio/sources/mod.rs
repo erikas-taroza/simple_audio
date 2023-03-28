@@ -33,10 +33,7 @@ pub static ACTIVE_LOCK: Mutex<()> = Mutex::new(());
 /// If another source already has a lock, this returns `None`.
 fn try_get_active_lock() -> Option<MutexGuard<'static, ()>>
 {
-    match ACTIVE_LOCK.try_lock() {
-        Ok(lock) => Some(lock),
-        Err(_) => None,
-    }
+    ACTIVE_LOCK.try_lock().ok()
 }
 
 /// A type that holds an ID and a `std::sync::mpsc::Receiver`.

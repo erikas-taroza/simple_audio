@@ -182,7 +182,6 @@ impl Decoder
                         return Ok(false);
                     }
 
-                    self.cpal_output = None;
                     let (cpal_output, playback) = self.preload_playback.take().unwrap();
                     self.playback = Some(playback);
                     self.cpal_output = Some(cpal_output);
@@ -225,19 +224,13 @@ impl Decoder
             return Ok(false);
         }
 
-        let seek_ts: u64 = if let Some(seek_ts) = *SEEK_TS.read().unwrap() {
+        if let Some(seek_ts) = *SEEK_TS.read().unwrap() {
             let seek_to = SeekTo::Time {
                 time: Time::from(seek_ts),
                 track_id: Some(playback.track_id),
             };
-            match playback.reader.seek(SeekMode::Coarse, seek_to) {
-                Ok(seeked_to) => seeked_to.required_ts,
-                Err(_) => 0,
-            }
+            playback.reader.seek(SeekMode::Coarse, seek_to)?;
         }
-        else {
-            0
-        };
 
         // Clean up seek stuff.
         if SEEK_TS.read().unwrap().is_some() {
@@ -275,10 +268,6 @@ impl Decoder
             .decoder
             .decode(&packet)
             .context("Could not decode audio packet.")?;
-
-        if packet.ts() < seek_ts {
-            return Ok(false);
-        }
 
         let position = if let Some(timebase) = playback.timebase {
             timebase.calc_time(packet.ts()).seconds
@@ -321,14 +310,14 @@ impl Decoder
         // There may be samples left over and we don't want to
         // start playing another file before they are read.
         update_playback_state_stream(PlaybackState::Done);
-        update_progress_state_stream(ProgressState {
-            position: 0,
-            duration: 0,
-        });
-        *PROGRESS.write().unwrap() = ProgressState {
+
+        let progress_state = ProgressState {
             position: 0,
             duration: 0,
         };
+        update_progress_state_stream(progress_state);
+        *PROGRESS.write().unwrap() = progress_state;
+
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Done);
     }
@@ -403,8 +392,12 @@ impl Decoder
         })
     }
 
-    /// Polls the `preload_thread`. If it is finished, the
-    /// preloaded file is then placed in `preload_playback`.
+    /// Polls the `preload_thread`.
+    ///
+    /// If it is finished, the preloaded file
+    /// is then placed in `preload_playback`.
+    ///
+    /// A `CpalOutput` is also created for the playback.
     fn poll_preload_thread(&mut self) -> anyhow::Result<()>
     {
         if self.preload_thread.is_none() || !self.preload_thread.as_ref().unwrap().is_finished() {
