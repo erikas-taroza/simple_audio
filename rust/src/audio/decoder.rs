@@ -78,11 +78,8 @@ impl Decoder
     {
         loop {
             // Check if the preload thread is done.
-            match self.poll_preload_thread() {
-                Err(_) => {
-                    update_callback_stream(Callback::DecodeError);
-                }
-                _ => (),
+            if self.poll_preload_thread().is_err() {
+                update_callback_stream(Callback::DecodeError);
             }
 
             // Check for incoming `ThreadMessage`s.
