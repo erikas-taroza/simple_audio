@@ -25,7 +25,7 @@ use anyhow::Context;
 use audio::{
     controls::*,
     decoder::Decoder,
-    streaming::{hls::HlsStream, http::HttpStream},
+    sources::{hls::HlsStream, http::HttpStream, local::Local},
 };
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
@@ -95,8 +95,7 @@ impl Player
         TXRX.read().unwrap().0.send(ThreadMessage::Dispose).unwrap();
         // Reset the controls in `controls.rs` to default values.
         reset_controls_to_default();
-        audio::streaming::streamable::IS_STREAM_BUFFERING
-            .store(false, std::sync::atomic::Ordering::SeqCst);
+        audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         metadata::dispose();
     }
@@ -123,6 +122,12 @@ impl Player
         IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
     }
 
+    /// Returns `true` if there is a file preloaded for playback.
+    pub fn has_preloaded(&self) -> bool
+    {
+        IS_FILE_PRELOADED.load(std::sync::atomic::Ordering::SeqCst)
+    }
+
     pub fn get_progress(&self) -> ProgressState
     {
         *PROGRESS.read().unwrap()
@@ -132,8 +137,8 @@ impl Player
     //            PLAYBACK
     // ---------------------------------
 
-    /// Opens a file or network resource for reading and playing.
-    pub fn open(&self, path: String, autoplay: bool) -> anyhow::Result<()>
+    /// Returns a Symphonia `MediaSource` for playback.
+    fn source_from_path(path: String) -> anyhow::Result<Box<dyn MediaSource>>
     {
         let path2 = path.clone();
 
@@ -152,8 +157,17 @@ impl Player
             }
         }
         else {
-            Box::new(File::open(path).context(format!("Could not open file at \"{path2}\""))?)
+            let file = File::open(path).context(format!("Could not open file at \"{path2}\""))?;
+            Box::new(Local::new(file))
         };
+
+        Ok(source)
+    }
+
+    /// Opens a file or network resource for reading and playing.
+    pub fn open(&self, path: String, autoplay: bool) -> anyhow::Result<()>
+    {
+        let source = Self::source_from_path(path)?;
 
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
@@ -165,6 +179,29 @@ impl Player
             Self::internal_pause();
         }
 
+        Ok(())
+    }
+
+    /// Preloads a file or network resource for reading and playing.
+    ///
+    /// Use this method if you want gapless playback. It reduces
+    /// the time spent loading between tracks (especially important
+    /// for streaming network files).
+    pub fn preload(&self, path: String) -> anyhow::Result<()>
+    {
+        let source = Self::source_from_path(path)?;
+        TXRX.read()
+            .unwrap()
+            .0
+            .send(ThreadMessage::Preload(source))?;
+
+        Ok(())
+    }
+
+    /// Plays the preloaded item from `preload`. The file starts playing automatically.
+    pub fn play_preload(&self) -> anyhow::Result<()>
+    {
+        TXRX.read().unwrap().0.send(ThreadMessage::PlayPreload)?;
         Ok(())
     }
 
@@ -439,6 +476,24 @@ mod tests
             ..Default::default()
         });
 
+        thread::sleep(Duration::from_secs(10));
+        Ok(())
+    }
+
+    #[test]
+    fn preload() -> anyhow::Result<()>
+    {
+        let path = "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string();
+
+        let player = crate::Player::default();
+        player.open(path.clone(), true)?;
+        player.set_volume(0.5);
+        thread::sleep(Duration::from_secs(10));
+        println!("Preloading");
+        player.preload(path)?;
+        thread::sleep(Duration::from_secs(5));
+        println!("Playing preloaded file.");
+        player.play_preload()?;
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }

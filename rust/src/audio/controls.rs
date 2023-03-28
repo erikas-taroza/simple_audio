@@ -34,6 +34,7 @@ pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
 pub static IS_STOPPED: AtomicBool = AtomicBool::new(true);
 pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
 pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
+pub static IS_FILE_PRELOADED: AtomicBool = AtomicBool::new(false);
 pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
 pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
 pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState {
@@ -66,4 +67,6 @@ pub enum ThreadMessage
     /// Called by `cpal_output` in the event the device outputting
     /// audio was changed/disconnected.
     DeviceChanged,
+    Preload(Box<dyn MediaSource>),
+    PlayPreload,
 }

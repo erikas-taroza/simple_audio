@@ -40,6 +40,11 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta;
 
+  /// Returns `true` if there is a file preloaded for playback.
+  Future<bool> hasPreloadedMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kHasPreloadedMethodPlayerConstMeta;
+
   Future<ProgressState> getProgressMethodPlayer(
       {required Player that, dynamic hint});
 
@@ -53,6 +58,21 @@ abstract class SimpleAudio {
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kOpenMethodPlayerConstMeta;
+
+  /// Preloads a file or network resource for reading and playing.
+  ///
+  /// Use this method if you want gapless playback. It reduces
+  /// the time spent loading between tracks (especially important
+  /// for streaming network files).
+  Future<void> preloadMethodPlayer(
+      {required Player that, required String path, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kPreloadMethodPlayerConstMeta;
+
+  /// Plays the preloaded item from `preload`. The file starts playing automatically.
+  Future<void> playPreloadMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kPlayPreloadMethodPlayerConstMeta;
 
   Future<void> playMethodPlayer({required Player that, dynamic hint});
 
@@ -205,6 +225,11 @@ class Player {
         that: this,
       );
 
+  /// Returns `true` if there is a file preloaded for playback.
+  Future<bool> hasPreloaded({dynamic hint}) => bridge.hasPreloadedMethodPlayer(
+        that: this,
+      );
+
   Future<ProgressState> getProgress({dynamic hint}) =>
       bridge.getProgressMethodPlayer(
         that: this,
@@ -217,6 +242,22 @@ class Player {
         that: this,
         path: path,
         autoplay: autoplay,
+      );
+
+  /// Preloads a file or network resource for reading and playing.
+  ///
+  /// Use this method if you want gapless playback. It reduces
+  /// the time spent loading between tracks (especially important
+  /// for streaming network files).
+  Future<void> preload({required String path, dynamic hint}) =>
+      bridge.preloadMethodPlayer(
+        that: this,
+        path: path,
+      );
+
+  /// Plays the preloaded item from `preload`. The file starts playing automatically.
+  Future<void> playPreload({dynamic hint}) => bridge.playPreloadMethodPlayer(
+        that: this,
       );
 
   Future<void> play({dynamic hint}) => bridge.playMethodPlayer(

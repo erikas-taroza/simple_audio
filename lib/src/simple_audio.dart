@@ -48,6 +48,8 @@ class SimpleAudio
 
     /// Returns `true` if the player is playing.
     Future<bool> get isPlaying => _player.isPlaying();
+    /// Returns `true` if the player has a file preloaded.
+    Future<bool> get hasPreloaded => _player.hasPreloaded();
     /// Returns the current progress state.
     Future<ProgressState> get _progress => _player.getProgress();
 
@@ -410,8 +412,26 @@ class SimpleAudio
     /// Whether or not to normalize the volume
     /// of the playback. The normalization uses the `EbuR128` standard and
     /// it normalizes to `-15 LUFS`.
-    Future<void> normalizeVolume(bool shouldNormalize) async
-    {
+    Future<void> normalizeVolume(bool shouldNormalize) async {
         return await _player.normalizeVolume(shouldNormalize: shouldNormalize);
+    }
+
+    /// Preloads a file or network resource for reading and playing.
+    /// 
+    /// Use this method if you want gapless playback. It reduces
+    /// the time spent loading between tracks (especially important
+    /// for streaming network files).
+    Future<void> preload(String path) async {
+        return await _player.preload(path: path);
+    }
+
+    /// Plays the preloaded item from [preload]. The file starts playing automatically.
+    Future<void> playPreload() async {
+        await _player.playPreload();
+
+        _methodChannel?.invokeMethod("setPlaybackState", {
+            "state": PlaybackState.play.index,
+            "position": 0
+        });
     }
 }

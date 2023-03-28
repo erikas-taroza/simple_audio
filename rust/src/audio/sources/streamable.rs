@@ -14,14 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-pub mod hls;
-pub mod http;
-pub mod streamable;
+use std::{
+    io::{Read, Seek},
+    sync::mpsc::Sender,
+};
 
-/// A type that holds an ID and a `std::sync::mpsc::Receiver`.
-/// Used for multithreaded download of audio data.
-struct Receiver
+use symphonia::core::io::MediaSource;
+
+pub const CHUNK_SIZE: usize = 1024 * 128;
+
+pub trait Streamable: Read + Seek + Send + Sync + MediaSource
 {
-    id: u128,
-    receiver: std::sync::mpsc::Receiver<(usize, Vec<u8>)>,
+    fn read_chunk(
+        tx: Sender<(usize, Vec<u8>)>,
+        url: String,
+        start: usize,
+        file_size: usize,
+    ) -> anyhow::Result<()>;
+
+    fn try_write_chunk(&mut self, should_buffer: bool);
+    fn should_get_chunk(&self) -> (bool, usize);
 }

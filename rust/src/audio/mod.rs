@@ -18,4 +18,4 @@ pub mod controls;
 mod cpal_output;
 pub mod decoder;
 mod dsp;
-pub mod streaming;
+pub mod sources;

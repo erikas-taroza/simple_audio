@@ -28,7 +28,7 @@ use crate::utils::blocking_rb::*;
 use super::{
     controls::*,
     dsp::{normalizer::Normalizer, resampler::Resampler},
-    streaming::streamable::IS_STREAM_BUFFERING,
+    sources::IS_STREAM_BUFFERING,
 };
 
 /// The default output volume is way too high.

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -64,8 +65,6 @@ class _MyAppState extends State<MyApp>
     double position = 0;
     double duration = 0;
 
-    String path = r"https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3";
-
     String convertSecondsToReadableString(int seconds)
     {
         int m = seconds ~/ 60;
@@ -74,12 +73,23 @@ class _MyAppState extends State<MyApp>
         return "$m:${s > 9 ? s : "0$s"}";
     }
 
+    Future<String> pickFile() async
+    {
+        FilePickerResult? file = await FilePicker.platform.pickFiles(
+            dialogTitle: "Pick file to play.",
+            type: FileType.audio
+        );
+
+        final PlatformFile pickedFile = file!.files.single;
+        return pickedFile.path!;
+    }
+
     @override
     void initState()
     {
         super.initState();
 
-        player.playbackStateStream.listen((event) {
+        player.playbackStateStream.listen((event) async {
             setState(() => playbackState = event);
         });
 
@@ -121,17 +131,9 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open File"),
                                 onPressed: () async {
-                                    // FilePickerResult? file = await FilePicker.platform.pickFiles(
-                                    //     dialogTitle: "Pick file to play.",
-                                    //     //type: FileType.audio
-                                    // );
+                                    String path = await pickFile();
 
-                                    // if(file == null) return;
-
-                                    // final PlatformFile pickedFile = file.files.single;
-                                    // path = pickedFile.path!;
-
-                                    player.setMetadata(Metadata(
+                                    player.setMetadata(const Metadata(
                                         title: "Title",
                                         artist: "Artist",
                                         album: "Album",
@@ -140,6 +142,31 @@ class _MyAppState extends State<MyApp>
                                     await player.stop();
                                     await player.open(path);
                                 },
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    ElevatedButton(
+                                        child: const Text("Preload File"),
+                                        onPressed: () async {
+                                            String path = await pickFile();
+                                            await player.preload(path);
+                                        },
+                                    ),
+                                    const SizedBox(width: 5),
+                                    ElevatedButton(
+                                        child: const Text("Play Preload"),
+                                        onPressed: () async {
+                                            if(!await player.hasPreloaded) {
+                                                debugPrint("No preloaded file to play!");
+                                            }
+
+                                            debugPrint("Playing preloaded file.");
+                                            await player.playPreload();
+                                        },
+                                    ),
+                                ],
                             ),
                             const SizedBox(height: 20),
 
@@ -258,7 +285,7 @@ class _MyAppState extends State<MyApp>
                                             child: ConstrainedBox(
                                                 constraints: const BoxConstraints(maxWidth: 450),
                                                 child: Slider(
-                                                    value: position,
+                                                    value: min(position, duration),
                                                     max: duration,
                                                     onChanged: (value) {
                                                         player.seek(value.floor());

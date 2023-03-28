@@ -14,26 +14,32 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::{
-    io::{Read, Seek},
-    sync::{atomic::AtomicBool, mpsc::Sender},
-};
+use std::sync::{atomic::AtomicBool, Mutex, MutexGuard};
 
-use symphonia::core::io::MediaSource;
+pub mod hls;
+pub mod http;
+pub mod local;
+pub mod streamable;
 
 // Used in cpal_output.rs to mute the stream when buffering.
 pub static IS_STREAM_BUFFERING: AtomicBool = AtomicBool::new(false);
-pub const CHUNK_SIZE: usize = 1024 * 128;
+// Used to ensure that only one file can access
+// things that should only be controlled by one source.
+// For example, `IS_STREAM_BUFFERING` shouldn't be set
+// when preloading.
+pub static ACTIVE_LOCK: Mutex<()> = Mutex::new(());
 
-pub trait Streamable<T: Read + Seek + Send + Sync + MediaSource>
+/// Attempts to set this source as active by returning a guard.
+/// If another source already has a lock, this returns `None`.
+fn try_get_active_lock() -> Option<MutexGuard<'static, ()>>
 {
-    fn read_chunk(
-        tx: Sender<(usize, Vec<u8>)>,
-        url: String,
-        start: usize,
-        file_size: usize,
-    ) -> anyhow::Result<()>;
+    ACTIVE_LOCK.try_lock().ok()
+}
 
-    fn try_write_chunk(&mut self, should_buffer: bool);
-    fn should_get_chunk(&self) -> (bool, usize);
+/// A type that holds an ID and a `std::sync::mpsc::Receiver`.
+/// Used for multithreaded download of audio data.
+struct Receiver
+{
+    id: u128,
+    receiver: std::sync::mpsc::Receiver<(usize, Vec<u8>)>,
 }
