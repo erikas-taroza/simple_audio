@@ -62,6 +62,15 @@ player.open("path/to/your/file.mp3", autoplay: true);
 // OR
 player.open("https://my-files.com/file.mp3", autoplay: true);
 
+// Check if the player is playing.
+bool isPlaying = await player.isPlaying;
+
+// Listen to the playback state.
+player.playbackStateStream.listen((e) {});
+
+// Listen to the progress state.
+player.progressStateStream.listen((e) {});
+
 // Play
 player.play();
 
@@ -87,6 +96,15 @@ player.loopPlayback(true);
 
 // Normalize the volume of the audio.
 player.normalizeVolume(true);
+
+// Preload a file at the given path.
+player.preload("/path/to/your/file.mp3");
+
+// Play the preloaded file (gapless playback).
+player.playPreload();
+
+// Check if there is a file preloaded.
+bool hasPreloaded = await player.hasPreloaded;
 ```
 
 ## Setup

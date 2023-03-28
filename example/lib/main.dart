@@ -65,8 +65,6 @@ class _MyAppState extends State<MyApp>
     double position = 0;
     double duration = 0;
 
-    String path = r"https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3";
-
     String convertSecondsToReadableString(int seconds)
     {
         int m = seconds ~/ 60;
@@ -75,18 +73,23 @@ class _MyAppState extends State<MyApp>
         return "$m:${s > 9 ? s : "0$s"}";
     }
 
+    Future<String> pickFile() async
+    {
+        FilePickerResult? file = await FilePicker.platform.pickFiles(
+            dialogTitle: "Pick file to play.",
+            type: FileType.audio
+        );
+
+        final PlatformFile pickedFile = file!.files.single;
+        return pickedFile.path!;
+    }
+
     @override
     void initState()
     {
         super.initState();
 
         player.playbackStateStream.listen((event) async {
-            if(await player.hasPreloaded && event == PlaybackState.done) {
-                debugPrint("Playing preloaded item.");
-                player.playPreload();
-                return;
-            }
-
             setState(() => playbackState = event);
         });
 
@@ -128,15 +131,7 @@ class _MyAppState extends State<MyApp>
                             ElevatedButton(
                                 child: const Text("Open File"),
                                 onPressed: () async {
-                                    // FilePickerResult? file = await FilePicker.platform.pickFiles(
-                                    //     dialogTitle: "Pick file to play.",
-                                    //     //type: FileType.audio
-                                    // );
-
-                                    // if(file == null) return;
-
-                                    // final PlatformFile pickedFile = file.files.single;
-                                    // path = pickedFile.path!;
+                                    String path = await pickFile();
 
                                     player.setMetadata(const Metadata(
                                         title: "Title",
@@ -148,20 +143,30 @@ class _MyAppState extends State<MyApp>
                                     await player.open(path);
                                 },
                             ),
-                            ElevatedButton(
-                                child: const Text("Preload File"),
-                                onPressed: () async {
-                                    // FilePickerResult? file = await FilePicker.platform.pickFiles(
-                                    //     dialogTitle: "Pick file to play.",
-                                    //     //type: FileType.audio
-                                    // );
+                            const SizedBox(height: 10),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                    ElevatedButton(
+                                        child: const Text("Preload File"),
+                                        onPressed: () async {
+                                            String path = await pickFile();
+                                            await player.preload(path);
+                                        },
+                                    ),
+                                    const SizedBox(width: 5),
+                                    ElevatedButton(
+                                        child: const Text("Play Preload"),
+                                        onPressed: () async {
+                                            if(!await player.hasPreloaded) {
+                                                debugPrint("No preloaded file to play!");
+                                            }
 
-                                    // if(file == null) return;
-
-                                    // final PlatformFile pickedFile = file.files.single;
-                                    // path = pickedFile.path!;
-                                    await player.preload(path);
-                                },
+                                            debugPrint("Playing preloaded file.");
+                                            await player.playPreload();
+                                        },
+                                    ),
+                                ],
                             ),
                             const SizedBox(height: 20),
 

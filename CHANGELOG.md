@@ -1,3 +1,7 @@
+## 1.5.0
+- Add support for gapless playback.
+- Fix panic when a file's timebase is `None`.
+
 ## 1.4.5
 - **BREAKING**: These names are more generic since not every OS has a notification as a media controller.
     - Renamed `showMediaNotification` to `useMediaController` in `SimpleAudio.init()`
