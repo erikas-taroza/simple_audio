@@ -237,3 +237,5 @@ impl CpalOutput
         self.stream.pause().unwrap();
     }
 }
+
+unsafe impl Send for CpalOutput {}

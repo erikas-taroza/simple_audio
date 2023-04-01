@@ -44,9 +44,9 @@ pub struct Decoder
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
     playback: Option<Playback>,
-    preload_playback: Option<(CpalOutput, Playback)>,
+    preload_playback: Option<(Playback, CpalOutput)>,
     /// The `JoinHandle` for the thread that preloads a file.
-    preload_thread: Option<JoinHandle<anyhow::Result<Playback>>>,
+    preload_thread: Option<JoinHandle<anyhow::Result<(Playback, CpalOutput)>>>,
 }
 
 impl Decoder
@@ -179,7 +179,7 @@ impl Decoder
                         return Ok(false);
                     }
 
-                    let (cpal_output, playback) = self.preload_playback.take().unwrap();
+                    let (playback, cpal_output) = self.preload_playback.take().unwrap();
                     self.playback = Some(playback);
                     self.cpal_output = Some(cpal_output);
                     IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
@@ -370,7 +370,7 @@ impl Decoder
     /// Spawns a thread that decodes the first packet of the source.
     ///
     /// Returns a preloaded `Playback` when complete.
-    fn preload(source: Box<dyn MediaSource>) -> JoinHandle<anyhow::Result<Playback>>
+    fn preload(source: Box<dyn MediaSource>) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
     {
         thread::spawn(move || {
             let mut playback = Self::open(source)?;
@@ -385,7 +385,9 @@ impl Decoder
             buf_ref.convert(&mut buf);
             playback.preload = Some(buf);
 
-            Ok(playback)
+            let cpal_output = CpalOutput::new(spec, duration)?;
+
+            Ok((playback, cpal_output))
         })
     }
 
@@ -406,10 +408,7 @@ impl Decoder
             .join()
             .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
-        let preload = result.preload.as_ref().unwrap();
-        let cpal_output = CpalOutput::new(*preload.spec(), preload.capacity() as u64)?;
-
-        self.preload_playback.replace((cpal_output, result));
+        self.preload_playback.replace((result.0, result.1));
         IS_FILE_PRELOADED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         Ok(())
