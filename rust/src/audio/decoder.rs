@@ -369,7 +369,7 @@ impl Decoder
 
     /// Spawns a thread that decodes the first packet of the source.
     ///
-    /// Returns a preloaded `Playback` when complete.
+    /// Returns a preloaded `Playback` and `CpalOutput` when complete.
     fn preload(source: Box<dyn MediaSource>) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
     {
         thread::spawn(move || {
@@ -395,8 +395,6 @@ impl Decoder
     ///
     /// If it is finished, the preloaded file
     /// is then placed in `preload_playback`.
-    ///
-    /// A `CpalOutput` is also created for the playback.
     fn poll_preload_thread(&mut self) -> anyhow::Result<()>
     {
         if self.preload_thread.is_none() || !self.preload_thread.as_ref().unwrap().is_finished() {
