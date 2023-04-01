@@ -316,6 +316,7 @@ impl Decoder
         *PROGRESS.write().unwrap() = progress_state;
 
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Done);
     }
 

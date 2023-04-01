@@ -169,7 +169,6 @@ impl Player
     {
         let source = Self::source_from_path(path)?;
 
-        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
 
         if autoplay {
@@ -218,6 +217,7 @@ impl Player
 
         update_playback_state_stream(PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
+        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Play);
     }
 
@@ -234,6 +234,7 @@ impl Player
 
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
+        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Pause);
     }
 
@@ -488,12 +489,14 @@ mod tests
         let player = crate::Player::default();
         player.open(path.clone(), true)?;
         player.set_volume(0.5);
-        thread::sleep(Duration::from_secs(10));
         println!("Preloading");
-        player.preload(path)?;
+        player.preload(path.clone())?;
         thread::sleep(Duration::from_secs(5));
         println!("Playing preloaded file.");
         player.play_preload()?;
+        thread::sleep(Duration::from_secs(10));
+        player.stop();
+        player.open(path, true)?;
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }
