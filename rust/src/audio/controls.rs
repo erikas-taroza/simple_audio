@@ -48,6 +48,7 @@ pub fn reset_controls_to_default()
     IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
     IS_LOOPING.store(false, std::sync::atomic::Ordering::SeqCst);
     IS_NORMALIZING.store(false, std::sync::atomic::Ordering::SeqCst);
+    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
     *VOLUME.write().unwrap() = 1.0;
     *SEEK_TS.write().unwrap() = None;
     *PROGRESS.write().unwrap() = ProgressState {
