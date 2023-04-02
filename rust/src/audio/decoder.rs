@@ -138,20 +138,18 @@ impl Decoder
                     self.state = DecoderState::Playing;
 
                     // Windows handles play/pause differently.
-                    if cfg!(not(target_os = "windows")) {
-                        if let Some(cpal_output) = &self.cpal_output {
-                            cpal_output.stream.play()?;
-                        }
+                    #[cfg(not(target_os = "windows"))]
+                    if let Some(cpal_output) = &self.cpal_output {
+                        cpal_output.stream.play()?;
                     }
                 }
                 ThreadMessage::Pause => {
                     self.state = DecoderState::Paused;
 
                     // Windows handles play/pause differently.
-                    if cfg!(not(target_os = "windows")) {
-                        if let Some(cpal_output) = &self.cpal_output {
-                            cpal_output.stream.pause()?;
-                        }
+                    #[cfg(not(target_os = "windows"))]
+                    if let Some(cpal_output) = &self.cpal_output {
+                        cpal_output.stream.pause()?;
                     }
                 }
                 ThreadMessage::Stop => {
@@ -387,6 +385,7 @@ impl Decoder
             playback.preload = Some(buf);
 
             let cpal_output = CpalOutput::new(spec, duration)?;
+            cpal_output.stream.pause()?;
 
             Ok((playback, cpal_output))
         })

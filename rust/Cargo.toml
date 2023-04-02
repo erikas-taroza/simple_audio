@@ -20,6 +20,10 @@ arrayvec = "0.7.2"
 ebur128 = "0.1.7"
 anyhow = "1.0.69"
 
+# Use this to debug Android issues.
+# android_logger = "0.13.1"
+# log = "0.4.17"
+
 [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))'.dependencies]
 dbus = "0.9.6"
 dbus-crossroads = "0.5.1"
