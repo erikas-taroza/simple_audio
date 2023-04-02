@@ -1,3 +1,8 @@
+## 1.5.1
+- Improved preload performance (stream is created in a different thread).
+- Fix `stop()` not working during playback.
+- Fix gapless playback for Android.
+
 ## 1.5.0
 - Add support for gapless playback.
 - Fix panic when a file's timebase is `None`.
