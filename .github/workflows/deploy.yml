@@ -36,7 +36,7 @@ jobs:
           git config --local user.name "erikas-taroza"
           git pull
           git add .
-          git commit -m "CI: Update Linux libs"
+          git commit -m "CD: Update Linux libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -67,7 +67,7 @@ jobs:
           git config --local user.name "erikas-taroza"
           git pull
           git add .
-          git commit -m "CI: Update Android libs"
+          git commit -m "CD: Update Android libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -98,7 +98,7 @@ jobs:
           git config --local user.name "erikas-taroza"
           git pull
           git add .
-          git commit -m "CI: Update Windows libs"
+          git commit -m "CD: Update Windows libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -129,7 +129,7 @@ jobs:
           git config --local user.name "erikas-taroza"
           git pull
           git add .
-          git commit -m "CI: Update macOS libs"
+          git commit -m "CD: Update macOS libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -178,7 +178,7 @@ jobs:
           git config --local user.name "erikas-taroza"
           git pull
           git add .
-          git commit -m "CI: Update iOS libs"
+          git commit -m "CD: Update iOS libs"
           
       - name: Push Changes
         uses: ad-m/github-push-action@v0.6.0
@@ -197,6 +197,6 @@ jobs:
           git pull
           git reset --soft HEAD~5
           git add .
-          git commit -m "CI: Update libraries"
+          git commit -m "CD: Update libraries"
           git push -f
           
