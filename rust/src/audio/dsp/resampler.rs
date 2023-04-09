@@ -47,7 +47,8 @@ where
         // Interleave the planar samples from Rubato.
         let num_channels = self.output.len();
 
-        self.interleaved.resize(num_channels * self.output[0].len(), T::MID);
+        self.interleaved
+            .resize(num_channels * self.output[0].len(), T::MID);
 
         for (i, frame) in self.interleaved.chunks_exact_mut(num_channels).enumerate() {
             for (ch, s) in frame.iter_mut().enumerate() {
@@ -80,7 +81,13 @@ where
 
         let input = vec![Vec::with_capacity(duration); num_channels];
 
-        Self { resampler, input, output, duration, interleaved: Default::default() }
+        Self {
+            resampler,
+            input,
+            output,
+            duration,
+            interleaved: Default::default(),
+        }
     }
 
     /// Resamples a planar/non-interleaved input.
