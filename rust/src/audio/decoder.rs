@@ -343,17 +343,20 @@ impl Decoder
         let decoder = default::get_codecs().make(&track.codec_params, &Default::default())?;
 
         // Used only for outputting the current position and duration.
-        let timebase = track.codec_params.time_base;
+        let timebase = track.codec_params.time_base.or_else(|| {
+            track
+                .codec_params
+                .sample_rate
+                .map(|sample_rate| TimeBase::new(1, sample_rate))
+        });
         let ts = track
             .codec_params
             .n_frames
             .map(|frames| track.codec_params.start_ts + frames);
 
-        let duration = if let Some(timebase) = timebase {
-            timebase.calc_time(ts.unwrap()).seconds
-        }
-        else {
-            0
+        let duration = match (timebase, ts) {
+            (Some(timebase), Some(ts)) => timebase.calc_time(ts).seconds,
+            _ => 0,
         };
 
         Ok(Playback {
