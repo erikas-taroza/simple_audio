@@ -25,6 +25,12 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--bump-version",
+    type=str,
+    help="Bumps the version of the plugin to the given version. Ex. \"1.0.0\""
+)
+
+parser.add_argument(
     "--ios-ssl",
     action="store",
     help="Used to fix the build for OpenSSL if the vendored feature is being used on aarch64-apple-ios-sim target. Please provide the path to the openssl include directory."
@@ -273,6 +279,55 @@ def build(targets:list[str], openssl_path:str = None):
             shutil.move(f"./{package_name}.xcframework", "./ios/Frameworks")
 
 
+def bump_version(version: str):
+    def replace_string_in_file(file, regex, replacement):
+        new_text = re.sub(regex, replacement, file.read(), count=1)
+        file.seek(0)
+        file.write(new_text)
+        file.seek(0)
+
+
+    # pubspec.yaml
+    pubspec = open("./pubspec.yaml", "r+")
+    replace_string_in_file(pubspec, r"version: [\d|\.]+\s", f"version: {version}\n")
+    pubspec.close()
+
+    # Cargo.toml
+    cargo = open("./rust/Cargo.toml", "r+")
+    replace_string_in_file(cargo, r'version = "[\d|\.]+"\s', f'version = "{version}"\n')
+    cargo.close()
+
+    # Android CMake
+    android_cmake = open("./android/CMakeLists.txt", "r+")
+    replace_string_in_file(android_cmake, r'set\(Version "[\d|\.]+"\)\s', f'set(Version "{version}")\n')
+    android_cmake.close()
+
+    # Linux CMake
+    linux_cmake = open("./linux/CMakeLists.txt", "r+")
+    replace_string_in_file(linux_cmake, r'set\(Version "[\d|\.]+"\)\s', f'set(Version "{version}")\n')
+    linux_cmake.close()
+
+    # Windows CMake
+    windows_cmake = open("./windows/CMakeLists.txt", "r+")
+    replace_string_in_file(windows_cmake, r'set\(Version "[\d|\.]+"\)\s', f'set(Version "{version}")\n')
+    windows_cmake.close()
+
+    pubspec_text = open("./pubspec.yaml", "r").read()
+    package_name = pubspec_text.split("name: ")[1].split("\n")[0].strip()
+
+    # macOS podspec
+    macos_podspec = open(f"./macos/{package_name}.podspec", "r+")
+    replace_string_in_file(macos_podspec, r'version = "[\d|\.]+"\s', f'version = "{version}"\n')
+    replace_string_in_file(macos_podspec, r"s\.version\s+= '[\d|\.]+'\s", f"s.version          = '{version}'\n")
+    macos_podspec.close()
+
+    # iOS podspec
+    ios_podspec = open(f"./ios/{package_name}.podspec", "r+")
+    replace_string_in_file(ios_podspec, r'version = "[\d|\.]+"\s', f'version = "{version}"\n')
+    replace_string_in_file(ios_podspec, r"s\.version\s+= '[\d|\.]+'\s", f"s.version          = '{version}'\n")
+    ios_podspec.close()
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
 
@@ -287,3 +342,6 @@ if __name__ == "__main__":
         if len(args.build) == 0:
             targets = ["android", "linux", "windows", "ios", "macos"]
         build(targets, args.ios_ssl)
+
+    if args.bump_version:
+        bump_version(args.bump_version)
