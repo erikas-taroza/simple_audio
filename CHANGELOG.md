@@ -1,3 +1,8 @@
+## 1.5.2
+- Add default timebase (thanks @Yesterday17)
+- Workflow commits use "CD" instead of "CI".
+- Code gen is run when `lib.rs` is changed.
+
 ## 1.5.1
 - Improved preload performance (stream is created in a different thread).
 - Fix `stop()` not working during playback.
