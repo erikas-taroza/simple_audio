@@ -24,6 +24,12 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./rust
+
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
           
       - name: Build Linux Library
         run: |
@@ -55,6 +61,12 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./rust
+
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
           
       - name: Build Android Libraries
         run: |
@@ -86,6 +98,12 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./rust
+
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
           
       - name: Build Windows Library
         run: |
@@ -117,6 +135,12 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./rust
+
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
           
       - name: Build macOS Libraries
         run: |
@@ -166,6 +190,12 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ./rust
+
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
             
       - name: Build iOS Libraries
         run: |
