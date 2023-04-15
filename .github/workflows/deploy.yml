@@ -40,6 +40,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update Linux libs"
@@ -77,6 +78,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update Android libs"
@@ -114,6 +116,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update Windows libs"
@@ -151,6 +154,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update macOS libs"
@@ -206,6 +210,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update iOS libs"
