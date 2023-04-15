@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ vars.GITHUB_REF_NAME }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
@@ -40,7 +42,6 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update Linux libs"
@@ -54,6 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ vars.GITHUB_REF_NAME }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
@@ -78,7 +81,6 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update Android libs"
@@ -92,6 +94,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ vars.GITHUB_REF_NAME }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
@@ -116,7 +120,6 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update Windows libs"
@@ -130,6 +133,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ vars.GITHUB_REF_NAME }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
@@ -154,7 +159,6 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update macOS libs"
@@ -168,6 +172,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ vars.GITHUB_REF_NAME }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
@@ -210,7 +216,6 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git checkout ${{ vars.GITHUB_REF_NAME }}
           git pull
           git add .
           git commit -m "CD: Update iOS libs"
