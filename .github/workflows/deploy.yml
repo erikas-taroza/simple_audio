@@ -45,11 +45,7 @@ jobs:
           git pull
           git add .
           git commit -m "CD: Update Linux libs"
-          
-      - name: Push Changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git push
           
   build_android:
     runs-on: ubuntu-latest
@@ -84,11 +80,7 @@ jobs:
           git pull
           git add .
           git commit -m "CD: Update Android libs"
-          
-      - name: Push Changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git push
           
   build_windows:
     runs-on: windows-latest
@@ -123,11 +115,7 @@ jobs:
           git pull
           git add .
           git commit -m "CD: Update Windows libs"
-          
-      - name: Push Changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git push
           
   build_macos:
     runs-on: macos-latest
@@ -162,12 +150,8 @@ jobs:
           git pull
           git add .
           git commit -m "CD: Update macOS libs"
-          
-      - name: Push Changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          
+          git push
+
   build_ios:
     runs-on: macos-latest
     steps:
@@ -219,18 +203,16 @@ jobs:
           git pull
           git add .
           git commit -m "CD: Update iOS libs"
-          
-      - name: Push Changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          
+          git push
+
 
   squash:
     runs-on: ubuntu-latest
     needs: [build_linux, build_android, build_windows, build_macos, build_ios]
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ vars.GITHUB_REF_NAME }}
       - run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
