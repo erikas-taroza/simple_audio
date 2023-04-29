@@ -111,6 +111,36 @@ pub fn set_metadata(metadata: Metadata)
     }
 }
 
+/// Sets the file's duration for the OS's media controller.
+///
+/// This should be called as soon as the duration is calculated
+/// in the decoder.
+pub fn set_duration(duration: u64)
+{
+    #[cfg(all(
+        unix,
+        not(target_os = "macos"),
+        not(target_os = "android"),
+        not(target_os = "ios")
+    ))]
+    {
+        let mpris = mpris::HANDLER.read().unwrap();
+        if mpris.is_none() {
+            return;
+        }
+        mpris.as_ref().unwrap().set_duration(duration);
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let smtc = smtc::HANDLER.read().unwrap();
+        if smtc.is_none() {
+            return;
+        }
+        smtc.as_ref().unwrap().set_duration(duration);
+    }
+}
+
 pub fn set_playback_state(state: PlaybackState)
 {
     #[cfg(all(

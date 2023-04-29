@@ -190,25 +190,24 @@ impl Smtc
             .SetMinSeekTime(Duration::default().into())
             .unwrap();
 
-        loop {
-            let progress = PROGRESS.read().unwrap();
-            if progress.duration == 0 {
-                continue;
-            }
-
-            self.timeline
-                .SetEndTime(Duration::from_secs(progress.duration).into())
-                .unwrap();
-            self.timeline
-                .SetMaxSeekTime(Duration::from_secs(progress.duration).into())
-                .unwrap();
-            break;
-        }
-
         self.controls
             .UpdateTimelineProperties(&self.timeline)
             .unwrap();
         self.display.Update().unwrap();
+    }
+
+    pub fn set_duration(&self, duration: u64)
+    {
+        self.timeline
+            .SetEndTime(Duration::from_secs(duration).into())
+            .unwrap();
+        self.timeline
+            .SetMaxSeekTime(Duration::from_secs(duration).into())
+            .unwrap();
+
+        self.controls
+            .UpdateTimelineProperties(&self.timeline)
+            .unwrap();
     }
 
     pub fn set_playback_state(&self, state: PlaybackState)

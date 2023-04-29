@@ -36,6 +36,8 @@ pub struct ProgressState
     pub duration: u64,
 }
 
+/// Events that are handled in Dart because they
+/// cannot be handled in Rust or need user action.
 pub enum Callback
 {
     /// The media controller trigged the SkipPrev action.
@@ -50,4 +52,6 @@ pub enum Callback
     /// The player is in the looping mode and the playback
     /// just looped to the beginning.
     PlaybackLooped,
+    /// The decoder has calculated the duration for the current playback.
+    DurationCalculated,
 }

@@ -250,15 +250,14 @@ impl Player
 
         TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
 
-        update_progress_state_stream(ProgressState {
-            position: 0,
-            duration: 0,
-        });
-        update_playback_state_stream(PlaybackState::Pause);
-        *PROGRESS.write().unwrap() = ProgressState {
+        let progress = ProgressState {
             position: 0,
             duration: 0,
         };
+
+        update_progress_state_stream(progress);
+        *PROGRESS.write().unwrap() = progress;
+        update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
         crate::metadata::set_playback_state(PlaybackState::Pause);

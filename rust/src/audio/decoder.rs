@@ -31,9 +31,12 @@ use symphonia::{
     default,
 };
 
-use crate::utils::{
-    callback_stream::update_callback_stream, playback_state_stream::update_playback_state_stream,
-    progress_state_stream::*, types::*,
+use crate::{
+    metadata,
+    utils::{
+        callback_stream::update_callback_stream,
+        playback_state_stream::update_playback_state_stream, progress_state_stream::*, types::*,
+    },
 };
 
 use super::{controls::*, cpal_output::CpalOutput};
@@ -277,6 +280,12 @@ impl Decoder
             duration: playback.duration,
         };
 
+        if PROGRESS.read().unwrap().duration == 0 {
+            // Notify OS media controllers about the new duration.
+            update_callback_stream(Callback::DurationCalculated);
+            metadata::set_duration(playback.duration);
+        }
+
         update_progress_state_stream(progress);
         *PROGRESS.write().unwrap() = progress;
 
@@ -310,6 +319,7 @@ impl Decoder
             position: 0,
             duration: 0,
         };
+
         update_progress_state_stream(progress_state);
         *PROGRESS.write().unwrap() = progress_state;
 

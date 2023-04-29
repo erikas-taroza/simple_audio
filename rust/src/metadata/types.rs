@@ -84,10 +84,17 @@ pub enum Event
     Seek(i64, bool),
 }
 
-/// Commands to be sent via the thread's channels.
+#[cfg(all(
+    unix,
+    not(target_os = "macos"),
+    not(target_os = "android"),
+    not(target_os = "ios")
+))]
+/// Commands to be sent via the thread's channels for MPRIS.
 pub enum Command
 {
     SetMetadata(Metadata),
+    SetDuration(u64),
     SetPlaybackState(PlaybackState),
     Stop,
 }
