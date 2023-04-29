@@ -280,12 +280,14 @@ impl Decoder
             duration: playback.duration,
         };
 
+        if PROGRESS.read().unwrap().duration == 0 {
+            // Notify OS media controllers about the new duration.
+            update_callback_stream(Callback::DurationCalculated);
+            metadata::set_duration(playback.duration);
+        }
+
         update_progress_state_stream(progress);
         *PROGRESS.write().unwrap() = progress;
-
-        // Notify OS media controllers about the new duration.
-        update_callback_stream(Callback::DurationCalculated);
-        metadata::set_duration(playback.duration);
 
         // Write the decoded packet to CPAL.
         if self.cpal_output.is_none() {
