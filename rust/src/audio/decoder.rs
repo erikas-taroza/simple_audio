@@ -31,9 +31,12 @@ use symphonia::{
     default,
 };
 
-use crate::utils::{
-    callback_stream::update_callback_stream, playback_state_stream::update_playback_state_stream,
-    progress_state_stream::*, types::*,
+use crate::{
+    metadata,
+    utils::{
+        callback_stream::update_callback_stream,
+        playback_state_stream::update_playback_state_stream, progress_state_stream::*, types::*,
+    },
 };
 
 use super::{controls::*, cpal_output::CpalOutput};
@@ -280,6 +283,8 @@ impl Decoder
         update_progress_state_stream(progress);
         *PROGRESS.write().unwrap() = progress;
 
+        metadata::set_duration(playback.duration);
+
         // Write the decoded packet to CPAL.
         if self.cpal_output.is_none() {
             let spec = *decoded.spec();
@@ -310,6 +315,7 @@ impl Decoder
             position: 0,
             duration: 0,
         };
+
         update_progress_state_stream(progress_state);
         *PROGRESS.write().unwrap() = progress_state;
 

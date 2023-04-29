@@ -72,6 +72,11 @@ impl Mpris
         self.tx.send(Command::SetMetadata(metadata)).unwrap();
     }
 
+    pub fn set_duration(&self, duration: u64)
+    {
+        self.tx.send(Command::SetDuration(duration)).unwrap();
+    }
+
     pub fn set_playback_state(&self, state: PlaybackState)
     {
         self.tx.send(Command::SetPlaybackState(state)).unwrap();
@@ -149,7 +154,7 @@ impl Mpris
                 e.property("Metadata")
                     .get({
                         let metadata = metadata.clone();
-                        move |_, _| Ok(metadata_to_map(&metadata.lock().unwrap()))
+                        move |_, _| Ok(metadata_to_map(&metadata.lock().unwrap(), 0))
                     })
                     .emits_changed_true();
 
@@ -265,7 +270,14 @@ impl Mpris
 
                             changes.insert(
                                 "Metadata".to_string(),
-                                Variant(metadata_to_map(&metadata).box_clone()),
+                                Variant(metadata_to_map(&metadata, 0).box_clone()),
+                            );
+                        }
+                        Command::SetDuration(duration) => {
+                            let metadata = metadata.lock().unwrap();
+                            changes.insert(
+                                "Metadata".to_string(),
+                                Variant(metadata_to_map(&metadata, duration).box_clone()),
                             );
                         }
                         Command::SetPlaybackState(state) => {
@@ -321,7 +333,8 @@ fn register_method<C>(
 }
 
 /// Converts the metadata object to a map that the MPRIS interface uses.
-fn metadata_to_map(metadata: &Metadata) -> HashMap<String, Variant<Box<dyn RefArg>>>
+fn metadata_to_map(metadata: &Metadata, duration: u64)
+    -> HashMap<String, Variant<Box<dyn RefArg>>>
 {
     let mut map = HashMap::<String, Variant<Box<dyn RefArg>>>::new();
 
@@ -345,19 +358,7 @@ fn metadata_to_map(metadata: &Metadata) -> HashMap<String, Variant<Box<dyn RefAr
         map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_uri)));
     }
 
-    // Wait for a valid value (duration != 0).
-    loop {
-        let progress = PROGRESS.read().unwrap();
-        if progress.duration == 0 {
-            continue;
-        }
-
-        map.insert(
-            "mpris:length".to_string(),
-            Variant(Box::new(progress.duration)),
-        );
-        break;
-    }
+    map.insert("mpris:length".to_string(), Variant(Box::new(duration)));
 
     map
 }
