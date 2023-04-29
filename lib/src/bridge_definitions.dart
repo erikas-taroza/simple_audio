@@ -112,6 +112,8 @@ abstract class SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta;
 }
 
+/// Events that are handled in Dart because they
+/// cannot be handled in Rust or need user action.
 enum Callback {
   /// The media controller trigged the SkipPrev action.
   mediaControlSkipPrev,
@@ -129,6 +131,9 @@ enum Callback {
   /// The player is in the looping mode and the playback
   /// just looped to the beginning.
   playbackLooped,
+
+  /// The decoder has calculated the duration for the current playback.
+  durationCalculated,
 }
 
 /// The actions that an OS's media controller can support.

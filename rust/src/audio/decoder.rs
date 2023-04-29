@@ -283,6 +283,8 @@ impl Decoder
         update_progress_state_stream(progress);
         *PROGRESS.write().unwrap() = progress;
 
+        // Notify OS media controllers about the new duration.
+        update_callback_stream(Callback::DurationCalculated);
         metadata::set_duration(playback.duration);
 
         // Write the decoded packet to CPAL.

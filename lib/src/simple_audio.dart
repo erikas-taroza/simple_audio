@@ -52,6 +52,11 @@ class SimpleAudio
     Future<bool> get hasPreloaded => _player.hasPreloaded();
     /// Returns the current progress state.
     Future<ProgressState> get _progress => _player.getProgress();
+    /// The latest metadata information. Used to update the duration
+    /// for Android, iOS, and macOS without changing the metadata. 
+    Metadata _currentMetadata = const Metadata();
+    /// Whether or not to use the OS's media controller.
+    static bool _useMediaController = true;
 
     /// The callback for when the [MediaControlAction.skipPrev] action is called.
     void Function(SimpleAudio player)? onSkipPrevious;
@@ -82,7 +87,7 @@ class SimpleAudio
         this.onDecodeError
     })
     {
-        Player.callbackStream(bridge: api).listen((event) {
+        Player.callbackStream(bridge: api).listen((event) async {
             switch(event)
             {
                 case Callback.mediaControlSkipPrev:
@@ -97,7 +102,7 @@ class SimpleAudio
                 case Callback.decodeError:
                     onDecodeError?.call(this);
                     break;
-                // This isn't a callback for the user to handle.
+                // The following callbacks are not for the user to handle.
                 // Instead, it is used to communicate via MethodChannel
                 // with Dart being the middleman.
                 case Callback.playbackLooped:
@@ -106,6 +111,17 @@ class SimpleAudio
                         "position": 0
                     });
                     break;
+                case Callback.durationCalculated:
+                    if(_methodChannel != null && _useMediaController) {
+                        _methodChannel?.invokeMethod("setMetadata", {
+                            "title": _currentMetadata.title,
+                            "artist": _currentMetadata.artist,
+                            "album": _currentMetadata.album,
+                            "artUri": _currentMetadata.artUri,
+                            "artBytes": _currentMetadata.artBytes,
+                            "duration": (await _progress).duration
+                        });
+                    }
             }
         });
         
@@ -207,6 +223,8 @@ class SimpleAudio
 
         // You must include this action.
         if(useMediaController) assert(actions.contains(MediaControlAction.playPause));
+        
+        _useMediaController = useMediaController;
 
         _player = await Player.newPlayer(
             bridge: api,
@@ -384,28 +402,16 @@ class SimpleAudio
         // The method channel is only available for Android, iOS, macOS.
         else if(_methodChannel != null)
         {
-            // Prevent users from awaiting this method
-            // and blocking their program infintely.
-            Future<void> _() async
-            {
-                // Wait for a valid duration.
-                ProgressState progress = await _progress;
-                while(progress.duration == 0)
-                {
-                    progress = await _progress;
-                    continue;
-                }
-
-                await _methodChannel?.invokeMethod("setMetadata", {
-                    "title": metadata.title,
-                    "artist": metadata.artist,
-                    "album": metadata.album,
-                    "artUri": metadata.artUri,
-                    "artBytes": metadata.artBytes,
-                    "duration": progress.duration
-                });
-            }
-            _();
+            _currentMetadata = metadata;  
+ 
+            await _methodChannel?.invokeMethod("setMetadata", {
+                "title": metadata.title,
+                "artist": metadata.artist,
+                "album": metadata.album,
+                "artUri": metadata.artUri,
+                "artBytes": metadata.artBytes,
+                "duration": 0
+            });
         }
     }
 

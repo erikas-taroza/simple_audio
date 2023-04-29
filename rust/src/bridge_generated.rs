@@ -398,6 +398,7 @@ impl support::IntoDart for Callback {
             Self::NetworkStreamError => 2,
             Self::DecodeError => 3,
             Self::PlaybackLooped => 4,
+            Self::DurationCalculated => 5,
         }
         .into_dart()
     }
