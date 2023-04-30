@@ -16,6 +16,17 @@
 
 use crate::utils::types::PlaybackState;
 
+pub trait MediaController<T>
+{
+    fn new<C>(actions: Vec<MediaControlAction>, id: T, callback: C) -> Self
+    where
+        C: Fn(Event) + Send + 'static;
+    fn set_metadata(&self, metadata: Metadata);
+    fn set_duration(&self, duration: u64);
+    fn set_playback_state(&self, state: PlaybackState);
+    fn stop(self);
+}
+
 /// The metadata of the currently playing file
 /// that will be shown in the OS's media controller.
 #[derive(Default)]
