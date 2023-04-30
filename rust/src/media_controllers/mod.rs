@@ -16,7 +16,7 @@
 
 use std::sync::RwLock;
 
-use self::types::{Event, MediaControlAction, Metadata, MediaController};
+use self::types::{Event, MediaControlAction, MediaController, Metadata};
 
 use crate::utils::types::PlaybackState;
 
@@ -56,7 +56,11 @@ where
         }
 
         let mut lock = MEDIA_CONTROLLER.write().unwrap();
-        *lock = Some(Box::new(smtc::Smtc::new(actions, hwnd.unwrap() as isize, callback)));
+        *lock = Some(Box::new(smtc::Smtc::new(
+            actions,
+            hwnd.unwrap() as isize,
+            callback,
+        )));
     }
 }
 

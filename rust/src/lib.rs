@@ -29,7 +29,7 @@ use audio::{
 };
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
-use media_controllers::types::{MediaControlAction, Metadata, Event};
+use media_controllers::types::{Event, MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 

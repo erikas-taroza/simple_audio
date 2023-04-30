@@ -34,9 +34,9 @@ use windows::{
     Win32::{Foundation::HWND, System::WinRT::ISystemMediaTransportControlsInterop},
 };
 
-use crate::{utils::types::PlaybackState};
+use crate::utils::types::PlaybackState;
 
-use super::types::{Event, MediaControlAction, Metadata, MediaController};
+use super::types::{Event, MediaControlAction, MediaController, Metadata};
 
 pub struct Smtc
 {

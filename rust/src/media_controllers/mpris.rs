@@ -40,7 +40,7 @@ use zbus::{
 
 use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
-use super::types::{Command, Event, MediaControlAction, Metadata, MediaController};
+use super::types::{Command, Event, MediaControlAction, MediaController, Metadata};
 
 pub struct Mpris
 {
