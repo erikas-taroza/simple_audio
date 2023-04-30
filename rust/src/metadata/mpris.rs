@@ -32,7 +32,11 @@ use std::{
 };
 
 use crossbeam::channel::{unbounded, Receiver};
-use zbus::{dbus_interface, zvariant::{Value, ObjectPath}, blocking::ConnectionBuilder};
+use zbus::{
+    blocking::ConnectionBuilder,
+    dbus_interface,
+    zvariant::{ObjectPath, Value},
+};
 
 use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
@@ -55,8 +59,7 @@ impl Mpris
         let (tx, rx) = unbounded::<Command>();
 
         let handle = thread::spawn(move || {
-            pollster::block_on(Self::run(actions, dbus_name, rx, callback))
-                .unwrap();
+            pollster::block_on(Self::run(actions, dbus_name, rx, callback)).unwrap();
         });
 
         Mpris { tx, handle }
@@ -158,7 +161,7 @@ impl Mpris
 /// (ex. can raise).
 struct AppInterface
 {
-    name: String
+    name: String,
 }
 
 #[dbus_interface(name = "org.mpris.MediaPlayer2")]
@@ -252,7 +255,7 @@ impl PlayerInterface
         let in_micros = Duration::from_secs(position).as_micros();
         in_micros.try_into().unwrap_or_default()
     }
-    
+
     #[dbus_interface(property)]
     fn playback_status(&self) -> &'static str
     {
@@ -287,17 +290,22 @@ impl PlayerInterface
             map.insert("mpris:artUrl", Value::new(art_uri));
         }
 
-        let as_micros: i64 = Duration::from_secs(self.duration).as_micros()
-            .try_into().unwrap_or_default();
-        map.insert("mpris:length", Value::new(as_micros));
+        let in_micros: i64 = Duration::from_secs(self.duration)
+            .as_micros()
+            .try_into()
+            .unwrap_or_default();
+
+        map.insert("mpris:length", Value::new(in_micros));
 
         map
     }
 
     fn seek(&self, offset: i64)
     {
-        let in_seconds = Duration::from_micros(offset.unsigned_abs()).as_secs()
-            .try_into().unwrap_or_default();
+        let in_seconds = Duration::from_micros(offset.unsigned_abs())
+            .as_secs()
+            .try_into()
+            .unwrap_or_default();
 
         // Seeking forward
         if offset.is_positive() && self.actions.contains(&MediaControlAction::FastForward) {
@@ -311,8 +319,11 @@ impl PlayerInterface
 
     fn set_position(&self, _track_id: ObjectPath, position: i64)
     {
-        let in_seconds = Duration::from_micros(position.unsigned_abs()).as_secs()
-            .try_into().unwrap_or_default();
+        let in_seconds = Duration::from_micros(position.unsigned_abs())
+            .as_secs()
+            .try_into()
+            .unwrap_or_default();
+
         self.callback.lock().unwrap()(Event::Seek(in_seconds, true));
     }
 
