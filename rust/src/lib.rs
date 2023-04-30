@@ -16,7 +16,7 @@
 
 mod audio;
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod metadata;
+mod media_controllers;
 mod utils;
 
 use std::{fs::File, thread};
@@ -29,7 +29,7 @@ use audio::{
 };
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
-use metadata::types::{MediaControlAction, Metadata};
+use media_controllers::types::{MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 
@@ -41,15 +41,15 @@ impl Player
 {
     pub fn new(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>) -> Player
     {
-        crate::metadata::init(actions, dbus_name, hwnd, |e| match e {
-            metadata::types::Event::Previous => {
+        crate::media_controllers::init(actions, dbus_name, hwnd, |e| match e {
+            media_controllers::types::Event::Previous => {
                 update_callback_stream(Callback::MediaControlSkipPrev)
             }
-            metadata::types::Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
-            metadata::types::Event::Play => Self::internal_play(),
-            metadata::types::Event::Pause => Self::internal_pause(),
-            metadata::types::Event::Stop => Self::internal_stop(),
-            metadata::types::Event::PlayPause => {
+            media_controllers::types::Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
+            media_controllers::types::Event::Play => Self::internal_play(),
+            media_controllers::types::Event::Pause => Self::internal_pause(),
+            media_controllers::types::Event::Stop => Self::internal_stop(),
+            media_controllers::types::Event::PlayPause => {
                 if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
                     Self::internal_pause();
                 }
@@ -57,7 +57,7 @@ impl Player
                     Self::internal_play();
                 }
             }
-            metadata::types::Event::Seek(position, is_absolute) => {
+            media_controllers::types::Event::Seek(position, is_absolute) => {
                 if is_absolute {
                     Self::internal_seek(position as u64);
                 }
@@ -97,7 +97,7 @@ impl Player
         reset_controls_to_default();
         audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
-        metadata::dispose();
+        media_controllers::dispose();
     }
 
     // ---------------------------------
@@ -218,7 +218,7 @@ impl Player
         update_playback_state_stream(PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(PlaybackState::Play);
+        crate::media_controllers::set_playback_state(PlaybackState::Play);
     }
 
     /// Allows for access in other places
@@ -235,7 +235,7 @@ impl Player
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(PlaybackState::Pause);
+        crate::media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
     /// Allows for access in other places
@@ -260,7 +260,7 @@ impl Player
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(PlaybackState::Pause);
+        crate::media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
     fn internal_seek(seconds: u64)
@@ -308,7 +308,7 @@ impl Player
 
     pub fn set_metadata(&self, metadata: Metadata)
     {
-        crate::metadata::set_metadata(metadata);
+        crate::media_controllers::set_metadata(metadata);
     }
 
     pub fn normalize_volume(&self, should_normalize: bool)
@@ -340,7 +340,7 @@ mod tests
 {
     use std::{thread, time::Duration};
 
-    use crate::metadata::types::{MediaControlAction, Metadata};
+    use crate::media_controllers::types::{MediaControlAction, Metadata};
 
     #[test]
     fn open_and_play() -> anyhow::Result<()>

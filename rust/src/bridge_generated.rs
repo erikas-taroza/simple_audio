@@ -19,8 +19,8 @@ use std::sync::Arc;
 
 // Section: imports
 
-use crate::metadata::types::MediaControlAction;
-use crate::metadata::types::Metadata;
+use crate::media_controllers::types::MediaControlAction;
+use crate::media_controllers::types::Metadata;
 use crate::utils::types::Callback;
 use crate::utils::types::PlaybackState;
 use crate::utils::types::ProgressState;
