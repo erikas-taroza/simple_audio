@@ -32,7 +32,7 @@ use symphonia::{
 };
 
 use crate::{
-    metadata,
+    media_controllers,
     utils::{
         callback_stream::update_callback_stream,
         playback_state_stream::update_playback_state_stream, progress_state_stream::*, types::*,
@@ -283,7 +283,7 @@ impl Decoder
         if PROGRESS.read().unwrap().duration == 0 {
             // Notify OS media controllers about the new duration.
             update_callback_stream(Callback::DurationCalculated);
-            metadata::set_duration(playback.duration);
+            media_controllers::set_duration(playback.duration);
         }
 
         update_progress_state_stream(progress);
@@ -325,7 +325,7 @@ impl Decoder
 
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
-        crate::metadata::set_playback_state(PlaybackState::Done);
+        crate::media_controllers::set_playback_state(PlaybackState::Done);
     }
 
     /// Opens the given source for playback. Returns a `Playback`
