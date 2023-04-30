@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+use std::sync::RwLock;
+
 use self::types::{Event, MediaControlAction, Metadata, MediaController};
 
 use crate::utils::types::PlaybackState;
@@ -21,6 +23,8 @@ use crate::utils::types::PlaybackState;
 pub mod mpris;
 pub mod smtc;
 pub mod types;
+
+static MEDIA_CONTROLLER: RwLock<Option<Box<dyn MediaController>>> = RwLock::new(None);
 
 /// Initialize a platform specific metadata handler.
 #[allow(unused_variables)]
@@ -39,8 +43,8 @@ where
         not(target_os = "ios")
     ))]
     {
-        let mut mpris = mpris::HANDLER.write().unwrap();
-        *mpris = Some(mpris::Mpris::new(actions, dbus_name, callback));
+        let mut lock = MEDIA_CONTROLLER.write().unwrap();
+        *lock = Some(Box::new(mpris::Mpris::new(actions, dbus_name, callback)));
     }
 
     #[cfg(target_os = "windows")]
@@ -51,64 +55,31 @@ where
             return;
         }
 
-        let mut smtc = smtc::HANDLER.write().unwrap();
-        *smtc = Some(smtc::Smtc::new(actions, hwnd.unwrap() as isize, callback));
+        let mut lock = MEDIA_CONTROLLER.write().unwrap();
+        *lock = Some(Box::new(smtc::Smtc::new(actions, hwnd.unwrap() as isize, callback)));
     }
 }
 
 /// Stops the OS's media controller.
 pub fn dispose()
 {
-    #[cfg(all(
-        unix,
-        not(target_os = "macos"),
-        not(target_os = "android"),
-        not(target_os = "ios")
-    ))]
-    {
-        let mut lock = mpris::HANDLER.write().unwrap();
-        if lock.is_none() {
-            return;
-        }
-        let mpris = (*lock).take().unwrap();
-        mpris.stop();
+    let mut lock = MEDIA_CONTROLLER.write().unwrap();
+    if lock.is_none() {
+        return;
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        let mut lock = smtc::HANDLER.write().unwrap();
-        if lock.is_none() {
-            return;
-        }
-        let smtc = (*lock).take().unwrap();
-        smtc.stop();
-    }
+    let controller = (*lock).take().unwrap();
+    controller.stop();
 }
 
 pub fn set_metadata(metadata: Metadata)
 {
-    #[cfg(all(
-        unix,
-        not(target_os = "macos"),
-        not(target_os = "android"),
-        not(target_os = "ios")
-    ))]
-    {
-        let mpris = mpris::HANDLER.read().unwrap();
-        if mpris.is_none() {
-            return;
-        }
-        mpris.as_ref().unwrap().set_metadata(metadata);
+    let lock = MEDIA_CONTROLLER.read().unwrap();
+    if lock.is_none() {
+        return;
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        let smtc = smtc::HANDLER.read().unwrap();
-        if smtc.is_none() {
-            return;
-        }
-        smtc.as_ref().unwrap().set_metadata(metadata);
-    }
+    lock.as_ref().unwrap().set_metadata(metadata);
 }
 
 /// Sets the file's duration for the OS's media controller.
@@ -117,52 +88,20 @@ pub fn set_metadata(metadata: Metadata)
 /// in the decoder.
 pub fn set_duration(duration: u64)
 {
-    #[cfg(all(
-        unix,
-        not(target_os = "macos"),
-        not(target_os = "android"),
-        not(target_os = "ios")
-    ))]
-    {
-        let mpris = mpris::HANDLER.read().unwrap();
-        if mpris.is_none() {
-            return;
-        }
-        mpris.as_ref().unwrap().set_duration(duration);
+    let lock = MEDIA_CONTROLLER.read().unwrap();
+    if lock.is_none() {
+        return;
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        let smtc = smtc::HANDLER.read().unwrap();
-        if smtc.is_none() {
-            return;
-        }
-        smtc.as_ref().unwrap().set_duration(duration);
-    }
+    lock.as_ref().unwrap().set_duration(duration);
 }
 
 pub fn set_playback_state(state: PlaybackState)
 {
-    #[cfg(all(
-        unix,
-        not(target_os = "macos"),
-        not(target_os = "android"),
-        not(target_os = "ios")
-    ))]
-    {
-        let mpris = mpris::HANDLER.read().unwrap();
-        if mpris.is_none() {
-            return;
-        }
-        mpris.as_ref().unwrap().set_playback_state(state);
+    let lock = MEDIA_CONTROLLER.read().unwrap();
+    if lock.is_none() {
+        return;
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        let smtc = smtc::HANDLER.read().unwrap();
-        if smtc.is_none() {
-            return;
-        }
-        smtc.as_ref().unwrap().set_playback_state(state);
-    }
+    lock.as_ref().unwrap().set_playback_state(state);
 }

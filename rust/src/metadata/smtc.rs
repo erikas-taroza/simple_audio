@@ -17,7 +17,7 @@
 #![cfg(target_os = "windows")]
 
 use std::{
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
     time::Duration,
 };
 
@@ -38,8 +38,6 @@ use crate::{utils::types::PlaybackState};
 
 use super::types::{Event, MediaControlAction, Metadata, MediaController};
 
-pub static HANDLER: RwLock<Option<Smtc>> = RwLock::new(None);
-
 pub struct Smtc
 {
     controls: SystemMediaTransportControls,
@@ -49,9 +47,9 @@ pub struct Smtc
     playback_pos_token: EventRegistrationToken,
 }
 
-impl MediaController<isize> for Smtc
+impl Smtc
 {
-    fn new<C>(actions: Vec<MediaControlAction>, hwnd: isize, callback: C) -> Self
+    pub fn new<C>(actions: Vec<MediaControlAction>, hwnd: isize, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static,
     {
@@ -135,8 +133,11 @@ impl MediaController<isize> for Smtc
             playback_pos_token,
         }
     }
+}
 
-    fn stop(self)
+impl MediaController for Smtc
+{
+    fn stop(&self)
     {
         self.controls
             .RemoveButtonPressed(self.button_press_token)

@@ -26,8 +26,8 @@
 
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, RwLock},
-    thread::{self, JoinHandle},
+    sync::{Arc, Mutex},
+    thread,
     time::Duration,
 };
 
@@ -42,29 +42,13 @@ use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
 use super::types::{Command, Event, MediaControlAction, Metadata, MediaController};
 
-pub static HANDLER: RwLock<Option<Mpris>> = RwLock::new(None);
-
 pub struct Mpris
 {
     tx: crossbeam::channel::Sender<Command>,
-    handle: JoinHandle<()>,
 }
 
-impl MediaController<String> for Mpris
+impl MediaController for Mpris
 {
-    fn new<C>(actions: Vec<MediaControlAction>, dbus_name: String, callback: C) -> Self
-    where
-        C: Fn(Event) + Send + 'static,
-    {
-        let (tx, rx) = unbounded::<Command>();
-
-        let handle = thread::spawn(move || {
-            pollster::block_on(Self::run(actions, dbus_name, rx, callback)).unwrap();
-        });
-
-        Mpris { tx, handle }
-    }
-
     fn set_metadata(&self, metadata: Metadata)
     {
         self.tx.send(Command::SetMetadata(metadata)).unwrap();
@@ -80,15 +64,27 @@ impl MediaController<String> for Mpris
         self.tx.send(Command::SetPlaybackState(state)).unwrap();
     }
 
-    fn stop(self)
+    fn stop(&self)
     {
         self.tx.send(Command::Stop).unwrap();
-        let _ = self.handle.join();
     }
 }
 
 impl Mpris
 {
+    pub fn new<C>(actions: Vec<MediaControlAction>, dbus_name: String, callback: C) -> Self
+    where
+        C: Fn(Event) + Send + 'static,
+    {
+        let (tx, rx) = unbounded::<Command>();
+
+        thread::spawn(move || {
+            pollster::block_on(Self::run(actions, dbus_name, rx, callback)).unwrap();
+        });
+
+        Mpris { tx }
+    }
+
     async fn run<C>(
         actions: Vec<MediaControlAction>,
         dbus_name: String,

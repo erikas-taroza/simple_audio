@@ -16,15 +16,12 @@
 
 use crate::utils::types::PlaybackState;
 
-pub trait MediaController<T>
+pub trait MediaController: Send + Sync
 {
-    fn new<C>(actions: Vec<MediaControlAction>, id: T, callback: C) -> Self
-    where
-        C: Fn(Event) + Send + 'static;
     fn set_metadata(&self, metadata: Metadata);
     fn set_duration(&self, duration: u64);
     fn set_playback_state(&self, state: PlaybackState);
-    fn stop(self);
+    fn stop(&self);
 }
 
 /// The metadata of the currently playing file
