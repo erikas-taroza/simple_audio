@@ -29,7 +29,7 @@ use audio::{
 };
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::StreamSink;
-use media_controllers::types::{MediaControlAction, Metadata};
+use media_controllers::types::{MediaControlAction, Metadata, Event};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 
@@ -41,15 +41,13 @@ impl Player
 {
     pub fn new(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>) -> Player
     {
-        crate::media_controllers::init(actions, dbus_name, hwnd, |e| match e {
-            media_controllers::types::Event::Previous => {
-                update_callback_stream(Callback::MediaControlSkipPrev)
-            }
-            media_controllers::types::Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
-            media_controllers::types::Event::Play => Self::internal_play(),
-            media_controllers::types::Event::Pause => Self::internal_pause(),
-            media_controllers::types::Event::Stop => Self::internal_stop(),
-            media_controllers::types::Event::PlayPause => {
+        media_controllers::init(actions, dbus_name, hwnd, |e| match e {
+            Event::Previous => update_callback_stream(Callback::MediaControlSkipPrev),
+            Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
+            Event::Play => Self::internal_play(),
+            Event::Pause => Self::internal_pause(),
+            Event::Stop => Self::internal_stop(),
+            Event::PlayPause => {
                 if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
                     Self::internal_pause();
                 }
@@ -57,7 +55,7 @@ impl Player
                     Self::internal_play();
                 }
             }
-            media_controllers::types::Event::Seek(position, is_absolute) => {
+            Event::Seek(position, is_absolute) => {
                 if is_absolute {
                     Self::internal_seek(position as u64);
                 }
@@ -218,7 +216,7 @@ impl Player
         update_playback_state_stream(PlaybackState::Play);
         IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::media_controllers::set_playback_state(PlaybackState::Play);
+        media_controllers::set_playback_state(PlaybackState::Play);
     }
 
     /// Allows for access in other places
@@ -235,7 +233,7 @@ impl Player
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
-        crate::media_controllers::set_playback_state(PlaybackState::Pause);
+        media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
     /// Allows for access in other places
@@ -260,7 +258,7 @@ impl Player
         update_playback_state_stream(PlaybackState::Pause);
         IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
         IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
-        crate::media_controllers::set_playback_state(PlaybackState::Pause);
+        media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
     fn internal_seek(seconds: u64)
@@ -308,7 +306,7 @@ impl Player
 
     pub fn set_metadata(&self, metadata: Metadata)
     {
-        crate::media_controllers::set_metadata(metadata);
+        media_controllers::set_metadata(metadata);
     }
 
     pub fn normalize_volume(&self, should_normalize: bool)
