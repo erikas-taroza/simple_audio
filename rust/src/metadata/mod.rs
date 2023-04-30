@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use self::types::{Event, MediaControlAction, Metadata};
+use self::types::{Event, MediaControlAction, Metadata, MediaController};
 
 use crate::utils::types::PlaybackState;
 

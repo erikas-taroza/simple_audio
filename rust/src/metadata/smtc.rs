@@ -34,9 +34,9 @@ use windows::{
     Win32::{Foundation::HWND, System::WinRT::ISystemMediaTransportControlsInterop},
 };
 
-use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
+use crate::{utils::types::PlaybackState};
 
-use super::types::{Event, MediaControlAction, Metadata};
+use super::types::{Event, MediaControlAction, Metadata, MediaController};
 
 pub static HANDLER: RwLock<Option<Smtc>> = RwLock::new(None);
 
@@ -49,9 +49,9 @@ pub struct Smtc
     playback_pos_token: EventRegistrationToken,
 }
 
-impl Smtc
+impl MediaController<isize> for Smtc
 {
-    pub fn new<C>(actions: Vec<MediaControlAction>, hwnd: isize, callback: C) -> Self
+    fn new<C>(actions: Vec<MediaControlAction>, hwnd: isize, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static,
     {
@@ -136,7 +136,7 @@ impl Smtc
         }
     }
 
-    pub fn stop(self)
+    fn stop(self)
     {
         self.controls
             .RemoveButtonPressed(self.button_press_token)
@@ -148,7 +148,7 @@ impl Smtc
         self.display.Update().unwrap();
     }
 
-    pub fn set_metadata(&self, metadata: Metadata)
+    fn set_metadata(&self, metadata: Metadata)
     {
         let properties = self.display.MusicProperties().unwrap();
 
@@ -196,7 +196,7 @@ impl Smtc
         self.display.Update().unwrap();
     }
 
-    pub fn set_duration(&self, duration: u64)
+    fn set_duration(&self, duration: u64)
     {
         self.timeline
             .SetEndTime(Duration::from_secs(duration).into())
@@ -210,7 +210,7 @@ impl Smtc
             .unwrap();
     }
 
-    pub fn set_playback_state(&self, state: PlaybackState)
+    fn set_playback_state(&self, state: PlaybackState)
     {
         let status: MediaPlaybackStatus = match state {
             PlaybackState::Play => MediaPlaybackStatus::Playing,

@@ -40,7 +40,7 @@ use zbus::{
 
 use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
-use super::types::{Command, Event, MediaControlAction, Metadata};
+use super::types::{Command, Event, MediaControlAction, Metadata, MediaController};
 
 pub static HANDLER: RwLock<Option<Mpris>> = RwLock::new(None);
 
@@ -50,9 +50,9 @@ pub struct Mpris
     handle: JoinHandle<()>,
 }
 
-impl Mpris
+impl MediaController<String> for Mpris
 {
-    pub fn new<C>(actions: Vec<MediaControlAction>, dbus_name: String, callback: C) -> Self
+    fn new<C>(actions: Vec<MediaControlAction>, dbus_name: String, callback: C) -> Self
     where
         C: Fn(Event) + Send + 'static,
     {
@@ -65,27 +65,30 @@ impl Mpris
         Mpris { tx, handle }
     }
 
-    pub fn set_metadata(&self, metadata: Metadata)
+    fn set_metadata(&self, metadata: Metadata)
     {
         self.tx.send(Command::SetMetadata(metadata)).unwrap();
     }
 
-    pub fn set_duration(&self, duration: u64)
+    fn set_duration(&self, duration: u64)
     {
         self.tx.send(Command::SetDuration(duration)).unwrap();
     }
 
-    pub fn set_playback_state(&self, state: PlaybackState)
+    fn set_playback_state(&self, state: PlaybackState)
     {
         self.tx.send(Command::SetPlaybackState(state)).unwrap();
     }
 
-    pub fn stop(self)
+    fn stop(self)
     {
         self.tx.send(Command::Stop).unwrap();
         let _ = self.handle.join();
     }
+}
 
+impl Mpris
+{
     async fn run<C>(
         actions: Vec<MediaControlAction>,
         dbus_name: String,
