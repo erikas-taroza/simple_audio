@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+// MPRIS docs: https://buildmedia.readthedocs.org/media/pdf/mpris2/latest/mpris2.pdf
 // Reference: https://github.com/Sinono3/souvlaki
 
 #![cfg(all(
@@ -31,14 +32,7 @@ use std::{
 };
 
 use crossbeam::channel::{unbounded, Receiver};
-use dbus::{
-    arg::{RefArg, Variant},
-    blocking::{stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged, Connection},
-    channel::{MatchingReceiver, Sender},
-    message::{MatchRule, SignalArgs},
-    Path,
-};
-use dbus_crossroads::{Crossroads, IfaceBuilder};
+use zbus::{dbus_interface, zvariant::{Value, ObjectPath}, blocking::ConnectionBuilder};
 
 use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
 
@@ -61,7 +55,8 @@ impl Mpris
         let (tx, rx) = unbounded::<Command>();
 
         let handle = thread::spawn(move || {
-            Self::run(actions, dbus_name, rx, callback).unwrap();
+            pollster::block_on(Self::run(actions, dbus_name, rx, callback))
+                .unwrap();
         });
 
         Mpris { tx, handle }
@@ -88,287 +83,266 @@ impl Mpris
         let _ = self.handle.join();
     }
 
-    fn run<C>(
+    async fn run<C>(
         actions: Vec<MediaControlAction>,
         dbus_name: String,
         rx: Receiver<Command>,
         callback: C,
-    ) -> Result<(), dbus::Error>
+    ) -> Result<(), zbus::Error>
     where
         C: Fn(Event) + Send + 'static,
     {
         let bus_name = dbus_name.split('.').last().unwrap().to_string();
 
-        let callback = Arc::new(Mutex::new(callback));
+        let app_interface = AppInterface {
+            name: bus_name.clone(),
+        };
 
-        let conn = Connection::new_session()?;
+        let player_interface = PlayerInterface {
+            actions,
+            callback: Arc::new(Mutex::new(callback)),
+            metadata: Default::default(),
+            playback_state: PlaybackState::Done,
+            duration: 0,
+        };
 
-        conn.request_name(
-            format!("org.mpris.MediaPlayer2.{bus_name}"),
-            false,
-            true,
-            false,
-        )?;
+        let full_bus_name = format!("org.mpris.MediaPlayer2.{bus_name}");
+        let bus_path = ObjectPath::try_from("/org/mpris/MediaPlayer2")?;
 
-        let mut cr = Crossroads::new();
-
-        let metadata = Arc::new(Mutex::new(Metadata::default()));
-        let playback_state = Arc::new(Mutex::new(PlaybackState::Done));
-
-        let bus_name_clone = bus_name.clone();
-        let mp = cr.register("org.mpris.MediaPlayer2", move |e: &mut IfaceBuilder<()>| {
-            e.property("Identity")
-                .get(move |_, &mut _| Ok(bus_name_clone.clone()));
-            e.property("CanQuit")
-                .get(|_, &mut _| Ok(false))
-                .emits_changed_true();
-            e.property("CanRaise")
-                .get(|_, &mut _| Ok(true))
-                .emits_changed_true();
-            e.property("HasTracklist")
-                .get(|_, &mut _| Ok(false))
-                .emits_changed_true();
-
-            // Open the app when the MPRIS notification is clicked.
-            e.method("Raise", (), (), move |_, _, _: ()| {
-                let process = std::env::current_exe().unwrap();
-
-                let _ = std::process::Command::new(process).spawn();
-
-                Ok(())
-            });
-        });
-
-        let mpp = cr.register(
-            "org.mpris.MediaPlayer2.Player",
-            |e: &mut IfaceBuilder<()>| {
-                let callback = callback.clone();
-
-                // Defaults
-                register_method(e, &callback, "Stop", Event::Stop);
-
-                e.property("CanControl")
-                    .get(|_, _| Ok(true))
-                    .emits_changed_true();
-
-                e.property("Metadata")
-                    .get({
-                        let metadata = metadata.clone();
-                        move |_, _| Ok(metadata_to_map(&metadata.lock().unwrap(), 0))
-                    })
-                    .emits_changed_true();
-
-                e.property("PlaybackStatus")
-                    .get({
-                        let playback_state = playback_state.clone();
-                        move |_, _| Ok(playback_state_to_string(&playback_state.lock().unwrap()))
-                    })
-                    .emits_changed_true();
-
-                e.property("Position").get(move |_, _| {
-                    let position: i64 = PROGRESS.read().unwrap().position as i64;
-                    Ok(position)
-                });
-
-                e.property("CanSeek")
-                    .get(|_, _| Ok(true))
-                    .emits_changed_true();
-
-                e.method("Seek", ("Offset",), (), {
-                    let callback = callback.clone();
-                    let actions = actions.to_vec();
-
-                    move |ctx, _, (offset,): (i64,)| {
-                        let offset = offset * 1_000_000;
-
-                        //TODO: This needs testing.
-                        if actions.contains(&MediaControlAction::Rewind)
-                            || actions.contains(&MediaControlAction::FastForward)
-                        {
-                            callback.lock().unwrap()(Event::Seek(offset, false));
-                        }
-
-                        ctx.push_msg(ctx.make_signal("Seeked", ()));
-                        Ok(())
-                    }
-                });
-
-                e.method("SetPosition", ("TrackId", "Position"), (), {
-                    let callback = callback.clone();
-                    move |_, _, (_track_id, position): (Path, i64)| {
-                        if position > PROGRESS.read().unwrap().duration as i64 {
-                            return Ok(());
-                        }
-
-                        if let Ok(position) = u64::try_from(position) {
-                            callback.lock().unwrap()(Event::Seek(
-                                (position * 1_000_000) as i64,
-                                true,
-                            ));
-                        }
-
-                        Ok(())
-                    }
-                });
-
-                // The following actions can be tweaked by the user.
-                for action in &actions {
-                    match action {
-                        MediaControlAction::SkipPrev => {
-                            register_method(e, &callback, "Previous", Event::Previous);
-
-                            e.property("CanGoPrevious")
-                                .get(|_, _| Ok(true))
-                                .emits_changed_true();
-                        }
-                        MediaControlAction::PlayPause => {
-                            register_method(e, &callback, "Play", Event::Play);
-                            register_method(e, &callback, "Pause", Event::Pause);
-                            register_method(e, &callback, "PlayPause", Event::PlayPause);
-
-                            e.property("CanPlay")
-                                .get(|_, _| Ok(true))
-                                .emits_changed_true();
-                            e.property("CanPause")
-                                .get(|_, _| Ok(true))
-                                .emits_changed_true();
-                        }
-                        MediaControlAction::SkipNext => {
-                            register_method(e, &callback, "Next", Event::Next);
-
-                            e.property("CanGoNext")
-                                .get(|_, _| Ok(true))
-                                .emits_changed_true();
-                        }
-                        _ => continue,
-                    }
-                }
-            },
-        );
-
-        cr.insert("/org/mpris/MediaPlayer2", &[mp, mpp], ());
-
-        conn.start_receive(
-            MatchRule::new_method_call(),
-            Box::new(move |message, conn| {
-                cr.handle_message(message, conn).unwrap();
-                true
-            }),
-        );
+        let conn = ConnectionBuilder::session()?
+            .serve_at(&bus_path, app_interface)?
+            .serve_at(&bus_path, player_interface)?
+            .name(full_bus_name.as_str())?
+            .build()?;
 
         loop {
             // Check for any new commands.
             match rx.try_recv() {
                 Err(_) => (),
                 Ok(message) => {
-                    let mut changes: HashMap<String, Variant<Box<dyn RefArg>>> = HashMap::new();
+                    let player_iface_ref = conn
+                        .object_server()
+                        .interface::<_, PlayerInterface>(&bus_path)?;
+
+                    let mut player_iface = player_iface_ref.get_mut();
+
+                    let context = player_iface_ref.signal_context();
 
                     match message {
                         Command::SetMetadata(data) => {
-                            let mut metadata = metadata.lock().unwrap();
-                            *metadata = data;
-
-                            changes.insert(
-                                "Metadata".to_string(),
-                                Variant(metadata_to_map(&metadata, 0).box_clone()),
-                            );
+                            player_iface.metadata = data;
+                            player_iface.metadata_changed(&context).await?;
                         }
                         Command::SetDuration(duration) => {
-                            let metadata = metadata.lock().unwrap();
-                            changes.insert(
-                                "Metadata".to_string(),
-                                Variant(metadata_to_map(&metadata, duration).box_clone()),
-                            );
+                            player_iface.duration = duration;
+                            player_iface.metadata_changed(&context).await?;
                         }
                         Command::SetPlaybackState(state) => {
-                            let mut playback_state = playback_state.lock().unwrap();
-                            *playback_state = state;
-
-                            changes.insert(
-                                "PlaybackStatus".to_string(),
-                                Variant(Box::new(playback_state_to_string(&playback_state))),
-                            );
+                            player_iface.playback_state = state;
+                            player_iface.playback_status_changed(&context).await?;
                         }
                         Command::Stop => break,
                     }
-
-                    let properties_changed = PropertiesPropertiesChanged {
-                        interface_name: "org.mpris.MediaPlayer2.Player".to_owned(),
-                        changed_properties: changes,
-                        invalidated_properties: Vec::new(),
-                    };
-
-                    conn.send(
-                        properties_changed
-                            .to_emit_message(&Path::new("/org/mpris/MediaPlayer2").unwrap()),
-                    )
-                    .unwrap();
                 }
             }
-
-            conn.process(Duration::from_millis(200))?;
         }
 
         // Clean up.
-        conn.release_name(format!("org.mpris.MediaPlayer2.{bus_name}"))?;
+        conn.release_name(full_bus_name)?;
 
         Ok(())
     }
 }
 
-/// Helper method to register callbacks to a MPRIS callback.
-fn register_method<C>(
-    e: &mut IfaceBuilder<()>,
-    callback: &Arc<Mutex<C>>,
-    name: &'static str,
-    event: Event,
-) where
-    C: Fn(Event) + Send + 'static,
+/// D-Bus interface that describes the app and its MPRIS capabilities
+/// (ex. can raise).
+struct AppInterface
 {
-    let callback = callback.clone();
-    e.method(name, (), (), move |_, _, _: ()| {
-        callback.lock().unwrap()(event);
-        Ok(())
-    });
+    name: String
 }
 
-/// Converts the metadata object to a map that the MPRIS interface uses.
-fn metadata_to_map(metadata: &Metadata, duration: u64)
-    -> HashMap<String, Variant<Box<dyn RefArg>>>
+#[dbus_interface(name = "org.mpris.MediaPlayer2")]
+impl AppInterface
 {
-    let mut map = HashMap::<String, Variant<Box<dyn RefArg>>>::new();
-
-    let path = Path::new("/").unwrap();
-
-    map.insert("mpris:trackid".to_string(), Variant(Box::new(path)));
-
-    if let Some(title) = metadata.title.clone() {
-        map.insert("xesam:title".to_string(), Variant(Box::new(title)));
+    #[dbus_interface(property)]
+    fn identity(&self) -> &str
+    {
+        &self.name
     }
 
-    if let Some(artist) = metadata.artist.clone() {
-        map.insert("xesam:artist".to_string(), Variant(Box::new(vec![artist])));
+    #[dbus_interface(property)]
+    fn can_quit(&self) -> bool
+    {
+        false
     }
 
-    if let Some(album) = metadata.album.clone() {
-        map.insert("xesam:album".to_string(), Variant(Box::new(album)));
+    #[dbus_interface(property)]
+    fn can_raise(&self) -> bool
+    {
+        true
     }
 
-    if let Some(art_uri) = metadata.art_uri.clone() {
-        map.insert("mpris:artUrl".to_string(), Variant(Box::new(art_uri)));
+    #[dbus_interface(property)]
+    fn has_tracklist(&self) -> bool
+    {
+        false
     }
 
-    map.insert("mpris:length".to_string(), Variant(Box::new(duration)));
-
-    map
+    fn raise(&self)
+    {
+        let process = std::env::current_exe().unwrap();
+        let _ = std::process::Command::new(process).spawn();
+    }
 }
 
-/// Converts the playback status to a string that MPRIS can use.
-fn playback_state_to_string(state: &PlaybackState) -> String
+/// D-Bus interface that describes the app's player and its MPRIS capabilities
+/// (ex. play/pause).
+struct PlayerInterface
 {
-    match state {
-        PlaybackState::Play => "Playing".to_string(),
-        PlaybackState::Pause => "Paused".to_string(),
-        _ => "Paused".to_string(),
+    actions: Vec<MediaControlAction>,
+    callback: Arc<Mutex<dyn Fn(Event) + Send + 'static>>,
+    duration: u64,
+    metadata: Metadata,
+    playback_state: PlaybackState,
+}
+
+#[dbus_interface(name = "org.mpris.MediaPlayer2.Player")]
+impl PlayerInterface
+{
+    #[dbus_interface(property)]
+    fn can_control(&self) -> bool
+    {
+        true
+    }
+
+    #[dbus_interface(property)]
+    fn can_seek(&self) -> bool
+    {
+        true
+    }
+
+    #[dbus_interface(property)]
+    fn can_play(&self) -> bool
+    {
+        true
+    }
+
+    #[dbus_interface(property)]
+    fn can_pause(&self) -> bool
+    {
+        true
+    }
+
+    #[dbus_interface(property)]
+    fn can_go_previous(&self) -> bool
+    {
+        self.actions.contains(&MediaControlAction::SkipPrev)
+    }
+
+    #[dbus_interface(property)]
+    fn can_go_next(&self) -> bool
+    {
+        self.actions.contains(&MediaControlAction::SkipNext)
+    }
+
+    #[dbus_interface(property)]
+    fn position(&self) -> i64
+    {
+        let position = PROGRESS.read().unwrap().position;
+        let in_micros = Duration::from_secs(position).as_micros();
+        in_micros.try_into().unwrap_or_default()
+    }
+    
+    #[dbus_interface(property)]
+    fn playback_status(&self) -> &'static str
+    {
+        match self.playback_state {
+            PlaybackState::Play => "Playing",
+            PlaybackState::Pause => "Paused",
+            _ => "Paused",
+        }
+    }
+
+    #[dbus_interface(property)]
+    fn metadata(&self) -> HashMap<&str, Value>
+    {
+        let mut map = HashMap::<&str, Value>::new();
+
+        let path = ObjectPath::try_from("/").unwrap();
+        map.insert("mpris:trackid", Value::new(path));
+
+        if let Some(title) = self.metadata.title.clone() {
+            map.insert("xesam:title", Value::new(title));
+        }
+
+        if let Some(artist) = self.metadata.artist.clone() {
+            map.insert("xesam:artist", Value::new(vec![artist]));
+        }
+
+        if let Some(album) = self.metadata.album.clone() {
+            map.insert("xesam:album", Value::new(album));
+        }
+
+        if let Some(art_uri) = self.metadata.art_uri.clone() {
+            map.insert("mpris:artUrl", Value::new(art_uri));
+        }
+
+        let as_micros: i64 = Duration::from_secs(self.duration).as_micros()
+            .try_into().unwrap_or_default();
+        map.insert("mpris:length", Value::new(as_micros));
+
+        map
+    }
+
+    fn seek(&self, offset: i64)
+    {
+        let in_seconds = Duration::from_micros(offset.unsigned_abs()).as_secs()
+            .try_into().unwrap_or_default();
+
+        // Seeking forward
+        if offset.is_positive() && self.actions.contains(&MediaControlAction::FastForward) {
+            self.callback.lock().unwrap()(Event::Seek(in_seconds, false));
+        }
+        // Seeking backwards
+        else if offset.is_negative() && self.actions.contains(&MediaControlAction::Rewind) {
+            self.callback.lock().unwrap()(Event::Seek(-in_seconds, false));
+        }
+    }
+
+    fn set_position(&self, _track_id: ObjectPath, position: i64)
+    {
+        let in_seconds = Duration::from_micros(position.unsigned_abs()).as_secs()
+            .try_into().unwrap_or_default();
+        self.callback.lock().unwrap()(Event::Seek(in_seconds, true));
+    }
+
+    fn stop(&self)
+    {
+        self.callback.lock().unwrap()(Event::Stop);
+    }
+
+    fn previous(&self)
+    {
+        self.callback.lock().unwrap()(Event::Previous);
+    }
+
+    fn play(&self)
+    {
+        self.callback.lock().unwrap()(Event::Play);
+    }
+
+    fn pause(&self)
+    {
+        self.callback.lock().unwrap()(Event::Pause);
+    }
+
+    fn play_pause(&self)
+    {
+        self.callback.lock().unwrap()(Event::PlayPause);
+    }
+
+    fn next(&self)
+    {
+        self.callback.lock().unwrap()(Event::Next);
     }
 }
