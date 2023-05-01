@@ -14,47 +14,99 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-// A file that defines controls globally.
-
-use std::sync::{atomic::AtomicBool, RwLock};
+use std::sync::{atomic::AtomicBool, Arc, RwLock, RwLockReadGuard};
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use lazy_static::lazy_static;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
 
-lazy_static! {
-    /// Use this to communicate between the main thread and the decoder thread.
-    /// Ex: play/pause commands.
-    pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
+/// Creates a getter and setter for an AtomicBool.
+macro_rules! getset_atomic_bool {
+    ($name:ident, $setter_name:ident) => {
+        pub fn $name(&self) -> bool
+        {
+            self.$name.load(std::sync::atomic::Ordering::SeqCst)
+        }
+
+        pub fn $setter_name(&self, value: bool)
+        {
+            self.$name.store(value, std::sync::atomic::Ordering::SeqCst);
+        }
+    };
 }
 
-pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
-pub static IS_STOPPED: AtomicBool = AtomicBool::new(true);
-pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
-pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
-pub static IS_FILE_PRELOADED: AtomicBool = AtomicBool::new(false);
-pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
-pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
-pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState {
-    position: 0,
-    duration: 0,
-});
+/// Creates a getter and setter for an RwLock.
+macro_rules! getset_rwlock {
+    ($name:ident, $setter_name:ident, $lock_type:ty) => {
+        pub fn $name(&self) -> RwLockReadGuard<'_, $lock_type>
+        {
+            self.$name.read().unwrap()
+        }
 
-pub fn reset_controls_to_default()
-{
-    IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-    IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
-    IS_LOOPING.store(false, std::sync::atomic::Ordering::SeqCst);
-    IS_NORMALIZING.store(false, std::sync::atomic::Ordering::SeqCst);
-    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
-    *VOLUME.write().unwrap() = 1.0;
-    *SEEK_TS.write().unwrap() = None;
-    *PROGRESS.write().unwrap() = ProgressState {
-        position: 0,
-        duration: 0,
+        pub fn $setter_name(&self, value: $lock_type)
+        {
+            *self.$name.write().unwrap() = value;
+        }
     };
+}
+
+type EventHandler = (Sender<ThreadMessage>, Receiver<ThreadMessage>);
+
+#[derive(Clone)]
+pub struct Controls
+{
+    event_handler: Arc<RwLock<EventHandler>>,
+    is_playing: Arc<AtomicBool>,
+    is_stopped: Arc<AtomicBool>,
+    is_looping: Arc<AtomicBool>,
+    is_normalizing: Arc<AtomicBool>,
+    is_file_preloaded: Arc<AtomicBool>,
+    volume: Arc<RwLock<f32>>,
+    seek_ts: Arc<RwLock<Option<u64>>>,
+    progress: Arc<RwLock<ProgressState>>,
+}
+
+impl Controls
+{
+    getset_rwlock!(event_handler, _set_event_handler, EventHandler);
+    getset_atomic_bool!(is_playing, set_is_playing);
+    getset_atomic_bool!(is_stopped, set_is_stopped);
+    getset_atomic_bool!(is_looping, set_is_looping);
+    getset_atomic_bool!(is_normalizing, set_is_normalizing);
+    getset_atomic_bool!(is_file_preloaded, set_is_file_preloaded);
+    getset_rwlock!(volume, set_volume, f32);
+    getset_rwlock!(seek_ts, set_seek_ts, Option<u64>);
+    getset_rwlock!(progress, set_progress, ProgressState);
+}
+
+impl Default for Controls
+{
+    fn default() -> Self
+    {
+        Controls {
+            event_handler: Arc::new(RwLock::new(unbounded())),
+            is_playing: Arc::new(AtomicBool::new(false)),
+            is_stopped: Arc::new(AtomicBool::new(true)),
+            is_looping: Arc::new(AtomicBool::new(false)),
+            is_normalizing: Arc::new(AtomicBool::new(false)),
+            is_file_preloaded: Arc::new(AtomicBool::new(false)),
+            volume: Arc::new(RwLock::new(1.0)),
+            seek_ts: Arc::new(RwLock::new(None)),
+            progress: Arc::new(RwLock::new(ProgressState {
+                position: 0,
+                duration: 0,
+            })),
+        }
+    }
+}
+
+impl Drop for Controls
+{
+    fn drop(&mut self)
+    {
+        self.event_handler().0.send(ThreadMessage::Dispose).unwrap();
+    }
 }
 
 pub enum ThreadMessage

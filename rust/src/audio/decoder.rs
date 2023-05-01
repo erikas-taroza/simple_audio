@@ -18,7 +18,6 @@ use std::thread::{self, JoinHandle};
 
 use anyhow::{anyhow, Context};
 use cpal::traits::StreamTrait;
-use crossbeam::channel::Receiver;
 use symphonia::{
     core::{
         audio::{AsAudioBufferRef, AudioBuffer},
@@ -43,7 +42,7 @@ use super::{controls::*, cpal_output::CpalOutput};
 
 pub struct Decoder
 {
-    rx: Receiver<ThreadMessage>,
+    controls: Controls,
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
     playback: Option<Playback>,
@@ -55,12 +54,10 @@ pub struct Decoder
 impl Decoder
 {
     /// Creates a new decoder.
-    pub fn new() -> Self
+    pub fn new(controls: Controls) -> Self
     {
-        let rx = TXRX.read().unwrap().1.clone();
-
         Decoder {
-            rx,
+            controls,
             state: DecoderState::Idle,
             cpal_output: None,
             playback: None,
@@ -112,7 +109,7 @@ impl Decoder
         }
     }
 
-    /// Listens to `self.rx` for any incoming messages.
+    /// Listens for any incoming messages.
     ///
     /// Blocks if the `self.state` is `Idle` or `Paused`.
     ///
@@ -123,10 +120,10 @@ impl Decoder
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
         let recv: Option<ThreadMessage> = if self.state.is_idle() || self.state.is_paused() {
-            self.rx.recv().ok()
+            self.controls.event_handler().1.recv().ok()
         }
         else {
-            self.rx.try_recv().ok()
+            self.controls.event_handler().1.try_recv().ok()
         };
 
         match recv {
@@ -167,12 +164,12 @@ impl Decoder
                 // playback themselves.
                 ThreadMessage::DeviceChanged => {
                     self.cpal_output = None;
-                    crate::Player::internal_pause();
+                    crate::Player::internal_pause(&self.controls);
                 }
                 ThreadMessage::Preload(source) => {
                     self.preload_playback = None;
-                    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
-                    let handle = Self::preload(source);
+                    self.controls.set_is_file_preloaded(false);
+                    let handle = self.preload(source);
                     self.preload_thread = Some(handle);
                 }
                 ThreadMessage::PlayPreload => {
@@ -183,9 +180,9 @@ impl Decoder
                     let (playback, cpal_output) = self.preload_playback.take().unwrap();
                     self.playback = Some(playback);
                     self.cpal_output = Some(cpal_output);
-                    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
+                    self.controls.set_is_file_preloaded(false);
 
-                    crate::Player::internal_play();
+                    crate::Player::internal_play(&self.controls);
                 }
             },
         }
@@ -213,7 +210,8 @@ impl Decoder
             if self.cpal_output.is_none() {
                 let spec = *preload.spec();
                 let duration = preload.capacity() as u64;
-                self.cpal_output.replace(CpalOutput::new(spec, duration)?);
+                self.cpal_output
+                    .replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
             }
 
             let buffer_ref = preload.as_audio_buffer_ref();
@@ -222,7 +220,7 @@ impl Decoder
             return Ok(false);
         }
 
-        if let Some(seek_ts) = *SEEK_TS.read().unwrap() {
+        if let Some(seek_ts) = *self.controls.seek_ts() {
             let seek_to = SeekTo::Time {
                 time: Time::from(seek_ts),
                 track_id: Some(playback.track_id),
@@ -231,8 +229,8 @@ impl Decoder
         }
 
         // Clean up seek stuff.
-        if SEEK_TS.read().unwrap().is_some() {
-            *SEEK_TS.write().unwrap() = None;
+        if self.controls.seek_ts().is_some() {
+            self.controls.set_seek_ts(None);
             playback.decoder.reset();
             // Clear the ring buffer which prevents the writer
             // from blocking.
@@ -248,8 +246,8 @@ impl Decoder
             // An error occurs when the stream
             // has reached the end of the audio.
             Err(_) => {
-                if IS_LOOPING.load(std::sync::atomic::Ordering::SeqCst) {
-                    *SEEK_TS.write().unwrap() = Some(0);
+                if self.controls.is_looping() {
+                    self.controls.set_seek_ts(Some(0));
                     crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
                     return Ok(false);
                 }
@@ -280,20 +278,21 @@ impl Decoder
             duration: playback.duration,
         };
 
-        if PROGRESS.read().unwrap().duration == 0 {
+        if self.controls.progress().duration == 0 {
             // Notify OS media controllers about the new duration.
             update_callback_stream(Callback::DurationCalculated);
             media_controllers::set_duration(playback.duration);
         }
 
         update_progress_state_stream(progress);
-        *PROGRESS.write().unwrap() = progress;
+        self.controls.set_progress(progress);
 
         // Write the decoded packet to CPAL.
         if self.cpal_output.is_none() {
             let spec = *decoded.spec();
             let duration = decoded.capacity() as u64;
-            self.cpal_output.replace(CpalOutput::new(spec, duration)?);
+            self.cpal_output
+                .replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
         }
 
         self.cpal_output.as_mut().unwrap().write(decoded);
@@ -321,10 +320,10 @@ impl Decoder
         };
 
         update_progress_state_stream(progress_state);
-        *PROGRESS.write().unwrap() = progress_state;
+        self.controls.set_progress(progress_state);
 
-        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
+        self.controls.set_is_playing(false);
+        self.controls.set_is_stopped(true);
         crate::media_controllers::set_playback_state(PlaybackState::Done);
     }
 
@@ -382,8 +381,12 @@ impl Decoder
     /// Spawns a thread that decodes the first packet of the source.
     ///
     /// Returns a preloaded `Playback` and `CpalOutput` when complete.
-    fn preload(source: Box<dyn MediaSource>) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
+    fn preload(
+        &self,
+        source: Box<dyn MediaSource>,
+    ) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
     {
+        let controls = self.controls.clone();
         thread::spawn(move || {
             let mut playback = Self::open(source)?;
             // Preload
@@ -397,7 +400,7 @@ impl Decoder
             buf_ref.convert(&mut buf);
             playback.preload = Some(buf);
 
-            let cpal_output = CpalOutput::new(spec, duration)?;
+            let cpal_output = CpalOutput::new(controls, spec, duration)?;
             cpal_output.stream.pause()?;
 
             Ok((playback, cpal_output))
@@ -420,7 +423,7 @@ impl Decoder
             .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
         self.preload_playback.replace((result.0, result.1));
-        IS_FILE_PRELOADED.store(true, std::sync::atomic::Ordering::SeqCst);
+        self.controls.set_is_file_preloaded(true);
 
         Ok(())
     }

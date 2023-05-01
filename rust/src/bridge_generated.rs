@@ -418,7 +418,7 @@ impl support::IntoDart for PlaybackState {
 impl support::IntoDartExceptPrimitive for PlaybackState {}
 impl support::IntoDart for Player {
     fn into_dart(self) -> support::DartAbi {
-        Vec::<u8>::new().into_dart()
+        vec![self.controls.into_dart()].into_dart()
     }
 }
 impl support::IntoDartExceptPrimitive for Player {}

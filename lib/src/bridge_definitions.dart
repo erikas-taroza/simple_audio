@@ -16,8 +16,9 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
-  /// Stops any old players/threads and resets the
-  /// static variables in `controls.rs`.
+  /// Stop media controllers and reset `IS_STREAM_BUFFERING`.
+  ///
+  /// The decoder thread is automatically disposed as the controls are dropped.
   Future<void> disposeStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kDisposeStaticMethodPlayerConstMeta;
@@ -110,6 +111,24 @@ abstract class SimpleAudio {
       {required Player that, required bool shouldNormalize, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta;
+
+  DropFnType get dropOpaqueControls;
+  ShareFnType get shareOpaqueControls;
+  OpaqueTypeFinalizer get ControlsFinalizer;
+}
+
+@sealed
+class Controls extends FrbOpaque {
+  final SimpleAudio bridge;
+  Controls.fromRaw(int ptr, int size, this.bridge) : super.unsafe(ptr, size);
+  @override
+  DropFnType get dropFn => bridge.dropOpaqueControls;
+
+  @override
+  ShareFnType get shareFn => bridge.shareOpaqueControls;
+
+  @override
+  OpaqueTypeFinalizer get staticFinalizer => bridge.ControlsFinalizer;
 }
 
 /// Events that are handled in Dart because they
@@ -195,9 +214,11 @@ enum PlaybackState {
 
 class Player {
   final SimpleAudio bridge;
+  final Controls controls;
 
   const Player({
     required this.bridge,
+    required this.controls,
   });
 
   static Future<Player> newPlayer(
@@ -209,8 +230,9 @@ class Player {
       bridge.newStaticMethodPlayer(
           actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
 
-  /// Stops any old players/threads and resets the
-  /// static variables in `controls.rs`.
+  /// Stop media controllers and reset `IS_STREAM_BUFFERING`.
+  ///
+  /// The decoder thread is automatically disposed as the controls are dropped.
   static Future<void> dispose({required SimpleAudio bridge, dynamic hint}) =>
       bridge.disposeStaticMethodPlayer(hint: hint);
 

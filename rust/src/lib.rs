@@ -27,72 +27,79 @@ use audio::{
     decoder::Decoder,
     sources::{hls::HlsStream, http::HttpStream, local::Local},
 };
-use crossbeam::channel::unbounded;
-use flutter_rust_bridge::StreamSink;
+use flutter_rust_bridge::{RustOpaque, StreamSink};
 use media_controllers::types::{Event, MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 
 use crate::utils::{callback_stream::*, playback_state_stream::*, progress_state_stream::*};
 
-pub struct Player {}
+pub struct Player
+{
+    controls: RustOpaque<Controls>,
+}
 
 impl Player
 {
     pub fn new(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>) -> Player
     {
-        media_controllers::init(actions, dbus_name, hwnd, |e| match e {
-            Event::Previous => update_callback_stream(Callback::MediaControlSkipPrev),
-            Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
-            Event::Play => Self::internal_play(),
-            Event::Pause => Self::internal_pause(),
-            Event::Stop => Self::internal_stop(),
-            Event::PlayPause => {
-                if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
-                    Self::internal_pause();
-                }
-                else {
-                    Self::internal_play();
-                }
-            }
-            Event::Seek(position, is_absolute) => {
-                if is_absolute {
-                    Self::internal_seek(position as u64);
-                }
-                else {
-                    let progress = PROGRESS.read().unwrap();
-                    if position.is_negative() {
-                        Self::internal_seek(
-                            progress.position.saturating_sub(position.unsigned_abs()),
-                        );
+        let player_controls = Controls::default();
+
+        media_controllers::init(actions, dbus_name, hwnd, {
+            let controls = player_controls.clone();
+            move |e| match e {
+                Event::Previous => update_callback_stream(Callback::MediaControlSkipPrev),
+                Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
+                Event::Play => Self::internal_play(&controls),
+                Event::Pause => Self::internal_pause(&controls),
+                Event::Stop => Self::internal_stop(&controls),
+                Event::PlayPause => {
+                    if controls.is_playing() {
+                        Self::internal_pause(&controls);
                     }
                     else {
-                        Self::internal_seek(progress.position + position as u64);
+                        Self::internal_play(&controls);
+                    }
+                }
+                Event::Seek(position, is_absolute) => {
+                    if is_absolute {
+                        Self::internal_seek(&controls, position as u64);
+                    }
+                    else {
+                        let progress = controls.progress();
+                        if position.is_negative() {
+                            Self::internal_seek(
+                                &controls,
+                                progress.position.saturating_sub(position.unsigned_abs()),
+                            );
+                        }
+                        else {
+                            Self::internal_seek(&controls, progress.position + position as u64);
+                        }
                     }
                 }
             }
         });
 
-        let mut txrx = TXRX.write().unwrap();
-        *txrx = unbounded();
-
         // Start the decoding thread.
-        thread::spawn(|| {
-            let decoder = Decoder::new();
-            decoder.start();
+        thread::spawn({
+            let controls = player_controls.clone();
+            move || {
+                let decoder = Decoder::new(controls);
+                decoder.start();
+            }
         });
 
-        Player {}
+        Player {
+            controls: RustOpaque::new(player_controls),
+        }
     }
 
-    /// Stops any old players/threads and resets the
-    /// static variables in `controls.rs`.
+    /// Stop media controllers and reset `IS_STREAM_BUFFERING`.
+    ///
+    /// The decoder thread is automatically disposed as the controls are dropped.
     pub fn dispose()
     {
-        // Stop the working thread.
-        TXRX.read().unwrap().0.send(ThreadMessage::Dispose).unwrap();
-        // Reset the controls in `controls.rs` to default values.
-        reset_controls_to_default();
         audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         media_controllers::dispose();
@@ -106,10 +113,12 @@ impl Player
     {
         playback_state_stream(stream);
     }
+
     pub fn progress_state_stream(stream: StreamSink<ProgressState>)
     {
         progress_state_stream(stream);
     }
+
     pub fn callback_stream(stream: StreamSink<Callback>)
     {
         callback_stream(stream);
@@ -117,18 +126,18 @@ impl Player
 
     pub fn is_playing(&self) -> bool
     {
-        IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+        self.controls.is_playing()
     }
 
     /// Returns `true` if there is a file preloaded for playback.
     pub fn has_preloaded(&self) -> bool
     {
-        IS_FILE_PRELOADED.load(std::sync::atomic::Ordering::SeqCst)
+        self.controls.is_file_preloaded()
     }
 
     pub fn get_progress(&self) -> ProgressState
     {
-        *PROGRESS.read().unwrap()
+        *self.controls.progress()
     }
 
     // ---------------------------------
@@ -167,13 +176,16 @@ impl Player
     {
         let source = Self::source_from_path(path)?;
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
+        self.controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Open(source))?;
 
         if autoplay {
-            Self::internal_play();
+            Self::internal_play(&self.controls);
         }
         else {
-            Self::internal_pause();
+            Self::internal_pause(&self.controls);
         }
 
         Ok(())
@@ -187,8 +199,8 @@ impl Player
     pub fn preload(&self, path: String) -> anyhow::Result<()>
     {
         let source = Self::source_from_path(path)?;
-        TXRX.read()
-            .unwrap()
+        self.controls
+            .event_handler()
             .0
             .send(ThreadMessage::Preload(source))?;
 
@@ -198,41 +210,52 @@ impl Player
     /// Plays the preloaded item from `preload`. The file starts playing automatically.
     pub fn play_preload(&self) -> anyhow::Result<()>
     {
-        TXRX.read().unwrap().0.send(ThreadMessage::PlayPreload)?;
+        self.controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::PlayPreload)?;
         Ok(())
     }
 
     /// Allows for access in other places
     /// where we would want to update the stream and
     /// the `IS_PLAYING` AtomicBool.
-    fn internal_play()
+    fn internal_play(controls: &Controls)
     {
-        if IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
+        if controls.is_playing() {
             return;
         }
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Play).unwrap();
+        controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Play)
+            .unwrap();
 
         update_playback_state_stream(PlaybackState::Play);
-        IS_PLAYING.store(true, std::sync::atomic::Ordering::SeqCst);
-        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
+        controls.set_is_playing(true);
+        controls.set_is_stopped(false);
         media_controllers::set_playback_state(PlaybackState::Play);
     }
 
     /// Allows for access in other places
     /// where we would want to update the stream and
     /// the `IS_PLAYING` AtomicBool.
-    fn internal_pause()
+    fn internal_pause(controls: &Controls)
     {
-        if !IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst) {
+        if !controls.is_playing() {
             return;
         }
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Pause).unwrap();
+        controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Pause)
+            .unwrap();
 
         update_playback_state_stream(PlaybackState::Pause);
-        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        IS_STOPPED.store(false, std::sync::atomic::Ordering::SeqCst);
+        controls.set_is_playing(false);
+        controls.set_is_stopped(false);
         media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
@@ -240,13 +263,17 @@ impl Player
     /// where we would want to update the stream and
     /// the `IS_PLAYING` AtomicBool.
     /// This stops all threads that are streaming.
-    fn internal_stop()
+    fn internal_stop(controls: &Controls)
     {
-        if IS_STOPPED.load(std::sync::atomic::Ordering::SeqCst) {
+        if controls.is_stopped() {
             return;
         }
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
+        controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Stop)
+            .unwrap();
 
         let progress = ProgressState {
             position: 0,
@@ -254,19 +281,19 @@ impl Player
         };
 
         update_progress_state_stream(progress);
-        *PROGRESS.write().unwrap() = progress;
+        controls.set_progress(progress);
         update_playback_state_stream(PlaybackState::Pause);
-        IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-        IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
+        controls.set_is_playing(false);
+        controls.set_is_stopped(true);
         media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
-    fn internal_seek(seconds: u64)
+    fn internal_seek(controls: &Controls, seconds: u64)
     {
-        *SEEK_TS.write().unwrap() = Some(seconds);
+        controls.set_seek_ts(Some(seconds));
         update_progress_state_stream(ProgressState {
             position: seconds,
-            duration: PROGRESS.read().unwrap().duration,
+            duration: controls.progress().duration,
         });
     }
 
@@ -276,32 +303,32 @@ impl Player
 
     pub fn play(&self)
     {
-        Self::internal_play();
+        Self::internal_play(&self.controls);
     }
 
     pub fn pause(&self)
     {
-        Self::internal_pause();
+        Self::internal_pause(&self.controls);
     }
 
     pub fn stop(&self)
     {
-        Self::internal_stop();
+        Self::internal_stop(&self.controls);
     }
 
     pub fn loop_playback(&self, should_loop: bool)
     {
-        IS_LOOPING.store(should_loop, std::sync::atomic::Ordering::SeqCst);
+        self.controls.set_is_looping(should_loop);
     }
 
     pub fn set_volume(&self, volume: f32)
     {
-        *VOLUME.write().unwrap() = volume;
+        self.controls.set_volume(volume);
     }
 
     pub fn seek(&self, seconds: u64)
     {
-        Self::internal_seek(seconds);
+        Self::internal_seek(&self.controls, seconds);
     }
 
     pub fn set_metadata(&self, metadata: Metadata)
@@ -311,7 +338,7 @@ impl Player
 
     pub fn normalize_volume(&self, should_normalize: bool)
     {
-        IS_NORMALIZING.store(should_normalize, std::sync::atomic::Ordering::SeqCst);
+        self.controls.set_is_normalizing(should_normalize);
     }
 }
 

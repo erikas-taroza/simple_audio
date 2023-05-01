@@ -390,10 +390,18 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that", "shouldNormalize"],
       );
 
+  DropFnType get dropOpaqueControls => _platform.inner.drop_opaque_Controls;
+  ShareFnType get shareOpaqueControls => _platform.inner.share_opaque_Controls;
+  OpaqueTypeFinalizer get ControlsFinalizer => _platform.ControlsFinalizer;
+
   void dispose() {
     _platform.dispose();
   }
 // Section: wire2api
+
+  Controls _wire2api_Controls(dynamic raw) {
+    return Controls.fromRaw(raw[0], raw[1], this);
+  }
 
   bool _wire2api_bool(dynamic raw) {
     return raw as bool;
@@ -413,10 +421,11 @@ class SimpleAudioImpl implements SimpleAudio {
 
   Player _wire2api_player(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 0)
-      throw Exception('unexpected arr length: expect 0 but see ${arr.length}');
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
     return Player(
       bridge: this,
+      controls: _wire2api_Controls(arr[0]),
     );
   }
 
@@ -474,6 +483,13 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
 // Section: api2wire
 
   @protected
+  wire_Controls api2wire_Controls(Controls raw) {
+    final ptr = inner.new_Controls();
+    _api_fill_to_wire_Controls(raw, ptr);
+    return ptr;
+  }
+
+  @protected
   ffi.Pointer<wire_uint_8_list> api2wire_String(String raw) {
     return api2wire_uint_8_list(utf8.encoder.convert(raw));
   }
@@ -493,6 +509,7 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   @protected
   ffi.Pointer<wire_Player> api2wire_box_autoadd_player(Player raw) {
     final ptr = inner.new_box_autoadd_player_0();
+    _api_fill_to_wire_player(raw, ptr.ref);
     return ptr;
   }
 
@@ -539,11 +556,23 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 // Section: finalizer
 
+  late final OpaqueTypeFinalizer _ControlsFinalizer =
+      OpaqueTypeFinalizer(inner._drop_opaque_ControlsPtr);
+  OpaqueTypeFinalizer get ControlsFinalizer => _ControlsFinalizer;
 // Section: api_fill_to_wire
+
+  void _api_fill_to_wire_Controls(Controls apiObj, wire_Controls wireObj) {
+    wireObj.ptr = apiObj.shareOrMove();
+  }
 
   void _api_fill_to_wire_box_autoadd_metadata(
       Metadata apiObj, ffi.Pointer<wire_Metadata> wireObj) {
     _api_fill_to_wire_metadata(apiObj, wireObj.ref);
+  }
+
+  void _api_fill_to_wire_box_autoadd_player(
+      Player apiObj, ffi.Pointer<wire_Player> wireObj) {
+    _api_fill_to_wire_player(apiObj, wireObj.ref);
   }
 
   void _api_fill_to_wire_metadata(Metadata apiObj, wire_Metadata wireObj) {
@@ -554,7 +583,9 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
     wireObj.art_bytes = api2wire_opt_uint_8_list(apiObj.artBytes);
   }
 
-  void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {}
+  void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {
+    wireObj.controls = api2wire_Controls(apiObj.controls);
+  }
 }
 
 // ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
@@ -1008,6 +1039,15 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
       _wire_normalize_volume__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>, bool)>();
 
+  wire_Controls new_Controls() {
+    return _new_Controls();
+  }
+
+  late final _new_ControlsPtr =
+      _lookup<ffi.NativeFunction<wire_Controls Function()>>('new_Controls');
+  late final _new_Controls =
+      _new_ControlsPtr.asFunction<wire_Controls Function()>();
+
   ffi.Pointer<ffi.Int64> new_box_autoadd_i64_0(
     int value,
   ) {
@@ -1073,6 +1113,35 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _new_uint_8_list_0 = _new_uint_8_list_0Ptr
       .asFunction<ffi.Pointer<wire_uint_8_list> Function(int)>();
 
+  void drop_opaque_Controls(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _drop_opaque_Controls(
+      ptr,
+    );
+  }
+
+  late final _drop_opaque_ControlsPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'drop_opaque_Controls');
+  late final _drop_opaque_Controls = _drop_opaque_ControlsPtr
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Void> share_opaque_Controls(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _share_opaque_Controls(
+      ptr,
+    );
+  }
+
+  late final _share_opaque_ControlsPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Void> Function(
+              ffi.Pointer<ffi.Void>)>>('share_opaque_Controls');
+  late final _share_opaque_Controls = _share_opaque_ControlsPtr
+      .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
+
   void free_WireSyncReturn(
     WireSyncReturn ptr,
   ) {
@@ -1104,7 +1173,13 @@ class wire_uint_8_list extends ffi.Struct {
   external int len;
 }
 
-class wire_Player extends ffi.Opaque {}
+class wire_Controls extends ffi.Struct {
+  external ffi.Pointer<ffi.Void> ptr;
+}
+
+class wire_Player extends ffi.Struct {
+  external wire_Controls controls;
+}
 
 class wire_Metadata extends ffi.Struct {
   external ffi.Pointer<wire_uint_8_list> title;
@@ -1121,6 +1196,6 @@ class wire_Metadata extends ffi.Struct {
 typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<ffi.Bool Function(DartPort, ffi.Pointer<ffi.Void>)>>;
 typedef DartPort = ffi.Int64;
-typedef uintptr_t = ffi.UnsignedLongLong;
+typedef uintptr_t = ffi.UnsignedLong;
 
 const int CHUNK_SIZE = 131072;

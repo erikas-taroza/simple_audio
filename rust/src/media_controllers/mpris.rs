@@ -38,7 +38,7 @@ use zbus::{
     zvariant::{ObjectPath, Value},
 };
 
-use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
+use crate::utils::types::PlaybackState;
 
 use super::types::{Command, Event, MediaControlAction, MediaController, Metadata};
 
@@ -133,15 +133,15 @@ impl Mpris
                     match message {
                         Command::SetMetadata(data) => {
                             player_iface.metadata = data;
-                            player_iface.metadata_changed(&context).await?;
+                            player_iface.metadata_changed(context).await?;
                         }
                         Command::SetDuration(duration) => {
                             player_iface.duration = duration;
-                            player_iface.metadata_changed(&context).await?;
+                            player_iface.metadata_changed(context).await?;
                         }
                         Command::SetPlaybackState(state) => {
                             player_iface.playback_state = state;
-                            player_iface.playback_status_changed(&context).await?;
+                            player_iface.playback_status_changed(context).await?;
                         }
                         Command::Stop => break,
                     }
@@ -250,9 +250,10 @@ impl PlayerInterface
     #[dbus_interface(property)]
     fn position(&self) -> i64
     {
-        let position = PROGRESS.read().unwrap().position;
-        let in_micros = Duration::from_secs(position).as_micros();
-        in_micros.try_into().unwrap_or_default()
+        // let position = PROGRESS.read().unwrap().position;
+        // let in_micros = Duration::from_secs(position).as_micros();
+        // in_micros.try_into().unwrap_or_default()
+        0
     }
 
     #[dbus_interface(property)]
