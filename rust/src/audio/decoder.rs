@@ -173,7 +173,9 @@ impl Decoder
                 }
                 ThreadMessage::Preload(source) => {
                     self.preload_playback = None;
-                    self.controls.is_file_preloaded.store(false, std::sync::atomic::Ordering::SeqCst);
+                    self.controls
+                        .is_file_preloaded
+                        .store(false, std::sync::atomic::Ordering::SeqCst);
                     let handle = self.preload(source);
                     self.preload_thread = Some(handle);
                 }
@@ -185,7 +187,9 @@ impl Decoder
                     let (playback, cpal_output) = self.preload_playback.take().unwrap();
                     self.playback = Some(playback);
                     self.cpal_output = Some(cpal_output);
-                    self.controls.is_file_preloaded.store(false, std::sync::atomic::Ordering::SeqCst);
+                    self.controls
+                        .is_file_preloaded
+                        .store(false, std::sync::atomic::Ordering::SeqCst);
 
                     crate::Player::internal_play(&self.controls);
                 }
@@ -215,7 +219,8 @@ impl Decoder
             if self.cpal_output.is_none() {
                 let spec = *preload.spec();
                 let duration = preload.capacity() as u64;
-                self.cpal_output.replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
+                self.cpal_output
+                    .replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
             }
 
             let buffer_ref = preload.as_audio_buffer_ref();
@@ -250,7 +255,11 @@ impl Decoder
             // An error occurs when the stream
             // has reached the end of the audio.
             Err(_) => {
-                if self.controls.is_looping.load(std::sync::atomic::Ordering::SeqCst) {
+                if self
+                    .controls
+                    .is_looping
+                    .load(std::sync::atomic::Ordering::SeqCst)
+                {
                     *self.controls.seek_ts.write().unwrap() = Some(0);
                     crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
                     return Ok(false);
@@ -295,7 +304,8 @@ impl Decoder
         if self.cpal_output.is_none() {
             let spec = *decoded.spec();
             let duration = decoded.capacity() as u64;
-            self.cpal_output.replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
+            self.cpal_output
+                .replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
         }
 
         self.cpal_output.as_mut().unwrap().write(decoded);
@@ -325,8 +335,12 @@ impl Decoder
         update_progress_state_stream(progress_state);
         *self.controls.progress.write().unwrap() = progress_state;
 
-        self.controls.is_playing.store(false, std::sync::atomic::Ordering::SeqCst);
-        self.controls.is_stopped.store(true, std::sync::atomic::Ordering::SeqCst);
+        self.controls
+            .is_playing
+            .store(false, std::sync::atomic::Ordering::SeqCst);
+        self.controls
+            .is_stopped
+            .store(true, std::sync::atomic::Ordering::SeqCst);
         crate::media_controllers::set_playback_state(PlaybackState::Done);
     }
 
@@ -384,7 +398,10 @@ impl Decoder
     /// Spawns a thread that decodes the first packet of the source.
     ///
     /// Returns a preloaded `Playback` and `CpalOutput` when complete.
-    fn preload(&self, source: Box<dyn MediaSource>) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
+    fn preload(
+        &self,
+        source: Box<dyn MediaSource>,
+    ) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
     {
         let controls = self.controls.clone();
         thread::spawn(move || {
@@ -423,7 +440,9 @@ impl Decoder
             .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
         self.preload_playback.replace((result.0, result.1));
-        self.controls.is_file_preloaded.store(true, std::sync::atomic::Ordering::SeqCst);
+        self.controls
+            .is_file_preloaded
+            .store(true, std::sync::atomic::Ordering::SeqCst);
 
         Ok(())
     }

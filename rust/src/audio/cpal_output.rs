@@ -97,7 +97,9 @@ impl CpalOutput
                 // With only a return statement, the current sample still plays.
                 // CPAL states that `stream.pause()` may not work for all devices.
                 // `stream.pause()` is the ideal way to play/pause.
-                if (!stream_controls.is_playing.load(std::sync::atomic::Ordering::SeqCst)
+                if (!stream_controls
+                    .is_playing
+                    .load(std::sync::atomic::Ordering::SeqCst)
                     && cfg!(target_os = "windows"))
                     || buffering
                 {
@@ -211,7 +213,11 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        if self.controls.is_normalizing.load(std::sync::atomic::Ordering::SeqCst) {
+        if self
+            .controls
+            .is_normalizing
+            .load(std::sync::atomic::Ordering::SeqCst)
+        {
             samples = self.normalizer.normalize(samples);
         }
 

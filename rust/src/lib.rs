@@ -28,14 +28,15 @@ use audio::{
     sources::{hls::HlsStream, http::HttpStream, local::Local},
 };
 use crossbeam::channel::unbounded;
-use flutter_rust_bridge::{StreamSink, RustOpaque};
+use flutter_rust_bridge::{RustOpaque, StreamSink};
 use media_controllers::types::{Event, MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
 use utils::types::*;
 
 use crate::utils::{callback_stream::*, playback_state_stream::*, progress_state_stream::*};
 
-pub struct Player {
+pub struct Player
+{
     controls: RustOpaque<Controls>,
 }
 
@@ -54,7 +55,10 @@ impl Player
                 Event::Pause => Self::internal_pause(&controls),
                 Event::Stop => Self::internal_stop(&controls),
                 Event::PlayPause => {
-                    if controls.is_playing.load(std::sync::atomic::Ordering::SeqCst) {
+                    if controls
+                        .is_playing
+                        .load(std::sync::atomic::Ordering::SeqCst)
+                    {
                         Self::internal_pause(&controls);
                     }
                     else {
@@ -94,7 +98,7 @@ impl Player
         });
 
         Player {
-            controls: RustOpaque::new(player_controls)
+            controls: RustOpaque::new(player_controls),
         }
     }
 
@@ -130,13 +134,17 @@ impl Player
 
     pub fn is_playing(&self) -> bool
     {
-        self.controls.is_playing.load(std::sync::atomic::Ordering::SeqCst)
+        self.controls
+            .is_playing
+            .load(std::sync::atomic::Ordering::SeqCst)
     }
 
     /// Returns `true` if there is a file preloaded for playback.
     pub fn has_preloaded(&self) -> bool
     {
-        self.controls.is_file_preloaded.load(std::sync::atomic::Ordering::SeqCst)
+        self.controls
+            .is_file_preloaded
+            .load(std::sync::atomic::Ordering::SeqCst)
     }
 
     pub fn get_progress(&self) -> ProgressState
@@ -220,15 +228,22 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_play(controls: &Controls)
     {
-        if controls.is_playing.load(std::sync::atomic::Ordering::SeqCst) {
+        if controls
+            .is_playing
+            .load(std::sync::atomic::Ordering::SeqCst)
+        {
             return;
         }
 
         TXRX.read().unwrap().0.send(ThreadMessage::Play).unwrap();
 
         update_playback_state_stream(PlaybackState::Play);
-        controls.is_playing.store(true, std::sync::atomic::Ordering::SeqCst);
-        controls.is_stopped.store(false, std::sync::atomic::Ordering::SeqCst);
+        controls
+            .is_playing
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        controls
+            .is_stopped
+            .store(false, std::sync::atomic::Ordering::SeqCst);
         media_controllers::set_playback_state(PlaybackState::Play);
     }
 
@@ -237,15 +252,22 @@ impl Player
     /// the `IS_PLAYING` AtomicBool.
     fn internal_pause(controls: &Controls)
     {
-        if !controls.is_playing.load(std::sync::atomic::Ordering::SeqCst) {
+        if !controls
+            .is_playing
+            .load(std::sync::atomic::Ordering::SeqCst)
+        {
             return;
         }
 
         TXRX.read().unwrap().0.send(ThreadMessage::Pause).unwrap();
 
         update_playback_state_stream(PlaybackState::Pause);
-        controls.is_playing.store(false, std::sync::atomic::Ordering::SeqCst);
-        controls.is_stopped.store(false, std::sync::atomic::Ordering::SeqCst);
+        controls
+            .is_playing
+            .store(false, std::sync::atomic::Ordering::SeqCst);
+        controls
+            .is_stopped
+            .store(false, std::sync::atomic::Ordering::SeqCst);
         media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
@@ -255,7 +277,10 @@ impl Player
     /// This stops all threads that are streaming.
     fn internal_stop(controls: &Controls)
     {
-        if controls.is_stopped.load(std::sync::atomic::Ordering::SeqCst) {
+        if controls
+            .is_stopped
+            .load(std::sync::atomic::Ordering::SeqCst)
+        {
             return;
         }
 
@@ -269,8 +294,12 @@ impl Player
         update_progress_state_stream(progress);
         *controls.progress.write().unwrap() = progress;
         update_playback_state_stream(PlaybackState::Pause);
-        controls.is_playing.store(false, std::sync::atomic::Ordering::SeqCst);
-        controls.is_stopped.store(true, std::sync::atomic::Ordering::SeqCst);
+        controls
+            .is_playing
+            .store(false, std::sync::atomic::Ordering::SeqCst);
+        controls
+            .is_stopped
+            .store(true, std::sync::atomic::Ordering::SeqCst);
         media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
@@ -304,7 +333,9 @@ impl Player
 
     pub fn loop_playback(&self, should_loop: bool)
     {
-        self.controls.is_looping.store(should_loop, std::sync::atomic::Ordering::SeqCst);
+        self.controls
+            .is_looping
+            .store(should_loop, std::sync::atomic::Ordering::SeqCst);
     }
 
     pub fn set_volume(&self, volume: f32)
@@ -324,7 +355,9 @@ impl Player
 
     pub fn normalize_volume(&self, should_normalize: bool)
     {
-        self.controls.is_normalizing.store(should_normalize, std::sync::atomic::Ordering::SeqCst);
+        self.controls
+            .is_normalizing
+            .store(should_normalize, std::sync::atomic::Ordering::SeqCst);
     }
 }
 
