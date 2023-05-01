@@ -16,7 +16,7 @@
 
 // A file that defines controls globally.
 
-use std::sync::{atomic::AtomicBool, RwLock};
+use std::sync::{atomic::AtomicBool, Arc, RwLock};
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use lazy_static::lazy_static;
@@ -30,31 +30,37 @@ lazy_static! {
     pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
 }
 
-pub static IS_PLAYING: AtomicBool = AtomicBool::new(false);
-pub static IS_STOPPED: AtomicBool = AtomicBool::new(true);
-pub static IS_LOOPING: AtomicBool = AtomicBool::new(false);
-pub static IS_NORMALIZING: AtomicBool = AtomicBool::new(false);
-pub static IS_FILE_PRELOADED: AtomicBool = AtomicBool::new(false);
-pub static VOLUME: RwLock<f32> = RwLock::new(1.0);
-pub static SEEK_TS: RwLock<Option<u64>> = RwLock::new(None);
-pub static PROGRESS: RwLock<ProgressState> = RwLock::new(ProgressState {
-    position: 0,
-    duration: 0,
-});
-
-pub fn reset_controls_to_default()
+#[derive(Clone)]
+pub struct Controls
 {
-    IS_PLAYING.store(false, std::sync::atomic::Ordering::SeqCst);
-    IS_STOPPED.store(true, std::sync::atomic::Ordering::SeqCst);
-    IS_LOOPING.store(false, std::sync::atomic::Ordering::SeqCst);
-    IS_NORMALIZING.store(false, std::sync::atomic::Ordering::SeqCst);
-    IS_FILE_PRELOADED.store(false, std::sync::atomic::Ordering::SeqCst);
-    *VOLUME.write().unwrap() = 1.0;
-    *SEEK_TS.write().unwrap() = None;
-    *PROGRESS.write().unwrap() = ProgressState {
-        position: 0,
-        duration: 0,
-    };
+    pub is_playing: Arc<AtomicBool>,
+    pub is_stopped: Arc<AtomicBool>,
+    pub is_looping: Arc<AtomicBool>,
+    pub is_normalizing: Arc<AtomicBool>,
+    pub is_file_preloaded: Arc<AtomicBool>,
+    pub volume: Arc<RwLock<f32>>,
+    pub seek_ts: Arc<RwLock<Option<u64>>>,
+    pub progress: Arc<RwLock<ProgressState>>,
+}
+
+impl Default for Controls
+{
+    fn default() -> Self
+    {
+        Controls {
+            is_playing: Arc::new(AtomicBool::new(false)),
+            is_stopped: Arc::new(AtomicBool::new(true)),
+            is_looping: Arc::new(AtomicBool::new(false)),
+            is_normalizing: Arc::new(AtomicBool::new(false)),
+            is_file_preloaded: Arc::new(AtomicBool::new(false)),
+            volume: Arc::new(RwLock::new(1.0)),
+            seek_ts: Arc::new(RwLock::new(None)),
+            progress: Arc::new(RwLock::new(ProgressState {
+                position: 0,
+                duration: 0,
+            })),
+        }
+    }
 }
 
 pub enum ThreadMessage

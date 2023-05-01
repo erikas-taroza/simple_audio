@@ -125,6 +125,11 @@ pub extern "C" fn wire_normalize_volume__method__Player(
 // Section: allocate functions
 
 #[no_mangle]
+pub extern "C" fn new_Controls() -> wire_Controls {
+    wire_Controls::new_with_null_ptr()
+}
+
+#[no_mangle]
 pub extern "C" fn new_box_autoadd_i64_0(value: i64) -> *mut i64 {
     support::new_leak_box_ptr(value)
 }
@@ -159,8 +164,28 @@ pub extern "C" fn new_uint_8_list_0(len: i32) -> *mut wire_uint_8_list {
 
 // Section: related functions
 
+#[no_mangle]
+pub extern "C" fn drop_opaque_Controls(ptr: *const c_void) {
+    unsafe {
+        Arc::<Controls>::decrement_strong_count(ptr as _);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn share_opaque_Controls(ptr: *const c_void) -> *const c_void {
+    unsafe {
+        Arc::<Controls>::increment_strong_count(ptr as _);
+        ptr
+    }
+}
+
 // Section: impl Wire2Api
 
+impl Wire2Api<RustOpaque<Controls>> for wire_Controls {
+    fn wire2api(self) -> RustOpaque<Controls> {
+        unsafe { support::opaque_from_dart(self.ptr as _) }
+    }
+}
 impl Wire2Api<String> for *mut wire_uint_8_list {
     fn wire2api(self) -> String {
         let vec: Vec<u8> = self.wire2api();
@@ -210,7 +235,9 @@ impl Wire2Api<Metadata> for wire_Metadata {
 
 impl Wire2Api<Player> for wire_Player {
     fn wire2api(self) -> Player {
-        Player {}
+        Player {
+            controls: self.controls.wire2api(),
+        }
     }
 }
 
@@ -223,6 +250,12 @@ impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
     }
 }
 // Section: wire structs
+
+#[repr(C)]
+#[derive(Clone)]
+pub struct wire_Controls {
+    ptr: *const core::ffi::c_void,
+}
 
 #[repr(C)]
 #[derive(Clone)]
@@ -243,7 +276,9 @@ pub struct wire_Metadata {
 
 #[repr(C)]
 #[derive(Clone)]
-pub struct wire_Player {}
+pub struct wire_Player {
+    controls: wire_Controls,
+}
 
 #[repr(C)]
 #[derive(Clone)]
@@ -261,6 +296,14 @@ pub trait NewWithNullPtr {
 impl<T> NewWithNullPtr for *mut T {
     fn new_with_null_ptr() -> Self {
         std::ptr::null_mut()
+    }
+}
+
+impl NewWithNullPtr for wire_Controls {
+    fn new_with_null_ptr() -> Self {
+        Self {
+            ptr: core::ptr::null(),
+        }
     }
 }
 
@@ -284,7 +327,9 @@ impl Default for wire_Metadata {
 
 impl NewWithNullPtr for wire_Player {
     fn new_with_null_ptr() -> Self {
-        Self {}
+        Self {
+            controls: wire_Controls::new_with_null_ptr(),
+        }
     }
 }
 

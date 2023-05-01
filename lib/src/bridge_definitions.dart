@@ -110,6 +110,24 @@ abstract class SimpleAudio {
       {required Player that, required bool shouldNormalize, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta;
+
+  DropFnType get dropOpaqueControls;
+  ShareFnType get shareOpaqueControls;
+  OpaqueTypeFinalizer get ControlsFinalizer;
+}
+
+@sealed
+class Controls extends FrbOpaque {
+  final SimpleAudio bridge;
+  Controls.fromRaw(int ptr, int size, this.bridge) : super.unsafe(ptr, size);
+  @override
+  DropFnType get dropFn => bridge.dropOpaqueControls;
+
+  @override
+  ShareFnType get shareFn => bridge.shareOpaqueControls;
+
+  @override
+  OpaqueTypeFinalizer get staticFinalizer => bridge.ControlsFinalizer;
 }
 
 /// Events that are handled in Dart because they
@@ -195,9 +213,11 @@ enum PlaybackState {
 
 class Player {
   final SimpleAudio bridge;
+  final Controls controls;
 
   const Player({
     required this.bridge,
+    required this.controls,
   });
 
   static Future<Player> newPlayer(

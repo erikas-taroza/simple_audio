@@ -46,12 +46,13 @@ pub struct CpalOutput
     resampler: Option<Resampler<f32>>,
     is_stream_done: Arc<(Mutex<bool>, Condvar)>,
     normalizer: Normalizer,
+    controls: Controls,
 }
 
 impl CpalOutput
 {
     /// Starts a new stream on the default device.
-    pub fn new(spec: SignalSpec, duration: u64) -> anyhow::Result<Self>
+    pub fn new(controls: Controls, spec: SignalSpec, duration: u64) -> anyhow::Result<Self>
     {
         // Get the output config.
         let (device, config) = Self::get_config(spec)?;
@@ -85,6 +86,7 @@ impl CpalOutput
         let is_stream_done = Arc::new((Mutex::new(false), Condvar::new()));
         let is_stream_done_clone = is_stream_done.clone();
 
+        let stream_controls = controls.clone();
         let stream = device.build_output_stream(
             &config,
             move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
@@ -95,7 +97,7 @@ impl CpalOutput
                 // With only a return statement, the current sample still plays.
                 // CPAL states that `stream.pause()` may not work for all devices.
                 // `stream.pause()` is the ideal way to play/pause.
-                if (!IS_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
+                if (!stream_controls.is_playing.load(std::sync::atomic::Ordering::SeqCst)
                     && cfg!(target_os = "windows"))
                     || buffering
                 {
@@ -121,7 +123,7 @@ impl CpalOutput
                 // Set the volume.
                 data[0..written.unwrap()]
                     .iter_mut()
-                    .for_each(|s| *s *= BASE_VOLUME * *VOLUME.read().unwrap());
+                    .for_each(|s| *s *= BASE_VOLUME * *stream_controls.volume.read().unwrap());
             },
             move |err| {
                 match err {
@@ -154,6 +156,7 @@ impl CpalOutput
             resampler,
             is_stream_done,
             normalizer: Normalizer::new(spec.channels.count(), sample_rate),
+            controls,
         })
     }
 
@@ -208,7 +211,7 @@ impl CpalOutput
             self.sample_buffer.samples()
         };
 
-        if IS_NORMALIZING.load(std::sync::atomic::Ordering::SeqCst) {
+        if self.controls.is_normalizing.load(std::sync::atomic::Ordering::SeqCst) {
             samples = self.normalizer.normalize(samples);
         }
 

@@ -21,8 +21,12 @@ typedef struct wire_uint_8_list {
   int32_t len;
 } wire_uint_8_list;
 
-typedef struct wire_Player {
+typedef struct wire_Controls {
+  const void *ptr;
+} wire_Controls;
 
+typedef struct wire_Player {
+  struct wire_Controls controls;
 } wire_Player;
 
 typedef struct wire_Metadata {
@@ -95,6 +99,8 @@ void wire_normalize_volume__method__Player(int64_t port_,
                                            struct wire_Player *that,
                                            bool should_normalize);
 
+struct wire_Controls new_Controls(void);
+
 int64_t *new_box_autoadd_i64_0(int64_t value);
 
 struct wire_Metadata *new_box_autoadd_metadata_0(void);
@@ -104,6 +110,10 @@ struct wire_Player *new_box_autoadd_player_0(void);
 struct wire_list_media_control_action *new_list_media_control_action_0(int32_t len);
 
 struct wire_uint_8_list *new_uint_8_list_0(int32_t len);
+
+void drop_opaque_Controls(const void *ptr);
+
+const void *share_opaque_Controls(const void *ptr);
 
 void free_WireSyncReturn(WireSyncReturn ptr);
 
@@ -128,11 +138,14 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_seek__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_set_metadata__method__Player);
     dummy_var ^= ((int64_t) (void*) wire_normalize_volume__method__Player);
+    dummy_var ^= ((int64_t) (void*) new_Controls);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_i64_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_metadata_0);
     dummy_var ^= ((int64_t) (void*) new_box_autoadd_player_0);
     dummy_var ^= ((int64_t) (void*) new_list_media_control_action_0);
     dummy_var ^= ((int64_t) (void*) new_uint_8_list_0);
+    dummy_var ^= ((int64_t) (void*) drop_opaque_Controls);
+    dummy_var ^= ((int64_t) (void*) share_opaque_Controls);
     dummy_var ^= ((int64_t) (void*) free_WireSyncReturn);
     dummy_var ^= ((int64_t) (void*) store_dart_post_cobject);
     dummy_var ^= ((int64_t) (void*) get_dart_object);

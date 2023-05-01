@@ -38,7 +38,7 @@ use zbus::{
     zvariant::{ObjectPath, Value},
 };
 
-use crate::{audio::controls::PROGRESS, utils::types::PlaybackState};
+use crate::utils::types::PlaybackState;
 
 use super::types::{Command, Event, MediaControlAction, MediaController, Metadata};
 
@@ -250,9 +250,10 @@ impl PlayerInterface
     #[dbus_interface(property)]
     fn position(&self) -> i64
     {
-        let position = PROGRESS.read().unwrap().position;
-        let in_micros = Duration::from_secs(position).as_micros();
-        in_micros.try_into().unwrap_or_default()
+        // let position = PROGRESS.read().unwrap().position;
+        // let in_micros = Duration::from_secs(position).as_micros();
+        // in_micros.try_into().unwrap_or_default()
+        0
     }
 
     #[dbus_interface(property)]
