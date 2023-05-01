@@ -14,10 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{atomic::AtomicBool, Arc, RwLock};
+use std::sync::{atomic::AtomicBool, Arc, RwLock, RwLockReadGuard};
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use lazy_static::lazy_static;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
@@ -40,9 +39,9 @@ macro_rules! getset_atomic_bool {
 /// Creates a getter and setter for an RwLock.
 macro_rules! getset_rwlock {
     ($name:ident, $setter_name:ident, $lock_type:ty) => {
-        pub fn $name(&self) -> $lock_type
+        pub fn $name(&self) -> RwLockReadGuard<'_, $lock_type>
         {
-            *self.$name.read().unwrap()
+            self.$name.read().unwrap()
         }
 
         pub fn $setter_name(&self, value: $lock_type)
@@ -52,15 +51,12 @@ macro_rules! getset_rwlock {
     };
 }
 
-lazy_static! {
-    /// Use this to communicate between the main thread and the decoder thread.
-    /// Ex: play/pause commands.
-    pub static ref TXRX: RwLock<(Sender<ThreadMessage>, Receiver<ThreadMessage>)> = RwLock::new(unbounded());
-}
+type EventHandler = (Sender<ThreadMessage>, Receiver<ThreadMessage>);
 
 #[derive(Clone)]
 pub struct Controls
 {
+    event_handler: Arc<RwLock<EventHandler>>,
     is_playing: Arc<AtomicBool>,
     is_stopped: Arc<AtomicBool>,
     is_looping: Arc<AtomicBool>,
@@ -73,6 +69,7 @@ pub struct Controls
 
 impl Controls
 {
+    getset_rwlock!(event_handler, _set_event_handler, EventHandler);
     getset_atomic_bool!(is_playing, set_is_playing);
     getset_atomic_bool!(is_stopped, set_is_stopped);
     getset_atomic_bool!(is_looping, set_is_looping);
@@ -88,6 +85,7 @@ impl Default for Controls
     fn default() -> Self
     {
         Controls {
+            event_handler: Arc::new(RwLock::new(unbounded())),
             is_playing: Arc::new(AtomicBool::new(false)),
             is_stopped: Arc::new(AtomicBool::new(true)),
             is_looping: Arc::new(AtomicBool::new(false)),
@@ -100,6 +98,14 @@ impl Default for Controls
                 duration: 0,
             })),
         }
+    }
+}
+
+impl Drop for Controls
+{
+    fn drop(&mut self)
+    {
+        self.event_handler().0.send(ThreadMessage::Dispose).unwrap();
     }
 }
 

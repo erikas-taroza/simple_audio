@@ -27,7 +27,6 @@ use audio::{
     decoder::Decoder,
     sources::{hls::HlsStream, http::HttpStream, local::Local},
 };
-use crossbeam::channel::unbounded;
 use flutter_rust_bridge::{RustOpaque, StreamSink};
 use media_controllers::types::{Event, MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
@@ -82,9 +81,6 @@ impl Player
             }
         });
 
-        let mut txrx = TXRX.write().unwrap();
-        *txrx = unbounded();
-
         // Start the decoding thread.
         thread::spawn({
             let controls = player_controls.clone();
@@ -99,12 +95,11 @@ impl Player
         }
     }
 
-    /// Stops any old players/threads and resets the
-    /// static variables in `controls.rs`.
+    /// Stop media controllers and reset `IS_STREAM_BUFFERING`.
+    ///
+    /// The decoder thread is automatically disposed as the controls are dropped.
     pub fn dispose()
     {
-        // Stop the working thread.
-        TXRX.read().unwrap().0.send(ThreadMessage::Dispose).unwrap();
         audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         media_controllers::dispose();
@@ -142,7 +137,7 @@ impl Player
 
     pub fn get_progress(&self) -> ProgressState
     {
-        self.controls.progress()
+        *self.controls.progress()
     }
 
     // ---------------------------------
@@ -181,7 +176,10 @@ impl Player
     {
         let source = Self::source_from_path(path)?;
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Open(source))?;
+        self.controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Open(source))?;
 
         if autoplay {
             Self::internal_play(&self.controls);
@@ -201,8 +199,8 @@ impl Player
     pub fn preload(&self, path: String) -> anyhow::Result<()>
     {
         let source = Self::source_from_path(path)?;
-        TXRX.read()
-            .unwrap()
+        self.controls
+            .event_handler()
             .0
             .send(ThreadMessage::Preload(source))?;
 
@@ -212,7 +210,10 @@ impl Player
     /// Plays the preloaded item from `preload`. The file starts playing automatically.
     pub fn play_preload(&self) -> anyhow::Result<()>
     {
-        TXRX.read().unwrap().0.send(ThreadMessage::PlayPreload)?;
+        self.controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::PlayPreload)?;
         Ok(())
     }
 
@@ -225,7 +226,11 @@ impl Player
             return;
         }
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Play).unwrap();
+        controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Play)
+            .unwrap();
 
         update_playback_state_stream(PlaybackState::Play);
         controls.set_is_playing(true);
@@ -242,7 +247,11 @@ impl Player
             return;
         }
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Pause).unwrap();
+        controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Pause)
+            .unwrap();
 
         update_playback_state_stream(PlaybackState::Pause);
         controls.set_is_playing(false);
@@ -260,7 +269,11 @@ impl Player
             return;
         }
 
-        TXRX.read().unwrap().0.send(ThreadMessage::Stop).unwrap();
+        controls
+            .event_handler()
+            .0
+            .send(ThreadMessage::Stop)
+            .unwrap();
 
         let progress = ProgressState {
             position: 0,

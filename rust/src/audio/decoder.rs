@@ -18,7 +18,6 @@ use std::thread::{self, JoinHandle};
 
 use anyhow::{anyhow, Context};
 use cpal::traits::StreamTrait;
-use crossbeam::channel::Receiver;
 use symphonia::{
     core::{
         audio::{AsAudioBufferRef, AudioBuffer},
@@ -43,7 +42,6 @@ use super::{controls::*, cpal_output::CpalOutput};
 
 pub struct Decoder
 {
-    rx: Receiver<ThreadMessage>,
     controls: Controls,
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
@@ -58,10 +56,7 @@ impl Decoder
     /// Creates a new decoder.
     pub fn new(controls: Controls) -> Self
     {
-        let rx = TXRX.read().unwrap().1.clone();
-
         Decoder {
-            rx,
             controls,
             state: DecoderState::Idle,
             cpal_output: None,
@@ -114,7 +109,7 @@ impl Decoder
         }
     }
 
-    /// Listens to `self.rx` for any incoming messages.
+    /// Listens for any incoming messages.
     ///
     /// Blocks if the `self.state` is `Idle` or `Paused`.
     ///
@@ -125,10 +120,10 @@ impl Decoder
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
         let recv: Option<ThreadMessage> = if self.state.is_idle() || self.state.is_paused() {
-            self.rx.recv().ok()
+            self.controls.event_handler().1.recv().ok()
         }
         else {
-            self.rx.try_recv().ok()
+            self.controls.event_handler().1.try_recv().ok()
         };
 
         match recv {
@@ -225,7 +220,7 @@ impl Decoder
             return Ok(false);
         }
 
-        if let Some(seek_ts) = self.controls.seek_ts() {
+        if let Some(seek_ts) = *self.controls.seek_ts() {
             let seek_to = SeekTo::Time {
                 time: Time::from(seek_ts),
                 track_id: Some(playback.track_id),

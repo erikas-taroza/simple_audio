@@ -84,56 +84,64 @@ impl CpalOutput
         let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
 
         let is_stream_done = Arc::new((Mutex::new(false), Condvar::new()));
-        let is_stream_done_clone = is_stream_done.clone();
 
-        let stream_controls = controls.clone();
         let stream = device.build_output_stream(
             &config,
-            move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                let buffering = IS_STREAM_BUFFERING.load(std::sync::atomic::Ordering::SeqCst);
+            {
+                let controls = controls.clone();
+                let is_stream_done = is_stream_done.clone();
+                move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
+                    let buffering = IS_STREAM_BUFFERING.load(std::sync::atomic::Ordering::SeqCst);
 
-                // "Pause" the stream.
-                // What this really does is mute the stream.
-                // With only a return statement, the current sample still plays.
-                // CPAL states that `stream.pause()` may not work for all devices.
-                // `stream.pause()` is the ideal way to play/pause.
-                if (!stream_controls.is_playing() && cfg!(target_os = "windows")) || buffering {
-                    data.iter_mut().for_each(|s| *s = 0.0);
+                    // "Pause" the stream.
+                    // What this really does is mute the stream.
+                    // With only a return statement, the current sample still plays.
+                    // CPAL states that `stream.pause()` may not work for all devices.
+                    // `stream.pause()` is the ideal way to play/pause.
+                    if (!controls.is_playing() && cfg!(target_os = "windows")) || buffering {
+                        data.iter_mut().for_each(|s| *s = 0.0);
 
-                    if buffering {
-                        ring_buffer_reader.skip_all();
+                        if buffering {
+                            ring_buffer_reader.skip_all();
+                        }
+
+                        return;
                     }
 
-                    return;
+                    let written = ring_buffer_reader.read(data);
+
+                    // Notify that the stream was finished reading.
+                    if written.is_none() {
+                        let (mutex, cvar) = &*is_stream_done;
+                        *mutex.lock().unwrap() = true;
+                        cvar.notify_one();
+                        return;
+                    }
+
+                    // Set the volume.
+                    data[0..written.unwrap()]
+                        .iter_mut()
+                        .for_each(|s| *s *= BASE_VOLUME * *controls.volume());
                 }
-
-                let written = ring_buffer_reader.read(data);
-
-                // Notify that the stream was finished reading.
-                if written.is_none() {
-                    let (mutex, cvar) = &*is_stream_done_clone;
-                    *mutex.lock().unwrap() = true;
-                    cvar.notify_one();
-                    return;
-                }
-
-                // Set the volume.
-                data[0..written.unwrap()]
-                    .iter_mut()
-                    .for_each(|s| *s *= BASE_VOLUME * stream_controls.volume());
             },
-            move |err| {
-                match err {
-                    cpal::StreamError::DeviceNotAvailable => {
-                        // Tell the decoder that there is no longer a valid device.
-                        // The decoder will make a new `cpal_output`.
-                        let tx = TXRX.read().unwrap().0.clone();
-                        tx.send(ThreadMessage::DeviceChanged).unwrap();
-                        ring_buffer_writer.cancel_write();
-                    }
-                    cpal::StreamError::BackendSpecific { err } => {
-                        // This should never happen.
-                        panic!("Unknown error occurred during playback: {err}");
+            {
+                let controls = controls.clone();
+                move |err| {
+                    match err {
+                        cpal::StreamError::DeviceNotAvailable => {
+                            // Tell the decoder that there is no longer a valid device.
+                            // The decoder will make a new `cpal_output`.
+                            controls
+                                .event_handler()
+                                .0
+                                .send(ThreadMessage::DeviceChanged)
+                                .unwrap();
+                            ring_buffer_writer.cancel_write();
+                        }
+                        cpal::StreamError::BackendSpecific { err } => {
+                            // This should never happen.
+                            panic!("Unknown error occurred during playback: {err}");
+                        }
                     }
                 }
             },
