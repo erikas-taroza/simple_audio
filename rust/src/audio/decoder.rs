@@ -173,9 +173,7 @@ impl Decoder
                 }
                 ThreadMessage::Preload(source) => {
                     self.preload_playback = None;
-                    self.controls
-                        .is_file_preloaded
-                        .store(false, std::sync::atomic::Ordering::SeqCst);
+                    self.controls.set_is_file_preloaded(false);
                     let handle = self.preload(source);
                     self.preload_thread = Some(handle);
                 }
@@ -187,9 +185,7 @@ impl Decoder
                     let (playback, cpal_output) = self.preload_playback.take().unwrap();
                     self.playback = Some(playback);
                     self.cpal_output = Some(cpal_output);
-                    self.controls
-                        .is_file_preloaded
-                        .store(false, std::sync::atomic::Ordering::SeqCst);
+                    self.controls.set_is_file_preloaded(false);
 
                     crate::Player::internal_play(&self.controls);
                 }
@@ -229,7 +225,7 @@ impl Decoder
             return Ok(false);
         }
 
-        if let Some(seek_ts) = *self.controls.seek_ts.read().unwrap() {
+        if let Some(seek_ts) = self.controls.seek_ts() {
             let seek_to = SeekTo::Time {
                 time: Time::from(seek_ts),
                 track_id: Some(playback.track_id),
@@ -238,8 +234,8 @@ impl Decoder
         }
 
         // Clean up seek stuff.
-        if self.controls.seek_ts.read().unwrap().is_some() {
-            *self.controls.seek_ts.write().unwrap() = None;
+        if self.controls.seek_ts().is_some() {
+            self.controls.set_seek_ts(None);
             playback.decoder.reset();
             // Clear the ring buffer which prevents the writer
             // from blocking.
@@ -255,12 +251,8 @@ impl Decoder
             // An error occurs when the stream
             // has reached the end of the audio.
             Err(_) => {
-                if self
-                    .controls
-                    .is_looping
-                    .load(std::sync::atomic::Ordering::SeqCst)
-                {
-                    *self.controls.seek_ts.write().unwrap() = Some(0);
+                if self.controls.is_looping() {
+                    self.controls.set_seek_ts(Some(0));
                     crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
                     return Ok(false);
                 }
@@ -291,14 +283,14 @@ impl Decoder
             duration: playback.duration,
         };
 
-        if self.controls.progress.read().unwrap().duration == 0 {
+        if self.controls.progress().duration == 0 {
             // Notify OS media controllers about the new duration.
             update_callback_stream(Callback::DurationCalculated);
             media_controllers::set_duration(playback.duration);
         }
 
         update_progress_state_stream(progress);
-        *self.controls.progress.write().unwrap() = progress;
+        self.controls.set_progress(progress);
 
         // Write the decoded packet to CPAL.
         if self.cpal_output.is_none() {
@@ -333,14 +325,10 @@ impl Decoder
         };
 
         update_progress_state_stream(progress_state);
-        *self.controls.progress.write().unwrap() = progress_state;
+        self.controls.set_progress(progress_state);
 
-        self.controls
-            .is_playing
-            .store(false, std::sync::atomic::Ordering::SeqCst);
-        self.controls
-            .is_stopped
-            .store(true, std::sync::atomic::Ordering::SeqCst);
+        self.controls.set_is_playing(false);
+        self.controls.set_is_stopped(true);
         crate::media_controllers::set_playback_state(PlaybackState::Done);
     }
 
@@ -440,9 +428,7 @@ impl Decoder
             .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
         self.preload_playback.replace((result.0, result.1));
-        self.controls
-            .is_file_preloaded
-            .store(true, std::sync::atomic::Ordering::SeqCst);
+        self.controls.set_is_file_preloaded(true);
 
         Ok(())
     }

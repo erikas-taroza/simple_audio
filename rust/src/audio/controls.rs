@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-// A file that defines controls globally.
-
 use std::sync::{atomic::AtomicBool, Arc, RwLock};
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
@@ -23,6 +21,36 @@ use lazy_static::lazy_static;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
+
+/// Creates a getter and setter for an AtomicBool.
+macro_rules! getset_atomic_bool {
+    ($name:ident, $setter_name:ident) => {
+        pub fn $name(&self) -> bool
+        {
+            self.$name.load(std::sync::atomic::Ordering::SeqCst)
+        }
+
+        pub fn $setter_name(&self, value: bool)
+        {
+            self.$name.store(value, std::sync::atomic::Ordering::SeqCst);
+        }
+    };
+}
+
+/// Creates a getter and setter for an RwLock.
+macro_rules! getset_rwlock {
+    ($name:ident, $setter_name:ident, $lock_type:ty) => {
+        pub fn $name(&self) -> $lock_type
+        {
+            *self.$name.read().unwrap()
+        }
+
+        pub fn $setter_name(&self, value: $lock_type)
+        {
+            *self.$name.write().unwrap() = value;
+        }
+    };
+}
 
 lazy_static! {
     /// Use this to communicate between the main thread and the decoder thread.
@@ -33,14 +61,26 @@ lazy_static! {
 #[derive(Clone)]
 pub struct Controls
 {
-    pub is_playing: Arc<AtomicBool>,
-    pub is_stopped: Arc<AtomicBool>,
-    pub is_looping: Arc<AtomicBool>,
-    pub is_normalizing: Arc<AtomicBool>,
-    pub is_file_preloaded: Arc<AtomicBool>,
-    pub volume: Arc<RwLock<f32>>,
-    pub seek_ts: Arc<RwLock<Option<u64>>>,
-    pub progress: Arc<RwLock<ProgressState>>,
+    is_playing: Arc<AtomicBool>,
+    is_stopped: Arc<AtomicBool>,
+    is_looping: Arc<AtomicBool>,
+    is_normalizing: Arc<AtomicBool>,
+    is_file_preloaded: Arc<AtomicBool>,
+    volume: Arc<RwLock<f32>>,
+    seek_ts: Arc<RwLock<Option<u64>>>,
+    progress: Arc<RwLock<ProgressState>>,
+}
+
+impl Controls
+{
+    getset_atomic_bool!(is_playing, set_is_playing);
+    getset_atomic_bool!(is_stopped, set_is_stopped);
+    getset_atomic_bool!(is_looping, set_is_looping);
+    getset_atomic_bool!(is_normalizing, set_is_normalizing);
+    getset_atomic_bool!(is_file_preloaded, set_is_file_preloaded);
+    getset_rwlock!(volume, set_volume, f32);
+    getset_rwlock!(seek_ts, set_seek_ts, Option<u64>);
+    getset_rwlock!(progress, set_progress, ProgressState);
 }
 
 impl Default for Controls
