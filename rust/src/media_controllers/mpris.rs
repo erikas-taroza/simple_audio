@@ -133,15 +133,15 @@ impl Mpris
                     match message {
                         Command::SetMetadata(data) => {
                             player_iface.metadata = data;
-                            player_iface.metadata_changed(&context).await?;
+                            player_iface.metadata_changed(context).await?;
                         }
                         Command::SetDuration(duration) => {
                             player_iface.duration = duration;
-                            player_iface.metadata_changed(&context).await?;
+                            player_iface.metadata_changed(context).await?;
                         }
                         Command::SetPlaybackState(state) => {
                             player_iface.playback_state = state;
-                            player_iface.playback_status_changed(&context).await?;
+                            player_iface.playback_status_changed(context).await?;
                         }
                         Command::Stop => break,
                     }
