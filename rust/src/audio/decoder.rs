@@ -128,7 +128,7 @@ impl Decoder
 
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
-        let recv: Option<ThreadMessage> = if self.state.is_idle() || self.state.is_paused() {
+        let recv: Option<PlayerEvent> = if self.state.is_idle() || self.state.is_paused() {
             self.controls.event_handler().1.recv().ok()
         }
         else {
@@ -138,11 +138,11 @@ impl Decoder
         match recv {
             None => (),
             Some(message) => match message {
-                ThreadMessage::Open(source) => {
+                PlayerEvent::Open(source) => {
                     self.cpal_output = None;
                     self.playback = Some(Self::open(source)?);
                 }
-                ThreadMessage::Play => {
+                PlayerEvent::Play => {
                     self.state = DecoderState::Playing;
 
                     // Windows handles play/pause differently.
@@ -151,7 +151,7 @@ impl Decoder
                         cpal_output.stream.play()?;
                     }
                 }
-                ThreadMessage::Pause => {
+                PlayerEvent::Pause => {
                     self.state = DecoderState::Paused;
 
                     // Windows handles play/pause differently.
@@ -160,7 +160,7 @@ impl Decoder
                         cpal_output.stream.pause()?;
                     }
                 }
-                ThreadMessage::Stop => {
+                PlayerEvent::Stop => {
                     self.state = DecoderState::Idle;
                     self.cpal_output = None;
                     self.playback = None;
@@ -170,17 +170,17 @@ impl Decoder
                 // To make a new connection, dispose of the current cpal_output
                 // and pause playback. Once the user is ready, they can start
                 // playback themselves.
-                ThreadMessage::DeviceChanged => {
+                PlayerEvent::DeviceChanged => {
                     self.cpal_output = None;
                     crate::Player::internal_pause(&self.controls);
                 }
-                ThreadMessage::Preload(source) => {
+                PlayerEvent::Preload(source) => {
                     self.preload_playback = None;
                     self.controls.set_is_file_preloaded(false);
                     let handle = self.preload(source);
                     self.preload_thread = Some(handle);
                 }
-                ThreadMessage::PlayPreload => {
+                PlayerEvent::PlayPreload => {
                     if self.preload_playback.is_none() {
                         return Ok(false);
                     }

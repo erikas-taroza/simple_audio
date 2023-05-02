@@ -57,7 +57,7 @@ macro_rules! getset_rwlock {
     };
 }
 
-type EventHandler = (Sender<ThreadMessage>, Receiver<ThreadMessage>);
+type EventHandler = (Sender<PlayerEvent>, Receiver<PlayerEvent>);
 
 #[derive(Clone)]
 pub struct Controls
@@ -107,7 +107,7 @@ impl Default for Controls
     }
 }
 
-pub enum ThreadMessage
+pub enum PlayerEvent
 {
     Open(Box<dyn MediaSource>),
     Play,

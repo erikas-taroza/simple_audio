@@ -180,7 +180,9 @@ impl Player
         let source = Self::source_from_path(path)?;
 
         self.controls
-            .event_handler().0.send(ThreadMessage::Open(source))?;
+            .event_handler()
+            .0
+            .send(PlayerEvent::Open(source))?;
 
         if autoplay {
             Self::internal_play(&self.controls);
@@ -203,7 +205,7 @@ impl Player
         self.controls
             .event_handler()
             .0
-            .send(ThreadMessage::Preload(source))?;
+            .send(PlayerEvent::Preload(source))?;
 
         Ok(())
     }
@@ -214,7 +216,7 @@ impl Player
         self.controls
             .event_handler()
             .0
-            .send(ThreadMessage::PlayPreload)?;
+            .send(PlayerEvent::PlayPreload)?;
         Ok(())
     }
 
@@ -227,11 +229,7 @@ impl Player
             return;
         }
 
-        controls
-            .event_handler()
-            .0
-            .send(ThreadMessage::Play)
-            .unwrap();
+        controls.event_handler().0.send(PlayerEvent::Play).unwrap();
 
         update_playback_state_stream(PlaybackState::Play);
         controls.set_is_playing(true);
@@ -248,11 +246,7 @@ impl Player
             return;
         }
 
-        controls
-            .event_handler()
-            .0
-            .send(ThreadMessage::Pause)
-            .unwrap();
+        controls.event_handler().0.send(PlayerEvent::Pause).unwrap();
 
         update_playback_state_stream(PlaybackState::Pause);
         controls.set_is_playing(false);
@@ -270,11 +264,7 @@ impl Player
             return;
         }
 
-        controls
-            .event_handler()
-            .0
-            .send(ThreadMessage::Stop)
-            .unwrap();
+        controls.event_handler().0.send(PlayerEvent::Stop).unwrap();
 
         let progress = ProgressState {
             position: 0,

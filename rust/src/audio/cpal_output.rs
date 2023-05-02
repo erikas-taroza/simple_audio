@@ -134,7 +134,7 @@ impl CpalOutput
                             controls
                                 .event_handler()
                                 .0
-                                .send(ThreadMessage::DeviceChanged)
+                                .send(PlayerEvent::DeviceChanged)
                                 .unwrap();
                             ring_buffer_writer.cancel_write();
                         }
