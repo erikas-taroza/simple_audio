@@ -27,6 +27,7 @@ use audio::{
     decoder::Decoder,
     sources::{hls::HlsStream, http::HttpStream, local::Local},
 };
+use crossbeam::channel::unbounded;
 use flutter_rust_bridge::{RustOpaque, StreamSink};
 use media_controllers::types::{Event, MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
@@ -81,6 +82,8 @@ impl Player
             }
         });
 
+        *THREAD_KILLER.write().unwrap() = unbounded();
+
         // Start the decoding thread.
         thread::spawn({
             let controls = player_controls.clone();
@@ -95,11 +98,11 @@ impl Player
         }
     }
 
-    /// Stop media controllers and reset `IS_STREAM_BUFFERING`.
-    ///
-    /// The decoder thread is automatically disposed as the controls are dropped.
+    /// Stops media controllers and resets `IS_STREAM_BUFFERING`.
+    /// Decoder threads are also stopped.
     pub fn dispose()
     {
+        THREAD_KILLER.read().unwrap().0.send(true).unwrap();
         audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         media_controllers::dispose();
@@ -177,9 +180,7 @@ impl Player
         let source = Self::source_from_path(path)?;
 
         self.controls
-            .event_handler()
-            .0
-            .send(ThreadMessage::Open(source))?;
+            .event_handler().0.send(ThreadMessage::Open(source))?;
 
         if autoplay {
             Self::internal_play(&self.controls);
@@ -464,12 +465,12 @@ mod tests
         thread::sleep(Duration::from_secs(5));
         println!("Stopping now");
         player.stop();
-        thread::sleep(Duration::from_millis(50));
         println!("Playing now");
         player.open("/home/erikas/Music/2.mp3".to_string(), true)?;
         player.stop();
         thread::sleep(Duration::from_millis(50));
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
+        player.play();
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }

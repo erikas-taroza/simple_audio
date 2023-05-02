@@ -17,9 +17,15 @@
 use std::sync::{atomic::AtomicBool, Arc, RwLock, RwLockReadGuard};
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
+use lazy_static::lazy_static;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
+
+lazy_static! {
+    /// Use this to stop the decoder thread.
+    pub static ref THREAD_KILLER: RwLock<(Sender<bool>, Receiver<bool>)> = RwLock::new(unbounded());
+}
 
 /// Creates a getter and setter for an AtomicBool.
 macro_rules! getset_atomic_bool {
@@ -101,18 +107,8 @@ impl Default for Controls
     }
 }
 
-impl Drop for Controls
-{
-    fn drop(&mut self)
-    {
-        self.event_handler().0.send(ThreadMessage::Dispose).unwrap();
-    }
-}
-
 pub enum ThreadMessage
 {
-    /// Stops the current running thread.
-    Dispose,
     Open(Box<dyn MediaSource>),
     Play,
     Pause,

@@ -18,6 +18,7 @@ use std::thread::{self, JoinHandle};
 
 use anyhow::{anyhow, Context};
 use cpal::traits::StreamTrait;
+use crossbeam::channel::Receiver;
 use symphonia::{
     core::{
         audio::{AsAudioBufferRef, AudioBuffer},
@@ -42,6 +43,7 @@ use super::{controls::*, cpal_output::CpalOutput};
 
 pub struct Decoder
 {
+    thread_killer: Receiver<bool>,
     controls: Controls,
     state: DecoderState,
     cpal_output: Option<CpalOutput>,
@@ -56,7 +58,10 @@ impl Decoder
     /// Creates a new decoder.
     pub fn new(controls: Controls) -> Self
     {
+        let thread_killer = THREAD_KILLER.read().unwrap().1.clone();
+
         Decoder {
+            thread_killer,
             controls,
             state: DecoderState::Idle,
             cpal_output: None,
@@ -113,10 +118,14 @@ impl Decoder
     ///
     /// Blocks if the `self.state` is `Idle` or `Paused`.
     ///
-    /// Returns true if the `Dispose` message was received.
+    /// Returns true if this thread should be stopped.
     /// Returns false otherwise.
     fn listen_for_message(&mut self) -> anyhow::Result<bool>
     {
+        if self.thread_killer.try_recv().is_ok() {
+            return Ok(true);
+        }
+
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
         let recv: Option<ThreadMessage> = if self.state.is_idle() || self.state.is_paused() {
@@ -129,7 +138,6 @@ impl Decoder
         match recv {
             None => (),
             Some(message) => match message {
-                ThreadMessage::Dispose => return Ok(true),
                 ThreadMessage::Open(source) => {
                     self.cpal_output = None;
                     self.playback = Some(Self::open(source)?);
