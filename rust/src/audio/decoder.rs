@@ -431,7 +431,10 @@ impl Decoder
         Ok(())
     }
 
-    fn notify_media_controllers_with_progress(curr_progress: &ProgressState, new_progress: &ProgressState)
+    fn notify_media_controllers_with_progress(
+        curr_progress: &ProgressState,
+        new_progress: &ProgressState,
+    )
     {
         // Notify OS media controllers about the new duration.
         if curr_progress.duration == 0 {
