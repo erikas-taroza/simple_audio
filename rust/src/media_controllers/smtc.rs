@@ -197,6 +197,17 @@ impl MediaController for Smtc
         self.display.Update().unwrap();
     }
 
+    fn set_position(&self, position: u64)
+    {
+        self.timeline
+            .SetPosition(Duration::from_secs(position).into())
+            .unwrap();
+
+        self.controls
+            .UpdateTimelineProperties(&self.timeline)
+            .unwrap();
+    }
+
     fn set_duration(&self, duration: u64)
     {
         self.timeline
