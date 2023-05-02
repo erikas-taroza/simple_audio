@@ -19,6 +19,7 @@ use crate::utils::types::PlaybackState;
 pub trait MediaController: Send + Sync
 {
     fn set_metadata(&self, metadata: Metadata);
+    fn set_position(&self, position: u64);
     fn set_duration(&self, duration: u64);
     fn set_playback_state(&self, state: PlaybackState);
     fn stop(&self);
@@ -102,6 +103,7 @@ pub enum Event
 pub enum Command
 {
     SetMetadata(Metadata),
+    SetPosition(u64),
     SetDuration(u64),
     SetPlaybackState(PlaybackState),
     Stop,

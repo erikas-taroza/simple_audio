@@ -286,12 +286,7 @@ impl Decoder
             duration: playback.duration,
         };
 
-        if self.controls.progress().duration == 0 {
-            // Notify OS media controllers about the new duration.
-            update_callback_stream(Callback::DurationCalculated);
-            media_controllers::set_duration(playback.duration);
-        }
-
+        Self::notify_media_controllers_with_progress(&self.controls.progress(), &progress);
         update_progress_state_stream(progress);
         self.controls.set_progress(progress);
 
@@ -434,6 +429,20 @@ impl Decoder
         self.controls.set_is_file_preloaded(true);
 
         Ok(())
+    }
+
+    fn notify_media_controllers_with_progress(curr_progress: &ProgressState, new_progress: &ProgressState)
+    {
+        // Notify OS media controllers about the new duration.
+        if curr_progress.duration == 0 {
+            update_callback_stream(Callback::DurationCalculated);
+            media_controllers::set_duration(new_progress.duration);
+        }
+
+        // Notify OS media controllers about the new position.
+        if curr_progress.position < new_progress.position {
+            media_controllers::set_position(new_progress.position);
+        }
     }
 }
 
