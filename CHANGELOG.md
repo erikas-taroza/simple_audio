@@ -1,3 +1,10 @@
+## 1.5.3
+- Removed static global variables that controls playback.
+- Refactor MPRIS and SMTC media controllers.
+- MPRIS and SMTC now update their position.
+- Removed loops that wait on a valid duration for media controllers.
+- CD works with different branches.
+
 ## 1.5.2
 - Add default timebase (thanks @Yesterday17)
 - Workflow commits use "CD" instead of "CI".
