@@ -54,6 +54,11 @@ impl MediaController for Mpris
         self.tx.send(Command::SetMetadata(metadata)).unwrap();
     }
 
+    fn set_position(&self, position: u64)
+    {
+        self.tx.send(Command::SetPosition(position)).unwrap();
+    }
+
     fn set_duration(&self, duration: u64)
     {
         self.tx.send(Command::SetDuration(duration)).unwrap();
@@ -105,6 +110,7 @@ impl Mpris
             callback: Arc::new(Mutex::new(callback)),
             metadata: Default::default(),
             playback_state: PlaybackState::Done,
+            position: 0,
             duration: 0,
         };
 
@@ -134,6 +140,10 @@ impl Mpris
                         Command::SetMetadata(data) => {
                             player_iface.metadata = data;
                             player_iface.metadata_changed(context).await?;
+                        }
+                        Command::SetPosition(position) => {
+                            player_iface.position = position;
+                            player_iface.position_changed(context).await?;
                         }
                         Command::SetDuration(duration) => {
                             player_iface.duration = duration;
@@ -203,6 +213,7 @@ struct PlayerInterface
 {
     actions: Vec<MediaControlAction>,
     callback: Arc<Mutex<dyn Fn(Event) + Send + 'static>>,
+    position: u64,
     duration: u64,
     metadata: Metadata,
     playback_state: PlaybackState,
@@ -250,10 +261,8 @@ impl PlayerInterface
     #[dbus_interface(property)]
     fn position(&self) -> i64
     {
-        // let position = PROGRESS.read().unwrap().position;
-        // let in_micros = Duration::from_secs(position).as_micros();
-        // in_micros.try_into().unwrap_or_default()
-        0
+        let in_micros = Duration::from_secs(self.position).as_micros();
+        in_micros.try_into().unwrap_or_default()
     }
 
     #[dbus_interface(property)]

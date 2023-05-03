@@ -86,6 +86,18 @@ pub fn set_metadata(metadata: Metadata)
     lock.as_ref().unwrap().set_metadata(metadata);
 }
 
+/// Sets the current position of playback for the OS's
+/// media controller. This should be called once every second.
+pub fn set_position(position: u64)
+{
+    let lock = MEDIA_CONTROLLER.read().unwrap();
+    if lock.is_none() {
+        return;
+    }
+
+    lock.as_ref().unwrap().set_position(position);
+}
+
 /// Sets the file's duration for the OS's media controller.
 ///
 /// This should be called as soon as the duration is calculated
