@@ -71,9 +71,10 @@ impl CpalOutput
                 None
             };
 
-        // Create a ring buffer with a capacity for up-to 200ms of audio.
+        // Create a ring buffer with a capacity for up-to `buf_len_ms` of audio.
         let channels = spec.channels.count();
-        let ring_len = ((200 * spec.rate as usize) / 1000) * channels;
+        let buf_len_ms = 300;
+        let ring_len = ((buf_len_ms * spec.rate as usize) / 1000) * channels;
 
         // Create the buffers for the stream.
         let rb = BlockingRb::<f32>::new(ring_len);
