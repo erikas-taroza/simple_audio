@@ -64,7 +64,7 @@ This project has 3 parts:
   - Main codebase that provides all the functionality.
   - `lib.rs`: The API that is used in Dart. Only public items are exported.
   - `./utils`: Contains things like Rust->Dart streams. Helpful things that don't have a better place to go.
-  - `./metadata`: Code that handles the MPRIS (Linux) and SMTC (Windows) media controllers.
+  - `./media_controllers`: Code that handles the MPRIS (Linux) and SMTC (Windows) media controllers.
   - `./audio`: Playback functionality.
     - `./audio/dsp`: Digital Signal Processing. Handles things like normalizing and resampling.
     - `./audio/streaming`: Custom sources for streaming online files.
