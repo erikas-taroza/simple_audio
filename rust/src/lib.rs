@@ -44,6 +44,21 @@ impl Player
 {
     pub fn new(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>) -> Player
     {
+        // Enable logging from Rust to Android logcat.
+        // `android_logger::init_once` can safely be called multiple times
+        // but will only initialize once.
+        #[cfg(all(
+            debug_assertions,
+            target_os = "android"
+        ))]
+        {
+            use log::LevelFilter;
+            use android_logger::Config;
+            android_logger::init_once(
+                Config::default().with_max_level(LevelFilter::Trace),
+            );
+        }
+
         let player_controls = Controls::default();
 
         media_controllers::init(actions, dbus_name, hwnd, {
