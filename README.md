@@ -18,16 +18,20 @@ platforms (audio_service, dart_vlc). This made it hard to deal with bugs from di
   - **iOS/macOS:** Control center
 - Playback of local and online resources
 
+## Documentation
+The documentation is hosted by `pub.dev`. You can find it [here](https://pub.dev/documentation/simple_audio/latest/simple_audio/simple_audio-library.html).
+
 ## Usage
 - Add this plugin as a dependency in ``pubspec.yaml``
-- Call ``SimpleAudio.init()`` in ``main()`` and configure as you need.
-- Instantiate a ``SimpleAudio`` object in your player controller.
+- Follow the [setup steps](https://github.com/erikas-taroza/simple_audio#setup).
+- Call ``SimpleAudio.init()`` in ``main()`` and configure as you need ([see below](https://github.com/erikas-taroza/simple_audio#initialization)).
+- Instantiate a ``SimpleAudio`` object in your player controller ([see below](https://github.com/erikas-taroza/simple_audio#create-player)).
 - Use the APIs provided in the instantiated object.
 
-To see a sample player project, please check the [example](https://github.com/erikas-taroza/simple_audio/tree/master/example).
+An example player project is located [here](https://github.com/erikas-taroza/simple_audio/tree/master/example).
 
+### Initialization
 ```dart
-// Initialize SimpleAudio
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -50,61 +54,16 @@ void main() async {
 
   runApp(const MyApp());
 }
+```
 
-// Instantiate a SimpleAudio object.
-final SimpleAudio player = SimpleAudio();
-
-// Stop the current playback.
-await player.stop();
-
-// Open a file for playing.
-player.open("path/to/your/file.mp3", autoplay: true);
-// OR
-player.open("https://my-files.com/file.mp3", autoplay: true);
-
-// Check if the player is playing.
-bool isPlaying = await player.isPlaying;
-
-// Listen to the playback state.
-player.playbackStateStream.listen((e) {});
-
-// Listen to the progress state.
-player.progressStateStream.listen((e) {});
-
-// Play
-player.play();
-
-// Pause
-player.pause();
-
-// Set the volume (0.0 - 1.0)
-player.setVolume(0.5);
-
-// Seek to the 5th second.
-player.seek(5);
-
-// Set the OS's media controller metadata.
-player.setMetadata(Metadata(
-  title: "My Title",
-  artist: "My Artist",
-  album: "My Album",
-  artUri: "https://my-files.com/image.jpg"
-));
-
-// Loop the playback.
-player.loopPlayback(true);
-
-// Normalize the volume of the audio.
-player.normalizeVolume(true);
-
-// Preload a file at the given path.
-player.preload("/path/to/your/file.mp3");
-
-// Play the preloaded file (gapless playback).
-player.playPreload();
-
-// Check if there is a file preloaded.
-bool hasPreloaded = await player.hasPreloaded;
+### Create Player
+```dart
+final SimpleAudio player = SimpleAudio(
+  onSkipPrevious: (SimpleAudio player) {},
+  onSkipNext: (SimpleAudio player) {},
+  onNetworkStreamError: (SimpleAudio player) {},
+  onDecodeError: (SimpleAudio player) {},
+);
 ```
 
 ## Setup
