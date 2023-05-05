@@ -27,7 +27,7 @@ pub static IS_STREAM_BUFFERING: AtomicBool = AtomicBool::new(false);
 // things that should only be controlled by one source.
 // For example, `IS_STREAM_BUFFERING` shouldn't be set
 // when preloading.
-pub static ACTIVE_LOCK: Mutex<()> = Mutex::new(());
+static ACTIVE_LOCK: Mutex<()> = Mutex::new(());
 
 /// Attempts to set this source as active by returning a guard.
 /// If another source already has a lock, this returns `None`.
