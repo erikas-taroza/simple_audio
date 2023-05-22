@@ -157,6 +157,8 @@ impl Mpris
                     }
                 }
             }
+
+            std::thread::sleep(Duration::from_millis(200));
         }
 
         // Clean up.
