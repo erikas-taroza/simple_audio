@@ -1,3 +1,9 @@
+## 1.5.4
+- Fix Android audio crackling with Bluetooth headphones.
+- Fix high CPU usage with MPRIS.
+- Improve README
+- Make `ACTIVE_LOCK` private.
+
 ## 1.5.3
 - Removed static global variables that controls playback.
 - Refactor MPRIS and SMTC media controllers.
