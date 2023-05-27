@@ -21,7 +21,7 @@ use std::{
 
 use symphonia::core::io::MediaSource;
 
-pub const CHUNK_SIZE: usize = 1024 * 128;
+pub const CHUNK_SIZE: usize = 1024 * 256;
 
 pub trait Streamable: Read + Seek + Send + Sync + MediaSource
 {

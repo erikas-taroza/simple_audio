@@ -3,7 +3,7 @@
 #include <stdlib.h>
 typedef struct _Dart_Handle* Dart_Handle;
 
-#define CHUNK_SIZE (1024 * 128)
+#define CHUNK_SIZE (1024 * 256)
 
 typedef struct DartCObject DartCObject;
 
