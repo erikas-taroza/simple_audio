@@ -18,4 +18,5 @@ pub mod controls;
 mod cpal_output;
 pub mod decoder;
 mod dsp;
+mod opus;
 pub mod sources;
