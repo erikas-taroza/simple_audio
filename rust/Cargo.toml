@@ -14,9 +14,7 @@ reqwest = { version = "0", features = [
 	"rustls-tls",
 ], default-features = false }
 # symphonia = { version = "0.5.2", features = ["all"] }
-symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements", features = [
-	"all",
-] }
+symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements", features = ["all"] }
 symphonia-core = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements" }
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 rubato = "0.12.0"
@@ -25,7 +23,7 @@ arrayvec = "0.7.2"
 ebur128 = "0.1.7"
 anyhow = "1.0.69"
 lazy_static = "1.4.0"
-audiopus = "0.2.0"
+audiopus = "0.3.0-rc.0"
 
 # Linux Dependencies
 [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))'.dependencies]

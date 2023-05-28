@@ -29,14 +29,12 @@ use symphonia_core::{
     formats::Packet,
 };
 
-/// Sample rate of audio to be sent to Discord.
 const SAMPLE_RATE: SampleRate = SampleRate::Hz48000;
 
-/// Sample rate of audio to be sent to Discord.
 const SAMPLE_RATE_RAW: usize = 48_000;
 
 /// Number of audio frames/packets to be sent per second.
-const AUDIO_FRAME_RATE: usize = 50;
+const AUDIO_FRAME_RATE: usize = 1000 / 20; // FIXME: this value might be incorrect. We need to parse it from opus TOC.
 
 /// This is equally the number of stereo (joint) samples in an audio frame.
 const MONO_FRAME_SIZE: usize = SAMPLE_RATE_RAW / AUDIO_FRAME_RATE;
@@ -67,7 +65,7 @@ impl OpusDecoder
     fn decode_inner(&mut self, packet: &Packet) -> SymphResult<()>
     {
         let s_ct = loop {
-            let pkt: Option<&[u8]> = if packet.buf().is_empty() {
+            let pkt = if packet.buf().is_empty() {
                 None
             }
             else if let Ok(checked_pkt) = packet.buf().try_into() {
@@ -76,7 +74,7 @@ impl OpusDecoder
             else {
                 return decode_error("Opus packet was too large (greater than i32::MAX bytes).");
             };
-            let out_space = &mut self.rawbuf[..];
+            let out_space = (&mut self.rawbuf[..]).try_into().expect("The following logic expands this buffer safely below i32::MAX, and we throw our own error.");
 
             match self.inner.decode_float(pkt, out_space, false) {
                 Ok(v) => break v,
@@ -94,8 +92,8 @@ impl OpusDecoder
                         SignalSpec::new_with_layout(SAMPLE_RATE_RAW as u32, Layout::Stereo),
                     );
                 }
-                Err(e) => {
-                    return decode_error("Opus decode error: see 'tracing' logs.");
+                Err(_) => {
+                    return decode_error("Opus decode error");
                 }
             }
         };
