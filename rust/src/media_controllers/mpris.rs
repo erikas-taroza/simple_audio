@@ -35,6 +35,7 @@ use crossbeam::channel::{unbounded, Receiver};
 use zbus::{
     blocking::ConnectionBuilder,
     dbus_interface,
+    fdo::RequestNameFlags,
     zvariant::{ObjectPath, Value},
 };
 
@@ -120,8 +121,12 @@ impl Mpris
         let conn = ConnectionBuilder::session()?
             .serve_at(&bus_path, app_interface)?
             .serve_at(&bus_path, player_interface)?
-            .name(full_bus_name.as_str())?
             .build()?;
+
+        conn.request_name_with_flags(
+            full_bus_name.as_str(),
+            RequestNameFlags::ReplaceExisting.into(),
+        )?;
 
         loop {
             // Check for any new commands.
