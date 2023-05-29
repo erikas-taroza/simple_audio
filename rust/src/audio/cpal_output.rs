@@ -40,6 +40,8 @@ const BASE_VOLUME: f32 = 0.7;
 pub struct CpalOutput
 {
     pub stream: Stream,
+    pub spec: SignalSpec,
+    pub duration: u64,
     pub ring_buffer_reader: BlockingRb<f32, Consumer>,
     ring_buffer_writer: BlockingRb<f32, Producer>,
     sample_buffer: SampleBuffer<f32>,
@@ -156,6 +158,8 @@ impl CpalOutput
 
         Ok(CpalOutput {
             stream,
+            spec,
+            duration,
             ring_buffer_writer: rb_clone.0,
             ring_buffer_reader: rb_clone.1,
             sample_buffer,

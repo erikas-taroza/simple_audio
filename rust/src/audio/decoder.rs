@@ -173,6 +173,20 @@ impl Decoder
                 PlayerEvent::DeviceChanged => {
                     self.cpal_output = None;
                     crate::Player::internal_pause(&self.controls);
+
+                    // The device change will also affect the preloaded playback.
+                    if self.preload_playback.is_some() {
+                        let (playback, cpal_output) = self.preload_playback.take().unwrap();
+
+                        self.preload_playback.replace((
+                            playback,
+                            CpalOutput::new(
+                                self.controls.clone(),
+                                cpal_output.spec,
+                                cpal_output.duration,
+                            )?,
+                        ));
+                    }
                 }
                 PlayerEvent::Preload(source) => {
                     self.preload_playback = None;
@@ -425,7 +439,7 @@ impl Decoder
             .join()
             .unwrap_or(Err(anyhow!("Could not join preload thread.")))?;
 
-        self.preload_playback.replace((result.0, result.1));
+        self.preload_playback.replace(result);
         self.controls.set_is_file_preloaded(true);
 
         Ok(())
