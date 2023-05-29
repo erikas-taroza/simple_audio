@@ -161,24 +161,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-          
-      - name: Cache OpenSSL setup
-        uses: actions/cache@v3
-        id: ios-openssl-cache
-        with:
-          key: ios-openssl-cache
-          path: |
-            ~/openssl
-            /usr/local/lib
-          
-      - if: steps.ios-openssl-cache.outputs.cache-hit != 'true'
-        name: OpenSSL setup for iOS Simluator
-        run: |
-          cd ~
-          git clone https://github.com/openssl/openssl.git
-          cd openssl
-          ./Configure
-          sudo make install
             
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
@@ -194,7 +176,7 @@ jobs:
       - name: Build iOS Libraries
         run: |
           pip install requests
-          python ./plugin_tool.py -b ios --ios-ssl ~/openssl/include
+          python ./plugin_tool.py -b ios
           
       - name: Commit
         run: |
