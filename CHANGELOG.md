@@ -1,3 +1,8 @@
+## 1.5.5
+- Fix preloaded file not playing after output device is changed.
+- MPRIS: Fix error when hot reloading because name is taken.
+- Increase downloaded chunk size for network streams.
+
 ## 1.5.4
 - Fix Android audio crackling with Bluetooth headphones.
 - Fix high CPU usage with MPRIS.
