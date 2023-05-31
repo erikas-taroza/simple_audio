@@ -7,7 +7,7 @@
 // the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 //
@@ -36,20 +36,25 @@ const _base = 'simple_audio';
 // but rather directly **linked** against the binary.
 final _dylib = io.Platform.isWindows ? '$_base.dll' : 'lib$_base.so';
 
-final SimpleAudio api = SimpleAudioImpl(io.Platform.isIOS || io.Platform.isMacOS
-    ? DynamicLibrary.executable()
-    : DynamicLibrary.open(_dylib));
+final SimpleAudio api = SimpleAudioImpl(
+  io.Platform.isIOS || io.Platform.isMacOS
+      ? DynamicLibrary.executable()
+      : DynamicLibrary.open(_dylib),
+);
 
-int getHWND()
-{
-    if(!Platform.isWindows) { throw "This can only be used on Windows."; }
+int getHWND() {
+  if (!Platform.isWindows) {
+    throw "This can only be used on Windows.";
+  }
 
-    final user32 = DynamicLibrary.open('user32.dll');
+  final user32 = DynamicLibrary.open('user32.dll');
 
-    final findWindowA = user32.lookupFunction<
-        Int32 Function(Pointer<Utf8> lpClassName, Pointer<Utf8> lpWindowName),
-        int Function(Pointer<Utf8> lpClassName,
-            Pointer<Utf8> lpWindowName)>('FindWindowA');
+  final findWindowA = user32.lookupFunction<
+      Int32 Function(Pointer<Utf8> lpClassName, Pointer<Utf8> lpWindowName),
+      int Function(
+        Pointer<Utf8> lpClassName,
+        Pointer<Utf8> lpWindowName,
+      )>('FindWindowA');
 
-    return findWindowA('FLUTTER_RUNNER_WIN32_WINDOW'.toNativeUtf8(), nullptr);
+  return findWindowA('FLUTTER_RUNNER_WIN32_WINDOW'.toNativeUtf8(), nullptr);
 }
