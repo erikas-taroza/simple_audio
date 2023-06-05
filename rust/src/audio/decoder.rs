@@ -58,7 +58,7 @@ impl Decoder
     /// Creates a new decoder.
     pub fn new(controls: Controls) -> Self
     {
-        let thread_killer = THREAD_KILLER.read().unwrap().1.clone();
+        let thread_killer = THREAD_KILLER.get().unwrap().read().unwrap().1.clone();
 
         Decoder {
             thread_killer,

@@ -14,27 +14,29 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::RwLock;
+use std::sync::{OnceLock, RwLock};
 
-use flutter_rust_bridge::{support::lazy_static, StreamSink};
+use flutter_rust_bridge::StreamSink;
 
 use super::types::Callback;
 
-lazy_static! {
-    static ref CALLBACK_STREAM: RwLock<Option<StreamSink<Callback>>> = RwLock::new(None);
-}
+static CALLBACK_STREAM: OnceLock<RwLock<Option<StreamSink<Callback>>>> = OnceLock::new();
 
 /// Creates a new stream for sending callbacks to Dart.
 pub fn callback_stream(stream: StreamSink<Callback>)
 {
-    let mut state_stream = CALLBACK_STREAM.write().unwrap();
-    *state_stream = Some(stream);
+    *CALLBACK_STREAM
+        .get_or_init(|| RwLock::new(None))
+        .write()
+        .unwrap() = Some(stream);
 }
 
 /// Updates/adds to the stream with the given value.
 pub fn update_callback_stream(value: Callback)
 {
-    if let Some(stream) = &*CALLBACK_STREAM.read().unwrap() {
-        stream.add(value);
+    if let Some(lock) = CALLBACK_STREAM.get() {
+        if let Some(stream) = &*lock.read().unwrap() {
+            stream.add(value);
+        }
     }
 }

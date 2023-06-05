@@ -14,27 +14,29 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::RwLock;
+use std::sync::{OnceLock, RwLock};
 
-use flutter_rust_bridge::{support::lazy_static, StreamSink};
+use flutter_rust_bridge::StreamSink;
 
 use super::types::ProgressState;
 
-lazy_static! {
-    static ref PROGRESS_STATE_STREAM: RwLock<Option<StreamSink<ProgressState>>> = RwLock::new(None);
-}
+static PROGRESS_STATE_STREAM: OnceLock<RwLock<Option<StreamSink<ProgressState>>>> = OnceLock::new();
 
 /// Creates a new progress stream.
 pub fn progress_state_stream(stream: StreamSink<ProgressState>)
 {
-    let mut state_stream = PROGRESS_STATE_STREAM.write().unwrap();
-    *state_stream = Some(stream);
+    *PROGRESS_STATE_STREAM
+        .get_or_init(|| RwLock::new(None))
+        .write()
+        .unwrap() = Some(stream);
 }
 
-/// Updates the progress stream with the given value.
+/// Updates/adds to the stream with the given value.
 pub fn update_progress_state_stream(value: ProgressState)
 {
-    if let Some(stream) = &*PROGRESS_STATE_STREAM.read().unwrap() {
-        stream.add(value);
+    if let Some(lock) = PROGRESS_STATE_STREAM.get() {
+        if let Some(stream) = &*lock.read().unwrap() {
+            stream.add(value);
+        }
     }
 }

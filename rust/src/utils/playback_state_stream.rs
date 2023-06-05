@@ -14,27 +14,29 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::RwLock;
+use std::sync::{OnceLock, RwLock};
 
-use flutter_rust_bridge::{support::lazy_static, StreamSink};
+use flutter_rust_bridge::StreamSink;
 
 use super::types::PlaybackState;
 
-lazy_static! {
-    static ref PLAYBACK_STATE_STREAM: RwLock<Option<StreamSink<PlaybackState>>> = RwLock::new(None);
-}
+static PLAYBACK_STATE_STREAM: OnceLock<RwLock<Option<StreamSink<PlaybackState>>>> = OnceLock::new();
 
 /// Creates a new playback stream.
 pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
 {
-    let mut state_stream = PLAYBACK_STATE_STREAM.write().unwrap();
-    *state_stream = Some(stream);
+    *PLAYBACK_STATE_STREAM
+        .get_or_init(|| RwLock::new(None))
+        .write()
+        .unwrap() = Some(stream);
 }
 
-/// Updates the playback stream with the given value.
+/// Updates/adds to the stream with the given value.
 pub fn update_playback_state_stream(value: PlaybackState)
 {
-    if let Some(stream) = &*PLAYBACK_STATE_STREAM.read().unwrap() {
-        stream.add(value);
+    if let Some(lock) = PLAYBACK_STATE_STREAM.get() {
+        if let Some(stream) = &*lock.read().unwrap() {
+            stream.add(value);
+        }
     }
 }

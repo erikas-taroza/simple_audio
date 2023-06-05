@@ -19,7 +19,7 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod media_controllers;
 mod utils;
 
-use std::{fs::File, thread};
+use std::{fs::File, sync::RwLock, thread};
 
 use anyhow::Context;
 use audio::{
@@ -92,7 +92,10 @@ impl Player
             }
         });
 
-        *THREAD_KILLER.write().unwrap() = unbounded();
+        *THREAD_KILLER
+            .get_or_init(|| RwLock::new(unbounded()))
+            .write()
+            .unwrap() = unbounded();
 
         // Start the decoding thread.
         thread::spawn({
@@ -112,7 +115,9 @@ impl Player
     /// Decoder threads are also stopped.
     pub fn dispose()
     {
-        THREAD_KILLER.read().unwrap().0.send(true).unwrap();
+        if let Some(thread_killer) = THREAD_KILLER.get() {
+            thread_killer.read().unwrap().0.send(true).unwrap();
+        }
         audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         media_controllers::dispose();
