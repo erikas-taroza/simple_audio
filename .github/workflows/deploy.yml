@@ -1,11 +1,11 @@
 name: Build & Deploy Rust Libraries
 
 on:
-#   push:
-#     branches:
-#       - master
+  #   push:
+  #     branches:
+  #       - master
   workflow_dispatch:
-      
+
 jobs:
   build_linux:
     runs-on: ubuntu-20.04
@@ -18,10 +18,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install Rust -sys dependencies
-        run: | 
+        run: |
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev pkg-config
-          
+
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
@@ -32,21 +32,22 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-          
+
       - name: Build Linux Library
         run: |
           pip install requests
           python ./plugin_tool.py -b linux
-          
+
       - name: Commit
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git pull --rebase
+          git pull --rebase --autostash
+          git stash pop
           git add .
           git commit -m "CD: Update Linux libs"
           git push
-          
+
   build_android:
     runs-on: ubuntu-latest
     steps:
@@ -56,7 +57,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-          
+
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
@@ -67,21 +68,22 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-          
+
       - name: Build Android Libraries
         run: |
           pip install requests
           python ./plugin_tool.py -b android
-          
+
       - name: Commit
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git pull --rebase
+          git pull --rebase --autostash
+          git stash pop
           git add .
           git commit -m "CD: Update Android libs"
           git push
-          
+
   build_windows:
     runs-on: windows-latest
     steps:
@@ -91,7 +93,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-          
+
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
@@ -102,21 +104,22 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-          
+
       - name: Build Windows Library
         run: |
           pip3 install requests
           python3 .\plugin_tool.py -b windows
-          
+
       - name: Commit
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git pull --rebase
+          git pull --rebase --autostash
+          git stash pop
           git add .
           git commit -m "CD: Update Windows libs"
           git push
-          
+
   build_macos:
     runs-on: macos-latest
     steps:
@@ -126,7 +129,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-          
+
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
@@ -137,17 +140,18 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-          
+
       - name: Build macOS Libraries
         run: |
           pip install requests
           python ./plugin_tool.py -b macos
-          
+
       - name: Commit
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git pull --rebase
+          git pull --rebase --autostash
+          git stash pop
           git add .
           git commit -m "CD: Update macOS libs"
           git push
@@ -161,7 +165,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-            
+
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2
         with:
@@ -172,21 +176,21 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-            
+
       - name: Build iOS Libraries
         run: |
           pip install requests
           python ./plugin_tool.py -b ios
-          
+
       - name: Commit
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
-          git pull --rebase
+          git pull --rebase --autostash
+          git stash pop
           git add .
           git commit -m "CD: Update iOS libs"
           git push
-
 
   squash:
     runs-on: ubuntu-latest
@@ -203,4 +207,3 @@ jobs:
           git add .
           git commit -m "CD: Update libraries"
           git push -f
-          
