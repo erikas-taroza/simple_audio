@@ -47,7 +47,7 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull --rebase --autostash
-          git stash pop
+          git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
           git commit -m "CD: Update Linux libs"
           git push
@@ -87,7 +87,7 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull --rebase --autostash
-          git stash pop
+          git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
           git commit -m "CD: Update Android libs"
           git push
@@ -127,7 +127,7 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull --rebase --autostash
-          git stash pop
+          git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
           git commit -m "CD: Update Windows libs"
           git push
@@ -167,7 +167,7 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull --rebase --autostash
-          git stash pop
+          git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
           git commit -m "CD: Update macOS libs"
           git push
@@ -207,7 +207,7 @@ jobs:
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
           git pull --rebase --autostash
-          git stash pop
+          git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
           git commit -m "CD: Update iOS libs"
           git push
