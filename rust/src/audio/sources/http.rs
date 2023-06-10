@@ -46,20 +46,37 @@ impl HttpStream
     {
         // Get the size of the file we are streaming.
         let res = Client::new().head(&url).send()?.error_for_status()?;
+        let header = res.headers().get("Content-Length");
 
-        let header = res
-            .headers()
-            .get("Content-Length")
-            .context("Could not get \"Content-Length\" header for HTTP stream.")?;
+        let buffer;
+        let mut downloaded = RangeSet::new();
+        let mut requested = RangeSet::new();
 
-        let size: usize = header.to_str()?.parse()?;
+        match header {
+            Some(content_length) => {
+                buffer = vec![0; content_length.to_str()?.parse()?];
+            }
+            None => {
+                // Content-Length request failed to get file size. Download the whole file.
+                let response = Client::new()
+                    .get(&url)
+                    .header("Range", "bytes=0-")
+                    .send()
+                    .context("Could not download file for playback.")?;
+
+                let bytes = response.bytes()?.to_vec();
+                buffer = bytes;
+                downloaded.insert(0..buffer.len());
+                requested.insert(0..buffer.len());
+            }
+        }
 
         Ok(HttpStream {
             url,
-            buffer: vec![0; size],
+            buffer,
             read_position: 0,
-            downloaded: RangeSet::new(),
-            requested: RangeSet::new(),
+            downloaded,
+            requested,
             receivers: Vec::new(),
             active_lock: super::try_get_active_lock(),
         })

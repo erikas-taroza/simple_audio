@@ -53,8 +53,11 @@ impl HlsStream
         let mut urls = Vec::new();
         let mut total_size = 0;
 
-        let file = Client::new().get(url).send()?.text()?;
+        let mut buffer = Vec::new();
+        let mut downloaded = RangeSet::new();
+        let mut requested = RangeSet::new();
 
+        let file = Client::new().get(url).send()?.text()?;
         for line in file.lines() {
             if !line.contains("http") {
                 continue;
@@ -62,24 +65,39 @@ impl HlsStream
 
             // Get the size of the part.
             let res = Client::new().head(line).send()?.error_for_status()?;
+            let header = res.headers().get("Content-Length");
 
-            let header = res
-                .headers()
-                .get("Content-Length")
-                .context("Could not get \"Content-Length\" header for a part of HLS stream.")?;
+            match header {
+                Some(content_length) => {
+                    let size = content_length.to_str()?.parse()?;
+                    urls.push((total_size..total_size + size + 1, line.to_string()));
+                    total_size += size;
+                    buffer.extend_from_slice(&vec![0; size]);
+                }
+                None => {
+                    // Content-Length request failed to get file size. Download the whole part.
+                    let response = Client::new()
+                        .get(line)
+                        .header("Range", "bytes=0-")
+                        .send()
+                        .context("Could not download part for playback.")?;
 
-            let size: usize = header.to_str()?.parse()?;
-
-            urls.push((total_size..total_size + size + 1, line.to_string()));
-            total_size += size;
+                    let mut bytes = response.bytes()?.to_vec();
+                    let size = bytes.len();
+                    buffer.append(&mut bytes);
+                    downloaded.insert(total_size..total_size + size);
+                    requested.insert(total_size..total_size + size);
+                    total_size += size;
+                }
+            }
         }
 
         Ok(HlsStream {
             urls,
-            buffer: vec![0; total_size],
+            buffer,
             read_position: 0,
-            downloaded: RangeSet::new(),
-            requested: RangeSet::new(),
+            downloaded,
+            requested,
             receivers: Vec::new(),
             active_lock: super::try_get_active_lock(),
         })
