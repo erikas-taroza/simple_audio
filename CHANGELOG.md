@@ -1,3 +1,8 @@
+## 1.5.7
+
+- HTTP and HLS streams fallback to downloading the file if `Content-Length` cannot be acquired.
+- More CD improvements
+
 ## 1.5.6
 
 - Update `.pubignore` to exclude the iOS framework `Info.plist` file.
