@@ -46,6 +46,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git fetch
           git pull --rebase --autostash
           git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
@@ -86,6 +87,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git fetch
           git pull --rebase --autostash
           git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
@@ -126,6 +128,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git fetch
           git pull --rebase --autostash
           git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
@@ -166,6 +169,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git fetch
           git pull --rebase --autostash
           git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
@@ -206,6 +210,7 @@ jobs:
         run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
+          git fetch
           git pull --rebase --autostash
           git stash list | grep "stash" && git stash pop || echo "No stash found."
           git add .
@@ -217,8 +222,6 @@ jobs:
     needs: [build_linux, build_android, build_windows, build_macos, build_ios]
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref_name }}
       - run: |
           git config --local user.email "erikastaroza@gmail.com"
           git config --local user.name "erikas-taroza"
