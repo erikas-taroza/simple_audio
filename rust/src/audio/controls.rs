@@ -106,13 +106,13 @@ impl Default for Controls
 
 pub enum PlayerEvent
 {
-    Open(Box<dyn MediaSource>),
+    Open(Box<dyn MediaSource>, Arc<AtomicBool>),
     Play,
     Pause,
     Stop,
     /// Called by `cpal_output` in the event the device outputting
     /// audio was changed/disconnected.
     DeviceChanged,
-    Preload(Box<dyn MediaSource>),
+    Preload(Box<dyn MediaSource>, Arc<AtomicBool>),
     PlayPreload,
 }

@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::thread::{self, JoinHandle};
+use std::{
+    sync::{atomic::AtomicBool, Arc},
+    thread::{self, JoinHandle},
+};
 
 use anyhow::{anyhow, Context};
 use cpal::traits::StreamTrait;
@@ -138,9 +141,9 @@ impl Decoder
         match recv {
             None => (),
             Some(message) => match message {
-                PlayerEvent::Open(source) => {
+                PlayerEvent::Open(source, buffer_signal) => {
                     self.cpal_output = None;
-                    self.playback = Some(Self::open(source)?);
+                    self.playback = Some(Self::open(source, buffer_signal)?);
                 }
                 PlayerEvent::Play => {
                     self.state = DecoderState::Playing;
@@ -177,21 +180,23 @@ impl Decoder
                     // The device change will also affect the preloaded playback.
                     if self.preload_playback.is_some() {
                         let (playback, cpal_output) = self.preload_playback.take().unwrap();
+                        let buffer_signal = playback.buffer_signal.clone();
 
                         self.preload_playback.replace((
                             playback,
                             CpalOutput::new(
                                 self.controls.clone(),
+                                buffer_signal,
                                 cpal_output.spec,
                                 cpal_output.duration,
                             )?,
                         ));
                     }
                 }
-                PlayerEvent::Preload(source) => {
+                PlayerEvent::Preload(source, buffer_signal) => {
                     self.preload_playback = None;
                     self.controls.set_is_file_preloaded(false);
-                    let handle = self.preload(source);
+                    let handle = self.preload(source, buffer_signal);
                     self.preload_thread = Some(handle);
                 }
                 PlayerEvent::PlayPreload => {
@@ -232,8 +237,12 @@ impl Decoder
             if self.cpal_output.is_none() {
                 let spec = *preload.spec();
                 let duration = preload.capacity() as u64;
-                self.cpal_output
-                    .replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
+                self.cpal_output.replace(CpalOutput::new(
+                    self.controls.clone(),
+                    playback.buffer_signal.clone(),
+                    spec,
+                    duration,
+                )?);
             }
 
             let buffer_ref = preload.as_audio_buffer_ref();
@@ -308,8 +317,12 @@ impl Decoder
         if self.cpal_output.is_none() {
             let spec = *decoded.spec();
             let duration = decoded.capacity() as u64;
-            self.cpal_output
-                .replace(CpalOutput::new(self.controls.clone(), spec, duration)?);
+            self.cpal_output.replace(CpalOutput::new(
+                self.controls.clone(),
+                playback.buffer_signal.clone(),
+                spec,
+                duration,
+            )?);
         }
 
         self.cpal_output.as_mut().unwrap().write(decoded);
@@ -346,7 +359,10 @@ impl Decoder
 
     /// Opens the given source for playback. Returns a `Playback`
     /// for the source.
-    fn open(source: Box<dyn MediaSource>) -> anyhow::Result<Playback>
+    fn open(
+        source: Box<dyn MediaSource>,
+        buffer_signal: Arc<AtomicBool>,
+    ) -> anyhow::Result<Playback>
     {
         let mss = MediaSourceStream::new(source, Default::default());
         let format_options = FormatOptions {
@@ -391,6 +407,7 @@ impl Decoder
             track_id,
             timebase,
             duration,
+            buffer_signal,
             preload: None,
         })
     }
@@ -401,11 +418,12 @@ impl Decoder
     fn preload(
         &self,
         source: Box<dyn MediaSource>,
+        buffer_signal: Arc<AtomicBool>,
     ) -> JoinHandle<anyhow::Result<(Playback, CpalOutput)>>
     {
         let controls = self.controls.clone();
         thread::spawn(move || {
-            let mut playback = Self::open(source)?;
+            let mut playback = Self::open(source, buffer_signal.clone())?;
             // Preload
             let packet = playback.reader.next_packet()?;
             let buf_ref = playback.decoder.decode(&packet)?;
@@ -417,7 +435,7 @@ impl Decoder
             buf_ref.convert(&mut buf);
             playback.preload = Some(buf);
 
-            let cpal_output = CpalOutput::new(controls, spec, duration)?;
+            let cpal_output = CpalOutput::new(controls, buffer_signal, spec, duration)?;
             cpal_output.stream.pause()?;
 
             Ok((playback, cpal_output))
@@ -501,6 +519,7 @@ struct Playback
     decoder: Box<dyn symphonia::core::codecs::Decoder>,
     timebase: Option<TimeBase>,
     duration: u64,
+    buffer_signal: Arc<AtomicBool>,
     /// A buffer of already decoded samples.
     preload: Option<AudioBuffer<f32>>,
 }

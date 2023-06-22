@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{atomic::AtomicBool, Arc, Condvar, Mutex};
 
 use anyhow::Context;
 use cpal::{
@@ -28,7 +28,6 @@ use crate::utils::blocking_rb::*;
 use super::{
     controls::*,
     dsp::{normalizer::Normalizer, resampler::Resampler},
-    sources::IS_STREAM_BUFFERING,
 };
 
 /// The default output volume is way too high.
@@ -54,7 +53,12 @@ pub struct CpalOutput
 impl CpalOutput
 {
     /// Starts a new stream on the default device.
-    pub fn new(controls: Controls, spec: SignalSpec, duration: u64) -> anyhow::Result<Self>
+    pub fn new(
+        controls: Controls,
+        buffer_signal: Arc<AtomicBool>,
+        spec: SignalSpec,
+        duration: u64,
+    ) -> anyhow::Result<Self>
     {
         // Get the output config.
         let (device, config) = Self::get_config(spec)?;
@@ -94,7 +98,7 @@ impl CpalOutput
                 let controls = controls.clone();
                 let is_stream_done = is_stream_done.clone();
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                    let buffering = IS_STREAM_BUFFERING.load(std::sync::atomic::Ordering::SeqCst);
+                    let buffering = buffer_signal.load(std::sync::atomic::Ordering::SeqCst);
 
                     // "Pause" the stream.
                     // What this really does is mute the stream.

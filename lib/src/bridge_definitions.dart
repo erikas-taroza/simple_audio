@@ -16,8 +16,7 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
-  /// Stops media controllers and resets `IS_STREAM_BUFFERING`.
-  /// Decoder threads are also stopped.
+  /// Stops media controllers and decoder threads.
   Future<void> disposeStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kDisposeStaticMethodPlayerConstMeta;
@@ -229,8 +228,7 @@ class Player {
       bridge.newStaticMethodPlayer(
           actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
 
-  /// Stops media controllers and resets `IS_STREAM_BUFFERING`.
-  /// Decoder threads are also stopped.
+  /// Stops media controllers and decoder threads.
   static Future<void> dispose({required SimpleAudio bridge, dynamic hint}) =>
       bridge.disposeStaticMethodPlayer(hint: hint);
 

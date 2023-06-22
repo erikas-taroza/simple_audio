@@ -16,8 +16,9 @@
 
 use std::io::{Read, Seek};
 use std::ops::Range;
+use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{channel, Sender};
-use std::sync::MutexGuard;
+use std::sync::Arc;
 use std::thread;
 
 use anyhow::Context;
@@ -28,7 +29,7 @@ use symphonia::core::io::MediaSource;
 use crate::utils::callback_stream::update_callback_stream;
 use crate::utils::types::Callback;
 
-use super::{streamable::*, Receiver, IS_STREAM_BUFFERING};
+use super::{streamable::*, Receiver};
 
 // NOTE: Most of the implementation is the same as HttpStream.
 // Most comments can be found in HttpStream. Only the HLS specific
@@ -43,12 +44,12 @@ pub struct HlsStream
     downloaded: RangeSet<usize>,
     requested: RangeSet<usize>,
     receivers: Vec<Receiver>,
-    active_lock: Option<MutexGuard<'static, ()>>,
+    buffer_signal: Arc<AtomicBool>,
 }
 
 impl HlsStream
 {
-    pub fn new(url: String) -> anyhow::Result<Self>
+    pub fn new(url: String, buffer_signal: Arc<AtomicBool>) -> anyhow::Result<Self>
     {
         let mut urls = Vec::new();
         let mut total_size = 0;
@@ -99,7 +100,7 @@ impl HlsStream
             downloaded,
             requested,
             receivers: Vec::new(),
-            active_lock: super::try_get_active_lock(),
+            buffer_signal,
         })
     }
 }
@@ -180,11 +181,6 @@ impl Read for HlsStream
 {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize>
     {
-        // Try to make this source active.
-        if self.active_lock.is_none() {
-            self.active_lock = super::try_get_active_lock();
-        }
-
         if self.read_position >= self.buffer.len() {
             return Ok(0);
         }
@@ -236,9 +232,8 @@ impl Read for HlsStream
 
         let should_buffer = !self.downloaded.contains(&self.read_position);
         // If this source is active, then allow buffering in `cpal_output`.
-        if self.active_lock.is_some() {
-            IS_STREAM_BUFFERING.store(should_buffer, std::sync::atomic::Ordering::SeqCst);
-        }
+        self.buffer_signal
+            .store(should_buffer, std::sync::atomic::Ordering::SeqCst);
         self.try_write_chunk(should_buffer);
 
         let bytes = &self.buffer[self.read_position..read_max];

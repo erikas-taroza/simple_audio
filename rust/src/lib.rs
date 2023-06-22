@@ -19,13 +19,17 @@ mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not
 mod media_controllers;
 mod utils;
 
-use std::{fs::File, sync::RwLock, thread};
+use std::{
+    fs::File,
+    sync::{atomic::AtomicBool, Arc, RwLock},
+    thread,
+};
 
 use anyhow::Context;
 use audio::{
     controls::*,
     decoder::Decoder,
-    sources::{hls::HlsStream, http::HttpStream, local::Local},
+    sources::{hls::HlsStream, http::HttpStream},
 };
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::{RustOpaque, StreamSink};
@@ -111,14 +115,12 @@ impl Player
         }
     }
 
-    /// Stops media controllers and resets `IS_STREAM_BUFFERING`.
-    /// Decoder threads are also stopped.
+    /// Stops media controllers and decoder threads.
     pub fn dispose()
     {
         if let Some(thread_killer) = THREAD_KILLER.get() {
             thread_killer.read().unwrap().0.send(true).unwrap();
         }
-        audio::sources::IS_STREAM_BUFFERING.store(false, std::sync::atomic::Ordering::SeqCst);
         // Reset the Linux/Windows media controllers.
         media_controllers::dispose();
     }
@@ -163,27 +165,30 @@ impl Player
     // ---------------------------------
 
     /// Returns a Symphonia `MediaSource` for playback.
-    fn source_from_path(path: String) -> anyhow::Result<Box<dyn MediaSource>>
+    fn source_from_path(
+        path: String,
+        buffer_signal: Arc<AtomicBool>,
+    ) -> anyhow::Result<Box<dyn MediaSource>>
     {
         let path2 = path.clone();
 
         let source: Box<dyn MediaSource> = if path.contains("http") {
             if path.contains("m3u") {
                 Box::new(
-                    HlsStream::new(path)
+                    HlsStream::new(path, buffer_signal)
                         .context(format!("Could not open HLS stream at \"{path2}\""))?,
                 )
             }
             else {
                 Box::new(
-                    HttpStream::new(path)
+                    HttpStream::new(path, buffer_signal)
                         .context(format!("Could not open HTTP stream at \"{path2}\""))?,
                 )
             }
         }
         else {
             let file = File::open(path).context(format!("Could not open file at \"{path2}\""))?;
-            Box::new(Local::new(file))
+            Box::new(file)
         };
 
         Ok(source)
@@ -192,12 +197,13 @@ impl Player
     /// Opens a file or network resource for reading and playing.
     pub fn open(&self, path: String, autoplay: bool) -> anyhow::Result<()>
     {
-        let source = Self::source_from_path(path)?;
+        let buffer_signal = Arc::new(AtomicBool::new(false));
+        let source = Self::source_from_path(path, buffer_signal.clone())?;
 
         self.controls
             .event_handler()
             .0
-            .send(PlayerEvent::Open(source))?;
+            .send(PlayerEvent::Open(source, buffer_signal))?;
 
         if autoplay {
             Self::internal_play(&self.controls);
@@ -216,11 +222,13 @@ impl Player
     /// for streaming network files).
     pub fn preload(&self, path: String) -> anyhow::Result<()>
     {
-        let source = Self::source_from_path(path)?;
+        let buffer_signal = Arc::new(AtomicBool::new(false));
+        let source = Self::source_from_path(path, buffer_signal.clone())?;
+
         self.controls
             .event_handler()
             .0
-            .send(PlayerEvent::Preload(source))?;
+            .send(PlayerEvent::Preload(source, buffer_signal))?;
 
         Ok(())
     }
