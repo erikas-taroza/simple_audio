@@ -436,6 +436,8 @@ impl Decoder
             playback.preload = Some(buf);
 
             let cpal_output = CpalOutput::new(controls, buffer_signal, spec, duration)?;
+            // Pausing the stream on Windows breaks the output stream.
+            #[cfg(not(target_os = "windows"))]
             cpal_output.stream.pause()?;
 
             Ok((playback, cpal_output))
