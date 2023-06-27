@@ -105,7 +105,11 @@ impl CpalOutput
                     // With only a return statement, the current sample still plays.
                     // CPAL states that `stream.pause()` may not work for all devices.
                     // `stream.pause()` is the ideal way to play/pause.
-                    if (!controls.is_playing() && cfg!(target_os = "windows")) || buffering {
+                    if (cfg!(target_os = "windows")
+                        && !controls.is_playing()
+                        && !controls.is_stopped())
+                        || buffering
+                    {
                         data.iter_mut().for_each(|s| *s = 0.0);
 
                         if buffering {

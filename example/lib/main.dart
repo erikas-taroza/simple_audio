@@ -154,6 +154,7 @@ class _MyAppState extends State<MyApp> {
                     }
 
                     debugPrint("Playing preloaded file.");
+                    await player.stop();
                     await player.playPreload();
                   },
                 ),

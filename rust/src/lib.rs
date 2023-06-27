@@ -531,6 +531,7 @@ mod tests
         player.preload(path.clone())?;
         thread::sleep(Duration::from_secs(5));
         println!("Playing preloaded file.");
+        player.stop();
         player.play_preload()?;
         thread::sleep(Duration::from_secs(10));
         player.stop();
