@@ -1,3 +1,9 @@
+## 1.5.8
+
+- Fix stream playback stopping for a moment when preloading another network stream.
+- Fix preloaded output stream breaking the next streams on Windows.
+- Fix `playPreload` not auto playing on Windows.
+
 ## 1.5.7
 
 - HTTP and HLS streams fallback to downloading the file if `Content-Length` cannot be acquired.
