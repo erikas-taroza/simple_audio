@@ -266,9 +266,9 @@ def build(targets:list[str], openssl_path:str = None):
             os.system("cargo build --release --target aarch64-apple-ios --manifest-path ./rust/Cargo.toml")
 
             env_vars = f"OPENSSL_STATIC=1 OPENSSL_LIB_DIR=/usr/local/lib OPENSSL_INCLUDE_DIR={openssl_path} OPENSSL_NO_VENDOR=1 " if openssl_path is not None else ""
-            os.system(f"{env_vars} CMAKE_OSX_SYSROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) cargo build --release --target aarch64-apple-ios-sim --manifest-path ./rust/Cargo.toml")
+            os.system(f"{env_vars} cargo build --release --target aarch64-apple-ios-sim --manifest-path ./rust/Cargo.toml")
 
-            os.system("cargo build --release --target x86_64-apple-ios --manifest-path ./rust/Cargo.toml")
+            os.system("CMAKE_OSX_SYSROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) cargo build --release --target x86_64-apple-ios --manifest-path ./rust/Cargo.toml")
             os.system(f'lipo "./rust/target/aarch64-apple-ios-sim/release/lib{package_name}.a" "./rust/target/x86_64-apple-ios/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
             os.system(f"xcodebuild -create-xcframework -library ./rust/target/aarch64-apple-ios/release/lib{package_name}.a -library ./lib{package_name}.a -output {package_name}.xcframework")
             os.remove(f"./lib{package_name}.a")
