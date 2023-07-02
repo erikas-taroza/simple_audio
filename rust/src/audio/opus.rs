@@ -33,11 +33,8 @@ const SAMPLE_RATE: SampleRate = SampleRate::Hz48000;
 
 const SAMPLE_RATE_RAW: usize = 48_000;
 
-/// Number of audio frames/packets to be sent per second.
-const AUDIO_FRAME_RATE: usize = 1000 / 20; // FIXME: this value might be incorrect. We need to parse it from opus TOC.
-
 /// This is equally the number of stereo (joint) samples in an audio frame.
-const MONO_FRAME_SIZE: usize = SAMPLE_RATE_RAW / AUDIO_FRAME_RATE;
+const MONO_FRAME_SIZE: usize = SAMPLE_RATE_RAW / 1000 * 60; // 60ms is the max frame size
 
 /// Number of individual samples in one complete frame of stereo audio.
 const STEREO_FRAME_SIZE: usize = 2 * MONO_FRAME_SIZE;

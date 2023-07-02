@@ -14,8 +14,8 @@ reqwest = { version = "0", features = [
 	"rustls-tls",
 ], default-features = false }
 # symphonia = { version = "0.5.2", features = ["all"] }
-symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements", features = ["all"] }
-symphonia-core = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-improvements" }
+symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-opus-improvements", features = ["all"] }
+symphonia-core = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-opus-improvements" }
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 rubato = "0.12.0"
 rangemap = "1.3.0"
