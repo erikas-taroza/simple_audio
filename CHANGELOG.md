@@ -1,3 +1,7 @@
+## 1.6.0
+
+- Opus support (thanks @Yesterday17)
+
 ## 1.5.8
 
 - Fix stream playback stopping for a moment when preloading another network stream.

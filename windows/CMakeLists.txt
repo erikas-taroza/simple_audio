@@ -45,7 +45,7 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
 
 # Download the binary from GitHub.
-set(Version "1.5.8")
+set(Version "1.6.0")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/simple_audio.dll")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
