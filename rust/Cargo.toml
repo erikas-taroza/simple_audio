@@ -52,4 +52,4 @@ features = [
 lto = true
 
 [patch.crates-io]
-audiopus_sys = { git = "https://github.com/ProjectAnni/audiopus_sys" }
+audiopus_sys = { git = "https://github.com/erikas-taroza/audiopus_sys" }
