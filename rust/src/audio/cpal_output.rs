@@ -33,7 +33,7 @@ use super::{
 /// The default output volume is way too high.
 /// Multiplying the volume input by this number
 /// will help to reduce it.
-const BASE_VOLUME: f32 = 0.7;
+const BASE_VOLUME: f32 = 0.8;
 
 //TODO: Support i16 and u16 instead of only f32.
 pub struct CpalOutput

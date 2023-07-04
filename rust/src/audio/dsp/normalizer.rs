@@ -17,7 +17,7 @@
 use ebur128::*;
 
 /// The target LUFS value.
-const NORMALIZE_TO: f64 = -15.0;
+const NORMALIZE_TO: f64 = -14.0;
 
 pub struct Normalizer
 {
@@ -48,15 +48,18 @@ impl Normalizer
 
         let global_loudness = self.ebur128.loudness_global().unwrap();
 
-        // There may not be enough data to calculate a global loudness value.
-        let loudness = if global_loudness.is_finite() {
-            global_loudness
+        let gain = if global_loudness.is_finite() {
+            // Create a precise gain value if there is enough data for a
+            // global loudness value.
+            calc_gain(global_loudness)
         }
         else {
-            self.ebur128.loudness_momentary().unwrap()
+            // Create a gain value that compensates less because
+            // the momentary value may compensate too much.
+            let loudness = self.ebur128.loudness_momentary().unwrap();
+            let gain = calc_gain(loudness);
+            gain.clamp(f32::MIN, 1.0)
         };
-
-        let gain = (loudness / NORMALIZE_TO).clamp(0.35, 1.0) as f32;
 
         self.buffer.clear();
         self.buffer.extend_from_slice(input);
@@ -64,4 +67,11 @@ impl Normalizer
         self.buffer.iter_mut().for_each(|sample| *sample *= gain);
         &self.buffer
     }
+}
+
+fn calc_gain(loudness: f64) -> f32
+{
+    let gain_db = NORMALIZE_TO - loudness;
+    let gain = 10.0_f32.powf(gain_db as f32 / 20.0);
+    gain
 }
