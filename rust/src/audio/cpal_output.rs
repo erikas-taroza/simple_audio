@@ -230,7 +230,9 @@ impl CpalOutput
         };
 
         if self.controls.is_normalizing() {
-            samples = self.normalizer.normalize(samples);
+            if let Some(normalized) = self.normalizer.normalize(samples) {
+                samples = normalized;
+            }
         }
 
         while let Some(written) = self.ring_buffer_writer.write(samples) {

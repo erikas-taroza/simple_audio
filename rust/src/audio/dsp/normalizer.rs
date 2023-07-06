@@ -18,11 +18,15 @@ use ebur128::*;
 
 /// The target LUFS value.
 const NORMALIZE_TO: f64 = -14.0;
+const LOWER_THRESHOLD: f32 = 0.2;
 
 pub struct Normalizer
 {
     ebur128: EbuR128,
     buffer: Vec<f32>,
+    /// True if the input samples are loud enough to start being normalized.
+    /// This prevents normalizing parts of a song that the artist intented to be quiet.
+    passed_lower_threshold: bool,
 }
 
 impl Normalizer
@@ -34,38 +38,42 @@ impl Normalizer
         Normalizer {
             ebur128,
             buffer: Vec::new(),
+            passed_lower_threshold: false,
         }
     }
 
-    pub fn normalize(&mut self, input: &[f32]) -> &[f32]
+    pub fn normalize(&mut self, input: &[f32]) -> Option<&[f32]>
     {
         // Completely quiet inputs cause a crackling sound to be made.
         if !input.iter().any(|x| *x != 0.0) {
-            return &[];
+            return None;
+        }
+
+        // Don't apply any gain when threshold is not passed.
+        if !self.passed_lower_threshold {
+            let samples_passing_threshold = input[0..3].iter().find(|e| **e >= LOWER_THRESHOLD);
+            self.passed_lower_threshold = samples_passing_threshold.is_some();
+            return None;
         }
 
         let _ = self.ebur128.add_frames_f32(input);
 
         let global_loudness = self.ebur128.loudness_global().unwrap();
-
         let gain = if global_loudness.is_finite() {
-            // Create a precise gain value if there is enough data for a
-            // global loudness value.
             calc_gain(global_loudness)
         }
         else {
-            // Create a gain value that compensates less because
-            // the momentary value may compensate too much.
             let loudness = self.ebur128.loudness_momentary().unwrap();
-            let gain = calc_gain(loudness);
-            gain.clamp(f32::MIN, 1.0)
+            calc_gain(loudness)
         };
+
+        let gain = gain.clamp(0.0, 1.2);
 
         self.buffer.clear();
         self.buffer.extend_from_slice(input);
 
         self.buffer.iter_mut().for_each(|sample| *sample *= gain);
-        &self.buffer
+        Some(&self.buffer)
     }
 }
 
@@ -74,4 +82,23 @@ fn calc_gain(loudness: f64) -> f32
     let gain_db = NORMALIZE_TO - loudness;
     let gain = 10.0_f32.powf(gain_db as f32 / 20.0);
     gain
+}
+
+#[cfg(test)]
+mod tests
+{
+    #[test]
+    fn normalize() -> anyhow::Result<()>
+    {
+        let player = crate::Player::default();
+        player.set_volume(0.5);
+        player.normalize_volume(true);
+        // Try out different files here.
+        player.open(
+            "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string(),
+            true,
+        )?;
+        std::thread::sleep(std::time::Duration::from_secs(100));
+        Ok(())
+    }
 }
