@@ -21,3 +21,4 @@ runs:
         channel: "stable"
         cache: true
     - run: flutter pub get
+      shell: bash
