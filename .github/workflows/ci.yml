@@ -1,4 +1,4 @@
-name: Build & Deploy Rust Libraries
+name: CI
 
 on:
   push:
