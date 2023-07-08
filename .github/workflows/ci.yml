@@ -63,6 +63,16 @@ jobs:
           cd lib/src
           dart analyze --fatal-infos
           cd ../..
+      - name: Format Example
+        run: |
+          cd example/lib
+          dart format --set-exit-if-changed . 
+          cd ../..
+      - name: Lint Example
+        run: |
+          cd example/lib
+          dart analyze --fatal-infos
+          cd ../..
 
   build:
     name: Build Libraries
