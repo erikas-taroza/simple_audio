@@ -61,10 +61,10 @@ jobs:
       - name: Zip Files
         run: |
           zip -j linux.zip linux/*
-          zip -jr android.zip android/*
+          cd android && zip -r android.zip ./* && cd .. && mv android/android.zip .
           zip -j windows.zip windows/*
           zip -j macos.zip macos/*
-          zip ios.zip ios/*
+          cd ios && zip -r ios.zip ./* && cd .. && mv ios/ios.zip .
       - name: Add to Release
         uses: softprops/action-gh-release@v1
         with:
