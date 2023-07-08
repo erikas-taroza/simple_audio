@@ -1,4 +1,4 @@
 simple_audio.dll
 libsimple_audio.so
 libsimple_audio.a
-ios/Frameworks/simple_audio.xcframework/Info.plist
+ios/Frameworks/simple_audio.xcframework
