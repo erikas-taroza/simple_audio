@@ -37,7 +37,7 @@ jobs:
           ref: ${{ github.ref_name }}
       - uses: ./.github/actions/setup_build
       - name: Install Rust -sys dependencies
-        if: ${{ matrix.target }} == linux
+        if: ${{ matrix.target == 'linux' }}
         run: |
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev pkg-config
