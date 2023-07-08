@@ -261,6 +261,7 @@ def build(targets: list[str], openssl_path: str = None):
             if os.path.exists(f"./macos/Libs/lib{package_name}.a"):
                 os.remove(f"./macos/Libs/lib{package_name}.a")
 
+            os.makedirs("./macos/Libs", exist_ok=True)
             shutil.move(f"./lib{package_name}.a", "./macos/Libs")
 
         if "ios" in targets:
@@ -283,6 +284,7 @@ def build(targets: list[str], openssl_path: str = None):
             if os.path.exists(f"./ios/Frameworks/{package_name}.xcframework"):
                 shutil.rmtree(f"./ios/Frameworks/{package_name}.xcframework")
 
+            os.makedirs("./ios/Frameworks", exist_ok=True)
             shutil.move(f"./{package_name}.xcframework", "./ios/Frameworks")
 
 
