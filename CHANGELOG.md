@@ -1,3 +1,10 @@
+## 1.6.1
+
+- Fixed normalization gain calculation.
+- Normalizer has smoother volume changes and don't apply excess positive gain.
+- Refactored CD. Built libraries are now release assets instead of files committed to the repo.
+- Created a CI.
+
 ## 1.6.0
 
 - Opus support (thanks @Yesterday17)
