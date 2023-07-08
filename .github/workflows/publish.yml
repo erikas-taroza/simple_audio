@@ -59,7 +59,12 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v2.1.1
       - name: Zip Files
-        run: zip linux android windows macos ios
+        run: |
+          zip -j linux.zip linux/*
+          zip -jr android.zip android/*
+          zip -j windows.zip windows/*
+          zip -j macos.zip macos/*
+          zip ios.zip ios/*
       - name: Add to Release
         uses: softprops/action-gh-release@v1
         with:
