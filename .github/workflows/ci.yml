@@ -19,10 +19,17 @@ jobs:
           toolchain: nightly
           profile: minimal
           components: rustfmt, clippy
+      # Clippy builds the project so we need build dependencies.
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
       - name: Install Rust -sys dependencies
         run: |
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev pkg-config
+
       - name: Format
         run: |
           cd rust
