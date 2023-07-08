@@ -43,7 +43,7 @@ set(Version "1.6.0")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/linux.zip")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
-    "https://github.com/erikas-taroza/simple_audio/releases/download/test_release/linux.zip"
+    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/linux.zip"
     ${LibPath}
     TLS_VERIFY ON
   )
