@@ -36,7 +36,7 @@ pub struct BlockingRb<T, Type = Producer>
     _type: std::marker::PhantomData<Type>,
 }
 
-impl<T: Copy + Clone + Default, Type> BlockingRb<T, Type>
+impl<T: Copy + Clone + Default + Sync, Type> BlockingRb<T, Type>
 {
     /// Returns a producer and a consumer tuple.
     pub fn new(size: usize) -> (BlockingRb<T, Producer>, BlockingRb<T, Consumer>)
@@ -89,7 +89,7 @@ impl<T: Copy + Clone + Default, Type> BlockingRb<T, Type>
     }
 }
 
-impl<T: Copy + Clone + Default> BlockingRb<T, Producer>
+impl<T: Copy + Clone + Default + Sync> BlockingRb<T, Producer>
 {
     /// Blocks the thread until there is space in the
     /// buffer to write to. This operation can be cancelled
@@ -160,7 +160,7 @@ impl<T: Copy + Clone + Default> BlockingRb<T, Producer>
     }
 }
 
-impl<T: Copy + Clone + Default> BlockingRb<T, Consumer>
+impl<T: Copy + Clone + Default + Sync> BlockingRb<T, Consumer>
 {
     /// Reads from the ring buffer and fills the given slice
     /// with as much data as possible.

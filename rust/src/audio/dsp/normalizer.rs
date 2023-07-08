@@ -80,8 +80,7 @@ impl Normalizer
 fn calc_gain(loudness: f64) -> f32
 {
     let gain_db = NORMALIZE_TO - loudness;
-    let gain = 10.0_f32.powf(gain_db as f32 / 20.0);
-    gain
+    10.0_f32.powf(gain_db as f32 / 20.0)
 }
 
 #[cfg(test)]
