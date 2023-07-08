@@ -8,6 +8,7 @@ on:
 
 jobs:
   rust_lint:
+    name: Rust Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,6 +31,7 @@ jobs:
           cd ..
 
   dart_lint:
+    name: Dart Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -50,62 +52,33 @@ jobs:
           dart analyze --fatal-infos
           cd ../..
 
-  build_linux:
-    runs-on: ubuntu-20.04
+  build:
+    name: Build Libraries
+    strategy:
+      matrix:
+        include:
+          - target: linux
+            os: ubuntu-20.04
+          - target: android
+            os: ubuntu-latest
+          - target: windows
+            os: windows-latest
+          - target: macos
+            os: macos-latest
+          - target: ios
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref_name }}
       - uses: ./.github/actions/setup_build
-
       - name: Install Rust -sys dependencies
+        if: ${{ matrix.target == 'linux' }}
         run: |
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev pkg-config
 
-      - name: Build Linux Library
-        run: python ./plugin_tool.py -b linux
-
-  build_android:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref_name }}
-      - uses: ./.github/actions/setup_build
-
-      - name: Build Android Libraries
-        run: python ./plugin_tool.py -b android
-
-  build_windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref_name }}
-      - uses: ./.github/actions/setup_build
-
-      - name: Build Windows Library
-        run: python3 .\plugin_tool.py -b windows
-
-  build_macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref_name }}
-      - uses: ./.github/actions/setup_build
-
-      - name: Build macOS Libraries
-        run: python ./plugin_tool.py -b macos
-
-  build_ios:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref_name }}
-      - uses: ./.github/actions/setup_build
-
-      - name: Build iOS Libraries
-        run: python ./plugin_tool.py -b ios
+      - name: Build
+        run: python ./plugin_tool.py -b ${{ matrix.target }}
