@@ -19,6 +19,10 @@ jobs:
           toolchain: nightly
           profile: minimal
           components: rustfmt, clippy
+      - name: Install Rust -sys dependencies
+        run: |
+          sudo apt install libasound2-dev
+          sudo apt install libdbus-1-dev pkg-config
       - name: Format
         run: |
           cd rust
@@ -41,6 +45,7 @@ jobs:
         with:
           channel: "stable"
           cache: true
+      - run: flutter pub get
       - name: Format
         run: |
           cd lib/src
@@ -54,6 +59,7 @@ jobs:
 
   build:
     name: Build Libraries
+    needs: [rust_lint, dart_lint]
     strategy:
       matrix:
         include:
