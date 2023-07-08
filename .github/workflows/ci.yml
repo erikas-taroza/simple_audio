@@ -7,6 +7,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  rust_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          components: rustfmt, clippy
+      - name: Format
+        run: |
+          cd rust
+          cargo +nightly fmt --check
+          cd ..
+      - name: Clippy
+        run: |
+          cd rust
+          cargo +nightly clippy 
+          cd ..
+
+  dart_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - name: Format
+        run: |
+          cd lib/src
+          dart format --set-exit-if-changed . 
+          cd ../..
+      - name: Lint
+        run: |
+          cd lib/src
+          dart analyze --fatal-infos
+          cd ../..
+
   build_linux:
     runs-on: ubuntu-20.04
     steps:
