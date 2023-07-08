@@ -1,4 +1,4 @@
-import argparse, re, os, shutil, requests, sys
+import argparse, re, os, shutil, sys
 
 parser = argparse.ArgumentParser(
     usage="Put this file in your root project directory and execute the commands.",
@@ -189,7 +189,7 @@ def code_gen():
     if "ffi.dart" not in os.listdir("./lib/src"):
         package_name = open("./rust/Cargo.toml", "r").read().split("name = \"")[1].split("\"")[0]
         pascal_case_package_name = package_name.lower().replace("_", " ").title().replace(" ", "")
-
+        import requests
         file = open("./lib/src/ffi.dart", "w")
         file.write(
             requests.get(r"https://raw.githubusercontent.com/Desdaemon/flutter_rust_bridge_template/main/lib/ffi.dart")

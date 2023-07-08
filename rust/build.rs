@@ -29,7 +29,7 @@ fn add_lib(name: impl AsRef<str>, _static: bool)
 
 fn main()
 {
-    println!("cargo:rerun-if-changed=src/lib.rs");
+    println!("cargo:rerun-if-changed=src/");
     let result = Command::new("python")
         .args(["plugin_tool.py", "-c"])
         .current_dir("../")

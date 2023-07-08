@@ -1,0 +1,24 @@
+name: Setup Build
+description: Performs the needed steps to start building the Rust project.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+    - name: Cache Rust Build
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: ./rust
+
+    - uses: subosito/flutter-action@v2.10.0
+      with:
+        channel: "stable"
+        cache: true
+    - run: flutter pub get
+      shell: bash

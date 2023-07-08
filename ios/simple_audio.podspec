@@ -1,21 +1,16 @@
 # Download the binaries from GitHub.
 version = "1.6.0"
-lib_url = "https://github.com/erikas-taroza/simple_audio/blob/v#{version}/ios/Frameworks/simple_audio.xcframework"
+lib_url = "https://github.com/erikas-taroza/simple_audio/releases/download/v#{version}/ios.zip"
 
 `
 mkdir Frameworks
 cd Frameworks
-if [ ! -d simple_audio.xcframework ]
+if [ ! -d ios.zip ]
 then
-  mkdir simple_audio.xcframework
-  cd simple_audio.xcframework
-  mkdir ios-arm64
-  mkdir ios-arm64_x86_64-simulator
-  curl -L "#{lib_url}/Info.plist?raw=true" -o Info.plist
-  curl -L "#{lib_url}/ios-arm64/libsimple_audio.a?raw=true" -o ios-arm64/libsimple_audio.a
-  curl -L "#{lib_url}/ios-arm64_x86_64-simulator/libsimple_audio.a?raw=true" -o ios-arm64_x86_64-simulator/libsimple_audio.a
+  curl -L "#{lib_url}" -o ios.zip
+  unzip ios.zip
 fi
-cd ../..
+cd ..
 `
 
 Pod::Spec.new do |s|

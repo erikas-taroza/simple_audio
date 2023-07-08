@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+jobs:
+  rust_lint:
+    name: Rust Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          components: rustfmt, clippy
+      # Clippy builds the project so we need build dependencies.
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
+      - name: Install Rust -sys dependencies
+        run: |
+          sudo apt install libasound2-dev
+          sudo apt install libdbus-1-dev pkg-config
+
+      - name: Format
+        run: |
+          cd rust
+          cargo +nightly fmt --check
+          cd ..
+      - name: Clippy
+        run: |
+          cd rust
+          cargo +nightly clippy 
+          cd ..
+
+  dart_lint:
+    name: Dart Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: subosito/flutter-action@v2.10.0
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
+      - name: Format
+        run: |
+          cd lib/src
+          dart format --set-exit-if-changed . 
+          cd ../..
+      - name: Lint
+        run: |
+          cd lib/src
+          dart analyze --fatal-infos
+          cd ../..
+      - name: Format Example
+        run: |
+          cd example/lib
+          dart format --set-exit-if-changed . 
+          cd ../..
+      - name: Lint Example
+        run: |
+          cd example/lib
+          dart analyze --fatal-infos
+          cd ../..
+
+  build:
+    name: Build Libraries
+    needs: [rust_lint, dart_lint]
+    strategy:
+      matrix:
+        include:
+          - target: linux
+            os: ubuntu-20.04
+          - target: android
+            os: ubuntu-latest
+          - target: windows
+            os: windows-latest
+          - target: macos
+            os: macos-latest
+          - target: ios
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: ./.github/actions/setup_build
+      - name: Install Rust -sys dependencies
+        if: ${{ matrix.target == 'linux' }}
+        run: |
+          sudo apt install libasound2-dev
+          sudo apt install libdbus-1-dev pkg-config
+
+      - name: Build
+        run: python ./plugin_tool.py -b ${{ matrix.target }}

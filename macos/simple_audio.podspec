@@ -1,13 +1,14 @@
 # Download the binary from GitHub.
 version = "1.6.0"
-lib_url = "https://github.com/erikas-taroza/simple_audio/blob/v#{version}/macos/Libs/libsimple_audio.a?raw=true"
+lib_url = "https://github.com/erikas-taroza/simple_audio/releases/download/v#{version}/macos.zip"
 
 `
 mkdir Libs
 cd Libs
-if [ ! -f libsimple_audio.a ]
+if [ ! -f macos.zip ]
 then
-  curl -L "#{lib_url}" -o libsimple_audio.a
+  curl -L "#{lib_url}" -o macos.zip
+  unzip macos.zip
 fi
 cd ..
 `
