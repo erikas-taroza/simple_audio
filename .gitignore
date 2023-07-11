@@ -2,6 +2,7 @@ libsimple_audio.so
 libsimple_audio.a
 simple_audio.dll
 simple_audio.xcframework
+*.zip
 
 # Miscellaneous
 *.class
