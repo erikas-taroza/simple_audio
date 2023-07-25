@@ -170,7 +170,7 @@ class SimpleAudio {
   /// **[shouldNormalizeVolume]** Whether or not to normalize the volume
   /// of the playback. You can also change this by calling [normalizeVolume]
   /// when you desire. The normalization uses the `EbuR128` standard and
-  /// it normalizes to `-15 LUFS`.
+  /// it normalizes to `-14 LUFS`.
   ///
   /// **[dbusName]** The bus name of the MPRIS metadata handler.
   /// The format is in reverse-DNS style.
@@ -401,7 +401,7 @@ class SimpleAudio {
 
   /// Whether or not to normalize the volume
   /// of the playback. The normalization uses the `EbuR128` standard and
-  /// it normalizes to `-15 LUFS`.
+  /// it normalizes to `-14 LUFS`.
   Future<void> normalizeVolume(bool shouldNormalize) async {
     return await _player.normalizeVolume(shouldNormalize: shouldNormalize);
   }
