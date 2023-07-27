@@ -3,12 +3,18 @@ cmake_minimum_required(VERSION 3.10)
 # Download the binaries from GitHub.
 set(Version "1.6.1")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs")
+set(ArchivePath "${CMAKE_CURRENT_SOURCE_DIR}/android.tar.gz")
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/android.zip")
+if(NOT EXISTS ${ArchivePath})
   file(DOWNLOAD
-    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/android.zip"
-    "${CMAKE_CURRENT_SOURCE_DIR}/android.zip"
+    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/android.tar.gz"
+    ${ArchivePath}
     TLS_VERIFY ON
+  )
+
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${ArchivePath} -C ${LibPath}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
   file(ARCHIVE_EXTRACT INPUT android.zip DESTINATION ${LibPath})

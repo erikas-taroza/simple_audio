@@ -46,15 +46,18 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
 
 # Download the binary from GitHub.
 set(Version "1.6.1")
-set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/windows.zip")
+set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/windows.tar.gz")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
-    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/windows.zip"
+    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/windows.tar.gz"
     ${LibPath}
     TLS_VERIFY ON
   )
 
-  file(ARCHIVE_EXTRACT INPUT ${LibPath} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${LibPath}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
 endif()
 
 # List of absolute paths to libraries that should be bundled with the plugin.
