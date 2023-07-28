@@ -60,9 +60,9 @@ jobs:
         uses: actions/download-artifact@v2.1.1
       - name: Create Archives
         run: |
-          tar -czvf linux.tar.gz linux/libsimple_audio.so
+          tar -C linux -czvf linux.tar.gz .
           tar -C android -czvf android.tar.gz .
-          tar -czvf windows.tar.gz windows/simple_audio.dll
+          tar -C windows -czvf windows.tar.gz .
           zip -j macos.zip macos/*
           cd ios && zip -r ios.zip ./* && cd .. && mv ios/ios.zip .
       - name: Add to Release
