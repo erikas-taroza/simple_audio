@@ -1,3 +1,9 @@
+## 1.6.2
+
+- Release assets use `tar.gz` for Linux/Android/Windows
+- Update README
+- Update git/pub ignore
+
 ## 1.6.1
 
 - Fixed normalization gain calculation.
