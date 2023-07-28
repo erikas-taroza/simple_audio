@@ -53,9 +53,11 @@ if(NOT EXISTS ${LibPath})
     ${LibPath}
     TLS_VERIFY ON
   )
+endif()
 
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/simple_audio.dll")
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar xzf ${LibPath}
+    COMMAND ${CMAKE_COMMAND} -E tar -xzf windows.tar.gz
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 endif()

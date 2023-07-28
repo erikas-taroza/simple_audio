@@ -11,11 +11,11 @@ if(NOT EXISTS ${ArchivePath})
     ${ArchivePath}
     TLS_VERIFY ON
   )
+endif()
 
+if(NOT EXISTS "${LibPath}/arm64-v8a/libsimple_audio.so")
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar xzf ${ArchivePath} -C ${LibPath}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E tar -xzf ${ArchivePath}
+    WORKING_DIRECTORY ${LibPath}
   )
-
-  file(ARCHIVE_EXTRACT INPUT android.zip DESTINATION ${LibPath})
 endif()

@@ -3,6 +3,7 @@ libsimple_audio.a
 simple_audio.dll
 simple_audio.xcframework
 *.zip
+*.tar.gz
 
 # Miscellaneous
 *.class
