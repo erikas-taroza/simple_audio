@@ -40,15 +40,20 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
 
 # Download the binary from GitHub.
 set(Version "1.6.1")
-set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/linux.zip")
+set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/linux.tar.gz")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
-    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/linux.zip"
+    "https://github.com/erikas-taroza/simple_audio/releases/download/v${Version}/linux.tar.gz"
     ${LibPath}
     TLS_VERIFY ON
   )
+endif()
 
-  file(ARCHIVE_EXTRACT INPUT ${LibPath} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio.so")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar -xzf linux.tar.gz
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
 endif()
 
 # List of absolute paths to libraries that should be bundled with the plugin.

@@ -58,19 +58,19 @@ jobs:
       # Downloading unzips the artifacts so they have to be rezipped.
       - name: Download Artifacts
         uses: actions/download-artifact@v2.1.1
-      - name: Zip Files
+      - name: Create Archives
         run: |
-          zip -j linux.zip linux/*
-          cd android && zip -r android.zip ./* && cd .. && mv android/android.zip .
-          zip -j windows.zip windows/*
+          tar -C linux -czvf linux.tar.gz .
+          tar -C android -czvf android.tar.gz .
+          tar -C windows -czvf windows.tar.gz .
           zip -j macos.zip macos/*
           cd ios && zip -r ios.zip ./* && cd .. && mv ios/ios.zip .
       - name: Add to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            linux.zip
-            android.zip
-            windows.zip
+            linux.tar.gz
+            android.tar.gz
+            windows.tar.gz
             macos.zip
             ios.zip
