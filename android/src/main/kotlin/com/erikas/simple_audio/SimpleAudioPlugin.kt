@@ -113,6 +113,8 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
             }
             else -> { result.notImplemented() }
         }
+
+        result.success(0)
     }
 }
 

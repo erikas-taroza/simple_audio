@@ -128,7 +128,7 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () async {
                   String path = await pickFile();
 
-                  player.setMetadata(
+                  await player.setMetadata(
                     const Metadata(
                       title: "Title",
                       artist: "Artist",

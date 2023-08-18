@@ -77,6 +77,8 @@ public class SimpleAudio
             default:
                 result(FlutterMethodNotImplemented)
         }
+
+        result(0)
     }
     
     func initialize(actions: [MediaControlAction], preferSkipButtons: Bool)

@@ -377,18 +377,17 @@ class SimpleAudio {
         artUri: "file://$path",
       );
 
-      _player.setMetadata(metadata: m);
-      return;
+      return await _player.setMetadata(metadata: m);
     }
 
     if (Platform.isLinux || Platform.isWindows) {
-      _player.setMetadata(metadata: metadata);
+      return await _player.setMetadata(metadata: metadata);
     }
     // The method channel is only available for Android, iOS, macOS.
     else if (_methodChannel != null) {
       _currentMetadata = metadata;
 
-      await _methodChannel?.invokeMethod("setMetadata", {
+      return await _methodChannel?.invokeMethod("setMetadata", {
         "title": metadata.title,
         "artist": metadata.artist,
         "album": metadata.album,
