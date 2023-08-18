@@ -1,3 +1,7 @@
+## 1.6.3
+
+- Fix method channels hanging because a result wasn't returned in native code.
+
 ## 1.6.2
 
 - Release assets use `tar.gz` for Linux/Android/Windows

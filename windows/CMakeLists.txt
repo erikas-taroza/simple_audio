@@ -45,7 +45,7 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
 
 # Download the binary from GitHub.
-set(Version "1.6.2")
+set(Version "1.6.3")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/windows.tar.gz")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
