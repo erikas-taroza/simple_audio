@@ -19,7 +19,7 @@ void main() async {
       MediaControlAction.skipPrev,
       MediaControlAction.playPause,
       MediaControlAction.skipNext,
-      MediaControlAction.fastForward
+      MediaControlAction.fastForward,
     ],
     androidNotificationIconPath: "mipmap/ic_launcher",
     androidCompactActions: [1, 2, 3],
@@ -253,7 +253,7 @@ class _MyAppState extends State<MyApp> {
                       player.loopPlayback(loop);
                     },
                   ),
-                  const Text("Loop Playback")
+                  const Text("Loop Playback"),
                 ],
               ),
 
@@ -268,7 +268,7 @@ class _MyAppState extends State<MyApp> {
                       player.normalizeVolume(normalize);
                     },
                   ),
-                  const Text("Normalize Volume")
+                  const Text("Normalize Volume"),
                 ],
               ),
 
@@ -294,7 +294,7 @@ class _MyAppState extends State<MyApp> {
                     Text(convertSecondsToReadableString(duration.floor())),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

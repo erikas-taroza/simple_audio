@@ -120,7 +120,7 @@ class SimpleAudio {
               "album": _currentMetadata.album,
               "artUri": _currentMetadata.artUri,
               "artBytes": _currentMetadata.artBytes,
-              "duration": (await _progress).duration
+              "duration": (await _progress).duration,
             });
           }
       }
@@ -248,13 +248,13 @@ class SimpleAudio {
         "useMediaController": useMediaController,
         "actions": actions.map((e) => e.index).toList(),
         "compactActions": androidCompactActions,
-        "icon": androidNotificationIconPath
+        "icon": androidNotificationIconPath,
       });
     } else if (Platform.isIOS || Platform.isMacOS) {
       _methodChannel?.invokeMethod("init", {
         "useMediaController": useMediaController,
         "actions": actions.map((e) => e.index).toList(),
-        "preferSkipButtons": applePreferSkipButtons
+        "preferSkipButtons": applePreferSkipButtons,
       });
     }
   }
@@ -291,7 +291,7 @@ class SimpleAudio {
   Future<void> play() async {
     _methodChannel?.invokeMethod("setPlaybackState", {
       "state": PlaybackState.play.index,
-      "position": (await _progress).position
+      "position": (await _progress).position,
     });
 
     return await _player.play();
@@ -301,7 +301,7 @@ class SimpleAudio {
   Future<void> pause() async {
     _methodChannel?.invokeMethod("setPlaybackState", {
       "state": PlaybackState.pause.index,
-      "position": (await _progress).position
+      "position": (await _progress).position,
     });
 
     return await _player.pause();
@@ -336,7 +336,7 @@ class SimpleAudio {
     _methodChannel?.invokeMethod("setPlaybackState", {
       "state":
           (await isPlaying ? PlaybackState.play : PlaybackState.pause).index,
-      "position": seconds
+      "position": seconds,
     });
 
     return await _player.seek(seconds: seconds);
@@ -393,7 +393,7 @@ class SimpleAudio {
         "album": metadata.album,
         "artUri": metadata.artUri,
         "artBytes": metadata.artBytes,
-        "duration": 0
+        "duration": 0,
       });
     }
   }
