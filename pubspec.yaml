@@ -3,6 +3,11 @@ description: A simple cross-platform solution for playing audio in Flutter.
 version: 1.6.3
 homepage: https://github.com/erikas-taroza/simple_audio
 repository: https://github.com/erikas-taroza/simple_audio
+topics:
+  - audio
+  - audio player
+  - music
+  - player
 
 environment:
   sdk: ">=2.18.1 <4.0.0"
