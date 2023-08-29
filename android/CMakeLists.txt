@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Download the binaries from GitHub.
-set(Version "1.6.3")
+set(Version "1.6.4")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs")
 set(ArchivePath "${CMAKE_CURRENT_SOURCE_DIR}/android.tar.gz")
 

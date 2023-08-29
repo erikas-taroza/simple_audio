@@ -39,7 +39,7 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE flutter)
 target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
 
 # Download the binary from GitHub.
-set(Version "1.6.3")
+set(Version "1.6.4")
 set(LibPath "${CMAKE_CURRENT_SOURCE_DIR}/linux.tar.gz")
 if(NOT EXISTS ${LibPath})
   file(DOWNLOAD
