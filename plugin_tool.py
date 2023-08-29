@@ -170,13 +170,15 @@ def init():
 def code_gen():
     print("Generating code with flutter_rust_bridge...\n")
 
-    os.system("cargo install flutter_rust_bridge_codegen --version 1.71.0")
+    # os.system("cargo install flutter_rust_bridge_codegen --version 1.71.0")
+    os.system("cargo install flutter_rust_bridge_codegen --git https://github.com/erikas-taroza/flutter_rust_bridge --branch dummy-method-improvement")
     os.system('flutter_rust_bridge_codegen \
         --dart-enums-style \
         --rust-input ./rust/src/lib.rs \
         --dart-output ./lib/src/bridge_generated.dart \
         --dart-decl-output ./lib/src/bridge_definitions.dart \
-        --c-output ./rust/src/bridge_generated.h')
+        --c-output ./rust/src/bridge_generated.h \
+        --symbol-prefix SimpleAudio')
 
     shutil.copyfile("./rust/src/bridge_generated.h", "./ios/Classes/bridge_generated.h")
     shutil.move("./rust/src/bridge_generated.h", "./macos/Classes/bridge_generated.h")

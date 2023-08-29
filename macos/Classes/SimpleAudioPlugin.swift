@@ -39,5 +39,5 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
     }
 
     public static func dummy() -> Int64
-    { return dummy_method_to_enforce_bundling() }
+    { return SimpleAudio_dummy_method_to_enforce_bundling() }
 }
