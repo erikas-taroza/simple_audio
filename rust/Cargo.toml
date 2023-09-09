@@ -37,6 +37,8 @@ pollster = "0.3.0"
 # Debug only.
 android_logger = "0.13.1"
 log = "0.4.17"
+jni = "0.21.1"
+ndk-context = "0.1.1"
 
 # Windows API Dependency
 # target.'cfg(target_os = "windows")'.

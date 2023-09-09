@@ -46,6 +46,8 @@ class SimpleAudioPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding)
     {
+        System.loadLibrary("simple_audio")
+
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
         channel?.setMethodCallHandler(this)
 
