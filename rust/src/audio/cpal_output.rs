@@ -61,7 +61,7 @@ impl CpalOutput
     ) -> anyhow::Result<Self>
     {
         // Get the output config.
-        let (device, config) = Self::get_config(spec)?;
+        let (device, config, ring_buffer_size) = Self::get_config(spec)?;
 
         // Create a resampler only if the code is running on Windows
         // and if the output config's sample rate doesn't match the audio's.
@@ -77,13 +77,8 @@ impl CpalOutput
                 None
             };
 
-        // Create a ring buffer with a capacity for up-to `buf_len_ms` of audio.
-        let channels = spec.channels.count();
-        let buf_len_ms = 300;
-        let ring_len = ((buf_len_ms * spec.rate as usize) / 1000) * channels;
-
         // Create the buffers for the stream.
-        let rb = BlockingRb::<f32>::new(ring_len);
+        let rb = BlockingRb::<f32>::new(ring_buffer_size);
         let rb_clone = rb.clone();
         let ring_buffer_writer = rb.0;
         let ring_buffer_reader = rb.1;
@@ -178,12 +173,29 @@ impl CpalOutput
         })
     }
 
-    fn get_config(spec: SignalSpec) -> anyhow::Result<(Device, StreamConfig)>
+    fn get_config(spec: SignalSpec) -> anyhow::Result<(Device, StreamConfig, usize)>
     {
         let host = cpal::default_host();
         let device = host
             .default_output_device()
             .context("Failed to get default output device.")?;
+        let default_output_config = device
+            .default_output_config()
+            .context("Failed to get default output config.")?;
+        let channels = spec.channels.count();
+
+        let default_ring_buf_size = ((200 * spec.rate as usize) / 1000) * channels;
+        let ring_buffer_size: usize = match default_output_config.buffer_size() {
+            cpal::SupportedBufferSize::Range { min, max: _ } => {
+                if min <= &1 {
+                    default_ring_buf_size
+                }
+                else {
+                    *min as usize
+                }
+            }
+            cpal::SupportedBufferSize::Unknown => default_ring_buf_size,
+        };
 
         let config;
 
@@ -201,7 +213,6 @@ impl CpalOutput
 
         #[cfg(not(target_os = "windows"))]
         {
-            let channels = spec.channels.count();
             config = cpal::StreamConfig {
                 channels: channels as cpal::ChannelCount,
                 sample_rate: cpal::SampleRate(spec.rate),
@@ -209,7 +220,7 @@ impl CpalOutput
             };
         }
 
-        Ok((device, config))
+        Ok((device, config, ring_buffer_size))
     }
 
     /// Write the `AudioBufferRef` to the buffers.
