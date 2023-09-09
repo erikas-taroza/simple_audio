@@ -377,7 +377,7 @@ impl Default for Player
 // https://github.com/RustAudio/cpal/issues/720#issuecomment-1311813294
 #[cfg(target_os = "android")]
 #[no_mangle]
-pub extern "C" fn JNI_OnLoad(vm: jni::JavaVM, res: *mut std::os::raw::c_void) -> jni::sys::jint
+extern "C" fn JNI_OnLoad(vm: jni::JavaVM, res: *mut std::os::raw::c_void) -> jni::sys::jint
 {
     use std::ffi::c_void;
 
