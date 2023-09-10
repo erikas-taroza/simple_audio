@@ -1,3 +1,9 @@
+## 1.6.4
+
+- Select correct buffer size based on default output config.
+- Extract `ios.zip` to `simple_audio.xcframework` directory (thanks @Yesterday17)
+- Add topics to pubspec.yaml
+
 ## 1.6.3
 
 - Fix method channels hanging because a result wasn't returned in native code.
