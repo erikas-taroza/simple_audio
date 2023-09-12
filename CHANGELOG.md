@@ -1,3 +1,7 @@
+## 1.6.5
+
+- Increase device buffer size, compare buffer size to default instead of `1`
+
 ## 1.6.4
 
 - Select correct buffer size based on default output config.
