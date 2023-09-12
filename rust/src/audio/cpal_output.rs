@@ -184,18 +184,18 @@ impl CpalOutput
             .context("Failed to get default output config.")?;
         let channels = spec.channels.count();
 
-        let default_ring_buf_size = ((200 * spec.rate as usize) / 1000) * channels;
+        let default_ring_buf_size = ((200 * spec.rate) / 1000) * channels as u32;
         let ring_buffer_size: usize = match default_output_config.buffer_size() {
             cpal::SupportedBufferSize::Range { min, max: _ } => {
-                if min <= &1 {
+                if min <= &default_ring_buf_size {
                     default_ring_buf_size
                 }
                 else {
-                    *min as usize
+                    *min + 10000
                 }
             }
             cpal::SupportedBufferSize::Unknown => default_ring_buf_size,
-        };
+        } as usize;
 
         let config;
 
