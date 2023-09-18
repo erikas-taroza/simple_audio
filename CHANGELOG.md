@@ -1,3 +1,7 @@
+## 1.6.6
+
+- Specify explicit version of `flutter_rust_bridge`
+
 ## 1.6.5
 
 - Increase device buffer size, compare buffer size to default instead of `1`
