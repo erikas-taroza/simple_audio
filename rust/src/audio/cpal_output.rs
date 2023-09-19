@@ -139,7 +139,6 @@ impl CpalOutput
                             // The decoder will make a new `cpal_output`.
                             controls
                                 .event_handler()
-                                .0
                                 .send(PlayerEvent::DeviceChanged)
                                 .unwrap();
                             ring_buffer_writer.cancel_write();

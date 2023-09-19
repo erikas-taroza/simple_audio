@@ -16,7 +16,7 @@
 
 use std::sync::{atomic::AtomicBool, Arc, OnceLock, RwLock, RwLockReadGuard};
 
-use crossbeam::channel::{unbounded, Receiver, Sender};
+use crossbeam::channel::{unbounded, Receiver, RecvError, SendError, Sender, TryRecvError};
 use symphonia::core::io::MediaSource;
 
 use crate::utils::types::ProgressState;
@@ -54,7 +54,35 @@ macro_rules! getset_rwlock {
     };
 }
 
-type EventHandler = (Sender<PlayerEvent>, Receiver<PlayerEvent>);
+struct EventHandler
+{
+    sender: Sender<PlayerEvent>,
+    receiver: Receiver<PlayerEvent>,
+}
+
+impl EventHandler
+{
+    fn new() -> EventHandler
+    {
+        let (sender, receiver) = unbounded();
+        Self { sender, receiver }
+    }
+
+    pub fn send(&self, event: PlayerEvent) -> Result<(), SendError<PlayerEvent>>
+    {
+        self.sender.send(event)
+    }
+
+    pub fn recv(&self) -> Result<PlayerEvent, RecvError>
+    {
+        self.receiver.recv()
+    }
+
+    pub fn try_recv(&self) -> Result<PlayerEvent, TryRecvError>
+    {
+        self.receiver.try_recv()
+    }
+}
 
 #[derive(Clone)]
 pub struct Controls
@@ -88,7 +116,7 @@ impl Default for Controls
     fn default() -> Self
     {
         Controls {
-            event_handler: Arc::new(RwLock::new(unbounded())),
+            event_handler: Arc::new(RwLock::new(EventHandler::new())),
             is_playing: Arc::new(AtomicBool::new(false)),
             is_stopped: Arc::new(AtomicBool::new(true)),
             is_looping: Arc::new(AtomicBool::new(false)),

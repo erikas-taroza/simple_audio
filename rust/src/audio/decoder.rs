@@ -144,10 +144,10 @@ impl Decoder
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
         let recv: Option<PlayerEvent> = if self.state.is_idle() || self.state.is_paused() {
-            self.controls.event_handler().1.recv().ok()
+            self.controls.event_handler().recv().ok()
         }
         else {
-            self.controls.event_handler().1.try_recv().ok()
+            self.controls.event_handler().try_recv().ok()
         };
 
         match recv {

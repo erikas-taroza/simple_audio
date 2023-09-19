@@ -202,7 +202,6 @@ impl Player
 
         self.controls
             .event_handler()
-            .0
             .send(PlayerEvent::Open(source, buffer_signal))?;
 
         if autoplay {
@@ -227,7 +226,6 @@ impl Player
 
         self.controls
             .event_handler()
-            .0
             .send(PlayerEvent::Preload(source, buffer_signal))?;
 
         Ok(())
@@ -238,7 +236,6 @@ impl Player
     {
         self.controls
             .event_handler()
-            .0
             .send(PlayerEvent::PlayPreload)?;
         Ok(())
     }
@@ -252,7 +249,7 @@ impl Player
             return;
         }
 
-        controls.event_handler().0.send(PlayerEvent::Play).unwrap();
+        controls.event_handler().send(PlayerEvent::Play).unwrap();
 
         update_playback_state_stream(PlaybackState::Play);
         controls.set_is_playing(true);
@@ -269,7 +266,7 @@ impl Player
             return;
         }
 
-        controls.event_handler().0.send(PlayerEvent::Pause).unwrap();
+        controls.event_handler().send(PlayerEvent::Pause).unwrap();
 
         update_playback_state_stream(PlaybackState::Pause);
         controls.set_is_playing(false);
@@ -287,7 +284,7 @@ impl Player
             return;
         }
 
-        controls.event_handler().0.send(PlayerEvent::Stop).unwrap();
+        controls.event_handler().send(PlayerEvent::Stop).unwrap();
 
         let progress = ProgressState {
             position: 0,
