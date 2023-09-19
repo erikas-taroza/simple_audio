@@ -54,7 +54,7 @@ macro_rules! getset_rwlock {
     };
 }
 
-struct EventHandler
+pub struct EventHandler
 {
     sender: Sender<PlayerEvent>,
     receiver: Receiver<PlayerEvent>,
