@@ -30,14 +30,14 @@ fn add_lib(name: impl AsRef<str>, _static: bool)
 fn main()
 {
     println!("cargo:rerun-if-changed=src/");
-    let result = Command::new("python")
-        .args(["plugin_tool.py", "-c"])
-        .current_dir("../")
-        .status();
+    // let result = Command::new("python")
+    //     .args(["plugin_tool.py", "-c"])
+    //     .current_dir("../")
+    //     .status();
 
-    if result.is_err() || !result.as_ref().unwrap().success() {
-        panic!("Error running codegen: {result:?}");
-    }
+    // if result.is_err() || !result.as_ref().unwrap().success() {
+    //     panic!("Error running codegen: {result:?}");
+    // }
 
     let target = std::env::var("TARGET").expect("ERR: Could not check the target for the build.");
 
