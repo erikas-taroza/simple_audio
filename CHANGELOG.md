@@ -1,3 +1,9 @@
+## 1.7.0
+
+- Improved error handling. Custom errors are thrown in `open()` and `preload()`. The `onNetworkStreamError` and `onDecodeError` callbacks now have a parameter for the error message.
+- Updated `flutter_rust_bridge` to `1.82.1`
+- Removed useless comments in `pubspec.yaml`
+
 ## 1.6.6
 
 - Specify explicit version of `flutter_rust_bridge`
