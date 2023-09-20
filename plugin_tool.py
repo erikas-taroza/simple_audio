@@ -174,7 +174,7 @@ def code_gen():
     os.system("cargo install cargo-expand --version 1.0.70")
     os.system('flutter_rust_bridge_codegen \
         --dart-enums-style \
-        --rust-input ./rust/src/lib.rs \
+        --rust-input ./rust/src/api.rs \
         --dart-output ./lib/src/bridge_generated.dart \
         --dart-decl-output ./lib/src/bridge_definitions.dart \
         --c-output ./rust/src/bridge_generated.h')

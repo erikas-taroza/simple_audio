@@ -1,6 +1,7 @@
 /// Errors that can be thrown by `simple_audio`.
 #[derive(Debug)]
-pub enum Error {
+pub enum Error
+{
     /// An error occurred when trying to fetch more bytes for
     /// a network stream.
     NetworkStream(String),
@@ -11,13 +12,15 @@ pub enum Error {
     /// An error occurred when trying to preload a file.
     Preload(String),
     /// An error occurred when trying to play the preloaded file.
-    PlayPreload(String)
+    PlayPreload(String),
 }
 
 impl std::error::Error for Error {}
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Error
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         write!(f, "{:?}", self)
     }
 }

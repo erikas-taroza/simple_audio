@@ -40,15 +40,11 @@ pub struct ProgressState
 /// cannot be handled in Rust or need user action.
 pub enum Callback
 {
+    Error(super::error::Error),
     /// The media controller trigged the SkipPrev action.
     MediaControlSkipPrev,
     /// The media controller trigged the SkipNext action.
     MediaControlSkipNext,
-    /// An error occurred when trying to fetch more bytes for
-    /// a network stream.
-    NetworkStreamError,
-    /// An error occurred when decoding the file.
-    DecodeError,
     /// The player is in the looping mode and the playback
     /// just looped to the beginning.
     PlaybackLooped,
