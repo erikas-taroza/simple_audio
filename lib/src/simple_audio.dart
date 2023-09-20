@@ -133,7 +133,8 @@ class SimpleAudio {
               break;
             default:
               throw UnimplementedError(
-                  "Error $field0 should not be thrown here.");
+                "Error $field0 should not be thrown here.",
+              );
           }
           break;
       }
