@@ -213,25 +213,33 @@ impl Player
     /// Use this method if you want gapless playback. It reduces
     /// the time spent loading between tracks (especially important
     /// for streaming network files).
-    pub fn preload(&self, path: String) -> anyhow::Result<()>
+    pub fn preload(&self, path: String) -> Result<(), Error>
     {
         let buffer_signal = Arc::new(AtomicBool::new(false));
-        let source = Self::source_from_path(path, buffer_signal.clone())?;
+        let source = match Self::source_from_path(path, buffer_signal.clone()) {
+            Ok(source) => source,
+            Err(err) => return Err(Error::Preload(err.to_string())),
+        };
 
-        self.controls
+        let send_event = self
+            .controls
             .event_handler()
-            .send(PlayerEvent::Preload(source, buffer_signal))?;
+            .send(PlayerEvent::Preload(source, buffer_signal));
 
-        Ok(())
+        match send_event {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Error::Preload(err.to_string())),
+        }
     }
 
     /// Plays the preloaded item from `preload`. The file starts playing automatically.
-    pub fn play_preload(&self) -> anyhow::Result<()>
+    pub fn play_preload(&self) -> Result<(), Error>
     {
-        self.controls
-            .event_handler()
-            .send(PlayerEvent::PlayPreload)?;
-        Ok(())
+        let send_event = self.controls.event_handler().send(PlayerEvent::PlayPreload);
+        match send_event {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Error::PlayPreload(err.to_string())),
+        }
     }
 
     /// Allows for access in other places
