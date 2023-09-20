@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::process::Command;
-
 #[allow(dead_code)]
 fn add_lib(name: impl AsRef<str>, _static: bool)
 {
@@ -30,7 +28,7 @@ fn add_lib(name: impl AsRef<str>, _static: bool)
 fn main()
 {
     println!("cargo:rerun-if-changed=src/");
-    // let result = Command::new("python")
+    // let result = std::process::Command::new("python")
     //     .args(["plugin_tool.py", "-c"])
     //     .current_dir("../")
     //     .status();
