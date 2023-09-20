@@ -7,25 +7,25 @@ pub enum Error
     NetworkStream
     {
         /// The error message.
-        message: String
+        message: String,
     },
     /// An error occurred when decoding the file.
     Decode
     {
         /// The error message.
-        message: String
+        message: String,
     },
     /// An error occurred when trying to open a file.
     Open
     {
         /// The error message.
-        message: String
+        message: String,
     },
     /// An error occurred when trying to preload a file.
     Preload
     {
         /// The error message.
-        message: String
+        message: String,
     },
 }
 
