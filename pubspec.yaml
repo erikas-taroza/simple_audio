@@ -22,6 +22,7 @@ dependencies:
   meta: ^1.8.0
   path_provider: ^2.0.11
   freezed_annotation: ^2.4.1
+  uuid: any
 
 dev_dependencies:
   flutter_test:
