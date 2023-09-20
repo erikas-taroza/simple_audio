@@ -15,7 +15,13 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 export 'bridge_definitions.dart'
-    show Metadata, ProgressState, PlaybackState, MediaControlAction;
+    show
+        Metadata,
+        ProgressState,
+        PlaybackState,
+        MediaControlAction,
+        Error_Open,
+        Error_Preload;
 
 import 'dart:io';
 
@@ -67,10 +73,10 @@ class SimpleAudio {
 
   /// The callback for when an error occurs when trying to fetch
   /// more bytes for a network stream.
-  void Function(SimpleAudio player)? onNetworkStreamError;
+  void Function(SimpleAudio player, String error)? onNetworkStreamError;
 
   /// The callback for when an error occurs during the decode loop.
-  void Function(SimpleAudio player)? onDecodeError;
+  void Function(SimpleAudio player, String error)? onDecodeError;
 
   /// Each callback has a reference to the instantiated `SimpleAudio` object
   /// if you need to access its members to implement the callbacks.
@@ -91,28 +97,22 @@ class SimpleAudio {
   }) {
     Player.callbackStream(bridge: api).listen((event) async {
       switch (event) {
-        case Callback.mediaControlSkipPrev:
+        case Callback_MediaControlSkipPrev():
           onSkipPrevious?.call(this);
           break;
-        case Callback.mediaControlSkipNext:
+        case Callback_MediaControlSkipNext():
           onSkipNext?.call(this);
-          break;
-        case Callback.networkStreamError:
-          onNetworkStreamError?.call(this);
-          break;
-        case Callback.decodeError:
-          onDecodeError?.call(this);
           break;
         // The following callbacks are not for the user to handle.
         // Instead, it is used to communicate via MethodChannel
         // with Dart being the middleman.
-        case Callback.playbackLooped:
+        case Callback_PlaybackLooped():
           _methodChannel?.invokeMethod(
             "setPlaybackState",
             {"state": PlaybackState.play.index, "position": 0},
           );
           break;
-        case Callback.durationCalculated:
+        case Callback_DurationCalculated():
           if (_methodChannel != null && _useMediaController) {
             _methodChannel?.invokeMethod("setMetadata", {
               "title": _currentMetadata.title,
@@ -123,6 +123,20 @@ class SimpleAudio {
               "duration": (await _progress).duration,
             });
           }
+          break;
+        case Callback_Error(:final field0):
+          switch (field0) {
+            case Error_Decode(:final message):
+              onDecodeError?.call(this, message);
+            case Error_NetworkStream(:final message):
+              onNetworkStreamError?.call(this, message);
+              break;
+            default:
+              throw UnimplementedError(
+                "Error $field0 should not be thrown here.",
+              );
+          }
+          break;
       }
     });
 
@@ -275,6 +289,8 @@ class SimpleAudio {
   /// or `/path/to/file.mp3`.
   ///
   /// **[autoplay]** Whether or not to immediately start playing the file when opened.
+  ///
+  /// Throws [Error_Open] if the file couldn't be opened.
   Future<void> open(String path, {bool autoplay = true}) async {
     await _player.open(path: path, autoplay: autoplay);
 
@@ -410,6 +426,8 @@ class SimpleAudio {
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
   /// for streaming network files).
+  ///
+  /// Throws [Error_Preload] if the file couldn't be preloaded.
   Future<void> preload(String path) async {
     return await _player.preload(path: path);
   }

@@ -26,6 +26,7 @@ use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
 use crate::utils::callback_stream::update_callback_stream;
+use crate::utils::error::Error;
 use crate::utils::types::Callback;
 
 use super::{streamable::*, Receiver};
@@ -223,8 +224,10 @@ impl Read for HttpStream
             thread::spawn(move || {
                 let result = Self::read_chunk(tx, url, chunk_write_pos, file_size);
 
-                if result.is_err() {
-                    update_callback_stream(Callback::NetworkStreamError)
+                if let Err(err) = result {
+                    update_callback_stream(Callback::Error(Error::NetworkStream {
+                        message: err.to_string(),
+                    }));
                 }
             });
         }

@@ -89,7 +89,7 @@ mod tests
     #[test]
     fn normalize() -> anyhow::Result<()>
     {
-        let player = crate::Player::default();
+        let player = crate::api::Player::default();
         player.set_volume(0.5);
         player.normalize_volume(true);
         // Try out different files here.

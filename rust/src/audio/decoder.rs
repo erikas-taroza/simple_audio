@@ -37,10 +37,11 @@ use symphonia::{
 use symphonia_core::codecs::CodecRegistry;
 
 use crate::{
+    api::Player,
     audio::opus::OpusDecoder,
     media_controllers,
     utils::{
-        callback_stream::update_callback_stream,
+        callback_stream::update_callback_stream, error::Error,
         playback_state_stream::update_playback_state_stream, progress_state_stream::*, types::*,
     },
 };
@@ -98,8 +99,10 @@ impl Decoder
     {
         loop {
             // Check if the preload thread is done.
-            if self.poll_preload_thread().is_err() {
-                update_callback_stream(Callback::DecodeError);
+            if let Err(err) = self.poll_preload_thread() {
+                update_callback_stream(Callback::Error(Error::Decode {
+                    message: err.to_string(),
+                }));
             }
 
             // Check for incoming `ThreadMessage`s.
@@ -109,8 +112,10 @@ impl Decoder
                         break;
                     }
                 }
-                Err(_) => {
-                    update_callback_stream(Callback::DecodeError);
+                Err(err) => {
+                    update_callback_stream(Callback::Error(Error::Decode {
+                        message: err.to_string(),
+                    }));
                 }
             }
 
@@ -122,8 +127,10 @@ impl Decoder
                         self.finish_playback();
                     }
                 }
-                Err(_) => {
-                    update_callback_stream(Callback::DecodeError);
+                Err(err) => {
+                    update_callback_stream(Callback::Error(Error::Decode {
+                        message: err.to_string(),
+                    }));
                 }
             }
         }
@@ -187,7 +194,7 @@ impl Decoder
                 // playback themselves.
                 PlayerEvent::DeviceChanged => {
                     self.cpal_output = None;
-                    crate::Player::internal_pause(&self.controls);
+                    Player::internal_pause(&self.controls);
 
                     // The device change will also affect the preloaded playback.
                     if self.preload_playback.is_some() {
@@ -221,7 +228,7 @@ impl Decoder
                     self.cpal_output = Some(cpal_output);
                     self.controls.set_is_file_preloaded(false);
 
-                    crate::Player::internal_play(&self.controls);
+                    Player::internal_play(&self.controls);
                 }
             },
         }
