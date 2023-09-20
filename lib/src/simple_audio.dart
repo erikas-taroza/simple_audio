@@ -15,7 +15,7 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 export 'bridge_definitions.dart'
-    show Metadata, ProgressState, PlaybackState, MediaControlAction;
+    show Metadata, ProgressState, PlaybackState, MediaControlAction, Error_Open, Error_Preload;
 
 import 'dart:io';
 
@@ -120,10 +120,10 @@ class SimpleAudio {
           break;
         case Callback_Error(:final field0):
           switch(field0) {
-            case Error_Decode(:final field0):
-              onDecodeError?.call(this, field0);
-            case Error_NetworkStream(:final field0):
-              onNetworkStreamError?.call(this, field0);
+            case Error_Decode(:final message):
+              onDecodeError?.call(this, message);
+            case Error_NetworkStream(:final message):
+              onNetworkStreamError?.call(this, message);
               break;
             default:
               throw UnimplementedError("Error $field0 should not be thrown here.");
@@ -281,6 +281,8 @@ class SimpleAudio {
   /// or `/path/to/file.mp3`.
   ///
   /// **[autoplay]** Whether or not to immediately start playing the file when opened.
+  /// 
+  /// Throws [Error_Open] if the file couldn't be opened.
   Future<void> open(String path, {bool autoplay = true}) async {
     await _player.open(path: path, autoplay: autoplay);
 
@@ -416,6 +418,8 @@ class SimpleAudio {
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
   /// for streaming network files).
+  /// 
+  /// Throws [Error_Preload] if the file couldn't be preloaded.
   Future<void> preload(String path) async {
     return await _player.preload(path: path);
   }

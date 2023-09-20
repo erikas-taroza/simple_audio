@@ -100,7 +100,9 @@ impl Decoder
         loop {
             // Check if the preload thread is done.
             if let Err(err) = self.poll_preload_thread() {
-                update_callback_stream(Callback::Error(Error::Decode(err.to_string())));
+                update_callback_stream(Callback::Error(Error::Decode {
+                    message: err.to_string(),
+                }));
             }
 
             // Check for incoming `ThreadMessage`s.
@@ -111,7 +113,9 @@ impl Decoder
                     }
                 }
                 Err(err) => {
-                    update_callback_stream(Callback::Error(Error::Decode(err.to_string())));
+                    update_callback_stream(Callback::Error(Error::Decode {
+                        message: err.to_string(),
+                    }));
                 }
             }
 
@@ -124,7 +128,9 @@ impl Decoder
                     }
                 }
                 Err(err) => {
-                    update_callback_stream(Callback::Error(Error::Decode(err.to_string())));
+                    update_callback_stream(Callback::Error(Error::Decode {
+                        message: err.to_string(),
+                    }));
                 }
             }
         }

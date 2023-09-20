@@ -776,32 +776,30 @@ abstract class Callback_DurationCalculated implements Callback {
 
 /// @nodoc
 mixin _$Error {
-  String get field0 => throw _privateConstructorUsedError;
+  /// The error message.
+  String get message => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) networkStream,
-    required TResult Function(String field0) decode,
-    required TResult Function(String field0) open,
-    required TResult Function(String field0) preload,
-    required TResult Function(String field0) playPreload,
+    required TResult Function(String message) networkStream,
+    required TResult Function(String message) decode,
+    required TResult Function(String message) open,
+    required TResult Function(String message) preload,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? networkStream,
-    TResult? Function(String field0)? decode,
-    TResult? Function(String field0)? open,
-    TResult? Function(String field0)? preload,
-    TResult? Function(String field0)? playPreload,
+    TResult? Function(String message)? networkStream,
+    TResult? Function(String message)? decode,
+    TResult? Function(String message)? open,
+    TResult? Function(String message)? preload,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? networkStream,
-    TResult Function(String field0)? decode,
-    TResult Function(String field0)? open,
-    TResult Function(String field0)? preload,
-    TResult Function(String field0)? playPreload,
+    TResult Function(String message)? networkStream,
+    TResult Function(String message)? decode,
+    TResult Function(String message)? open,
+    TResult Function(String message)? preload,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -811,7 +809,6 @@ mixin _$Error {
     required TResult Function(Error_Decode value) decode,
     required TResult Function(Error_Open value) open,
     required TResult Function(Error_Preload value) preload,
-    required TResult Function(Error_PlayPreload value) playPreload,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -820,7 +817,6 @@ mixin _$Error {
     TResult? Function(Error_Decode value)? decode,
     TResult? Function(Error_Open value)? open,
     TResult? Function(Error_Preload value)? preload,
-    TResult? Function(Error_PlayPreload value)? playPreload,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -829,7 +825,6 @@ mixin _$Error {
     TResult Function(Error_Decode value)? decode,
     TResult Function(Error_Open value)? open,
     TResult Function(Error_Preload value)? preload,
-    TResult Function(Error_PlayPreload value)? playPreload,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -843,7 +838,7 @@ abstract class $ErrorCopyWith<$Res> {
   factory $ErrorCopyWith(Error value, $Res Function(Error) then) =
       _$ErrorCopyWithImpl<$Res, Error>;
   @useResult
-  $Res call({String field0});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -859,12 +854,12 @@ class _$ErrorCopyWithImpl<$Res, $Val extends Error>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? field0 = null,
+    Object? message = null,
   }) {
     return _then(_value.copyWith(
-      field0: null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ) as $Val);
   }
@@ -878,7 +873,7 @@ abstract class _$$Error_NetworkStreamCopyWith<$Res>
       __$$Error_NetworkStreamCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String field0});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -892,12 +887,12 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? field0 = null,
+    Object? message = null,
   }) {
     return _then(_$Error_NetworkStream(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -906,14 +901,15 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_NetworkStream implements Error_NetworkStream {
-  const _$Error_NetworkStream(this.field0);
+  const _$Error_NetworkStream({required this.message});
 
+  /// The error message.
   @override
-  final String field0;
+  final String message;
 
   @override
   String toString() {
-    return 'Error.networkStream(field0: $field0)';
+    return 'Error.networkStream(message: $message)';
   }
 
   @override
@@ -921,11 +917,11 @@ class _$Error_NetworkStream implements Error_NetworkStream {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_NetworkStream &&
-            (identical(other.field0, field0) || other.field0 == field0));
+            (identical(other.message, message) || other.message == message));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, field0);
+  int get hashCode => Object.hash(runtimeType, message);
 
   @JsonKey(ignore: true)
   @override
@@ -937,39 +933,36 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) networkStream,
-    required TResult Function(String field0) decode,
-    required TResult Function(String field0) open,
-    required TResult Function(String field0) preload,
-    required TResult Function(String field0) playPreload,
+    required TResult Function(String message) networkStream,
+    required TResult Function(String message) decode,
+    required TResult Function(String message) open,
+    required TResult Function(String message) preload,
   }) {
-    return networkStream(field0);
+    return networkStream(message);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? networkStream,
-    TResult? Function(String field0)? decode,
-    TResult? Function(String field0)? open,
-    TResult? Function(String field0)? preload,
-    TResult? Function(String field0)? playPreload,
+    TResult? Function(String message)? networkStream,
+    TResult? Function(String message)? decode,
+    TResult? Function(String message)? open,
+    TResult? Function(String message)? preload,
   }) {
-    return networkStream?.call(field0);
+    return networkStream?.call(message);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? networkStream,
-    TResult Function(String field0)? decode,
-    TResult Function(String field0)? open,
-    TResult Function(String field0)? preload,
-    TResult Function(String field0)? playPreload,
+    TResult Function(String message)? networkStream,
+    TResult Function(String message)? decode,
+    TResult Function(String message)? open,
+    TResult Function(String message)? preload,
     required TResult orElse(),
   }) {
     if (networkStream != null) {
-      return networkStream(field0);
+      return networkStream(message);
     }
     return orElse();
   }
@@ -981,7 +974,6 @@ class _$Error_NetworkStream implements Error_NetworkStream {
     required TResult Function(Error_Decode value) decode,
     required TResult Function(Error_Open value) open,
     required TResult Function(Error_Preload value) preload,
-    required TResult Function(Error_PlayPreload value) playPreload,
   }) {
     return networkStream(this);
   }
@@ -993,7 +985,6 @@ class _$Error_NetworkStream implements Error_NetworkStream {
     TResult? Function(Error_Decode value)? decode,
     TResult? Function(Error_Open value)? open,
     TResult? Function(Error_Preload value)? preload,
-    TResult? Function(Error_PlayPreload value)? playPreload,
   }) {
     return networkStream?.call(this);
   }
@@ -1005,7 +996,6 @@ class _$Error_NetworkStream implements Error_NetworkStream {
     TResult Function(Error_Decode value)? decode,
     TResult Function(Error_Open value)? open,
     TResult Function(Error_Preload value)? preload,
-    TResult Function(Error_PlayPreload value)? playPreload,
     required TResult orElse(),
   }) {
     if (networkStream != null) {
@@ -1016,11 +1006,13 @@ class _$Error_NetworkStream implements Error_NetworkStream {
 }
 
 abstract class Error_NetworkStream implements Error {
-  const factory Error_NetworkStream(final String field0) =
+  const factory Error_NetworkStream({required final String message}) =
       _$Error_NetworkStream;
 
   @override
-  String get field0;
+
+  /// The error message.
+  String get message;
   @override
   @JsonKey(ignore: true)
   _$$Error_NetworkStreamCopyWith<_$Error_NetworkStream> get copyWith =>
@@ -1034,7 +1026,7 @@ abstract class _$$Error_DecodeCopyWith<$Res> implements $ErrorCopyWith<$Res> {
       __$$Error_DecodeCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String field0});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -1048,12 +1040,12 @@ class __$$Error_DecodeCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? field0 = null,
+    Object? message = null,
   }) {
     return _then(_$Error_Decode(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -1062,14 +1054,15 @@ class __$$Error_DecodeCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_Decode implements Error_Decode {
-  const _$Error_Decode(this.field0);
+  const _$Error_Decode({required this.message});
 
+  /// The error message.
   @override
-  final String field0;
+  final String message;
 
   @override
   String toString() {
-    return 'Error.decode(field0: $field0)';
+    return 'Error.decode(message: $message)';
   }
 
   @override
@@ -1077,11 +1070,11 @@ class _$Error_Decode implements Error_Decode {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_Decode &&
-            (identical(other.field0, field0) || other.field0 == field0));
+            (identical(other.message, message) || other.message == message));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, field0);
+  int get hashCode => Object.hash(runtimeType, message);
 
   @JsonKey(ignore: true)
   @override
@@ -1092,39 +1085,36 @@ class _$Error_Decode implements Error_Decode {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) networkStream,
-    required TResult Function(String field0) decode,
-    required TResult Function(String field0) open,
-    required TResult Function(String field0) preload,
-    required TResult Function(String field0) playPreload,
+    required TResult Function(String message) networkStream,
+    required TResult Function(String message) decode,
+    required TResult Function(String message) open,
+    required TResult Function(String message) preload,
   }) {
-    return decode(field0);
+    return decode(message);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? networkStream,
-    TResult? Function(String field0)? decode,
-    TResult? Function(String field0)? open,
-    TResult? Function(String field0)? preload,
-    TResult? Function(String field0)? playPreload,
+    TResult? Function(String message)? networkStream,
+    TResult? Function(String message)? decode,
+    TResult? Function(String message)? open,
+    TResult? Function(String message)? preload,
   }) {
-    return decode?.call(field0);
+    return decode?.call(message);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? networkStream,
-    TResult Function(String field0)? decode,
-    TResult Function(String field0)? open,
-    TResult Function(String field0)? preload,
-    TResult Function(String field0)? playPreload,
+    TResult Function(String message)? networkStream,
+    TResult Function(String message)? decode,
+    TResult Function(String message)? open,
+    TResult Function(String message)? preload,
     required TResult orElse(),
   }) {
     if (decode != null) {
-      return decode(field0);
+      return decode(message);
     }
     return orElse();
   }
@@ -1136,7 +1126,6 @@ class _$Error_Decode implements Error_Decode {
     required TResult Function(Error_Decode value) decode,
     required TResult Function(Error_Open value) open,
     required TResult Function(Error_Preload value) preload,
-    required TResult Function(Error_PlayPreload value) playPreload,
   }) {
     return decode(this);
   }
@@ -1148,7 +1137,6 @@ class _$Error_Decode implements Error_Decode {
     TResult? Function(Error_Decode value)? decode,
     TResult? Function(Error_Open value)? open,
     TResult? Function(Error_Preload value)? preload,
-    TResult? Function(Error_PlayPreload value)? playPreload,
   }) {
     return decode?.call(this);
   }
@@ -1160,7 +1148,6 @@ class _$Error_Decode implements Error_Decode {
     TResult Function(Error_Decode value)? decode,
     TResult Function(Error_Open value)? open,
     TResult Function(Error_Preload value)? preload,
-    TResult Function(Error_PlayPreload value)? playPreload,
     required TResult orElse(),
   }) {
     if (decode != null) {
@@ -1171,10 +1158,12 @@ class _$Error_Decode implements Error_Decode {
 }
 
 abstract class Error_Decode implements Error {
-  const factory Error_Decode(final String field0) = _$Error_Decode;
+  const factory Error_Decode({required final String message}) = _$Error_Decode;
 
   @override
-  String get field0;
+
+  /// The error message.
+  String get message;
   @override
   @JsonKey(ignore: true)
   _$$Error_DecodeCopyWith<_$Error_Decode> get copyWith =>
@@ -1188,7 +1177,7 @@ abstract class _$$Error_OpenCopyWith<$Res> implements $ErrorCopyWith<$Res> {
       __$$Error_OpenCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String field0});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -1202,12 +1191,12 @@ class __$$Error_OpenCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? field0 = null,
+    Object? message = null,
   }) {
     return _then(_$Error_Open(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -1216,14 +1205,15 @@ class __$$Error_OpenCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_Open implements Error_Open {
-  const _$Error_Open(this.field0);
+  const _$Error_Open({required this.message});
 
+  /// The error message.
   @override
-  final String field0;
+  final String message;
 
   @override
   String toString() {
-    return 'Error.open(field0: $field0)';
+    return 'Error.open(message: $message)';
   }
 
   @override
@@ -1231,11 +1221,11 @@ class _$Error_Open implements Error_Open {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_Open &&
-            (identical(other.field0, field0) || other.field0 == field0));
+            (identical(other.message, message) || other.message == message));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, field0);
+  int get hashCode => Object.hash(runtimeType, message);
 
   @JsonKey(ignore: true)
   @override
@@ -1246,39 +1236,36 @@ class _$Error_Open implements Error_Open {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) networkStream,
-    required TResult Function(String field0) decode,
-    required TResult Function(String field0) open,
-    required TResult Function(String field0) preload,
-    required TResult Function(String field0) playPreload,
+    required TResult Function(String message) networkStream,
+    required TResult Function(String message) decode,
+    required TResult Function(String message) open,
+    required TResult Function(String message) preload,
   }) {
-    return open(field0);
+    return open(message);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? networkStream,
-    TResult? Function(String field0)? decode,
-    TResult? Function(String field0)? open,
-    TResult? Function(String field0)? preload,
-    TResult? Function(String field0)? playPreload,
+    TResult? Function(String message)? networkStream,
+    TResult? Function(String message)? decode,
+    TResult? Function(String message)? open,
+    TResult? Function(String message)? preload,
   }) {
-    return open?.call(field0);
+    return open?.call(message);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? networkStream,
-    TResult Function(String field0)? decode,
-    TResult Function(String field0)? open,
-    TResult Function(String field0)? preload,
-    TResult Function(String field0)? playPreload,
+    TResult Function(String message)? networkStream,
+    TResult Function(String message)? decode,
+    TResult Function(String message)? open,
+    TResult Function(String message)? preload,
     required TResult orElse(),
   }) {
     if (open != null) {
-      return open(field0);
+      return open(message);
     }
     return orElse();
   }
@@ -1290,7 +1277,6 @@ class _$Error_Open implements Error_Open {
     required TResult Function(Error_Decode value) decode,
     required TResult Function(Error_Open value) open,
     required TResult Function(Error_Preload value) preload,
-    required TResult Function(Error_PlayPreload value) playPreload,
   }) {
     return open(this);
   }
@@ -1302,7 +1288,6 @@ class _$Error_Open implements Error_Open {
     TResult? Function(Error_Decode value)? decode,
     TResult? Function(Error_Open value)? open,
     TResult? Function(Error_Preload value)? preload,
-    TResult? Function(Error_PlayPreload value)? playPreload,
   }) {
     return open?.call(this);
   }
@@ -1314,7 +1299,6 @@ class _$Error_Open implements Error_Open {
     TResult Function(Error_Decode value)? decode,
     TResult Function(Error_Open value)? open,
     TResult Function(Error_Preload value)? preload,
-    TResult Function(Error_PlayPreload value)? playPreload,
     required TResult orElse(),
   }) {
     if (open != null) {
@@ -1325,10 +1309,12 @@ class _$Error_Open implements Error_Open {
 }
 
 abstract class Error_Open implements Error {
-  const factory Error_Open(final String field0) = _$Error_Open;
+  const factory Error_Open({required final String message}) = _$Error_Open;
 
   @override
-  String get field0;
+
+  /// The error message.
+  String get message;
   @override
   @JsonKey(ignore: true)
   _$$Error_OpenCopyWith<_$Error_Open> get copyWith =>
@@ -1342,7 +1328,7 @@ abstract class _$$Error_PreloadCopyWith<$Res> implements $ErrorCopyWith<$Res> {
       __$$Error_PreloadCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String field0});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -1356,12 +1342,12 @@ class __$$Error_PreloadCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? field0 = null,
+    Object? message = null,
   }) {
     return _then(_$Error_Preload(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -1370,14 +1356,15 @@ class __$$Error_PreloadCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_Preload implements Error_Preload {
-  const _$Error_Preload(this.field0);
+  const _$Error_Preload({required this.message});
 
+  /// The error message.
   @override
-  final String field0;
+  final String message;
 
   @override
   String toString() {
-    return 'Error.preload(field0: $field0)';
+    return 'Error.preload(message: $message)';
   }
 
   @override
@@ -1385,11 +1372,11 @@ class _$Error_Preload implements Error_Preload {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_Preload &&
-            (identical(other.field0, field0) || other.field0 == field0));
+            (identical(other.message, message) || other.message == message));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, field0);
+  int get hashCode => Object.hash(runtimeType, message);
 
   @JsonKey(ignore: true)
   @override
@@ -1400,39 +1387,36 @@ class _$Error_Preload implements Error_Preload {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String field0) networkStream,
-    required TResult Function(String field0) decode,
-    required TResult Function(String field0) open,
-    required TResult Function(String field0) preload,
-    required TResult Function(String field0) playPreload,
+    required TResult Function(String message) networkStream,
+    required TResult Function(String message) decode,
+    required TResult Function(String message) open,
+    required TResult Function(String message) preload,
   }) {
-    return preload(field0);
+    return preload(message);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? networkStream,
-    TResult? Function(String field0)? decode,
-    TResult? Function(String field0)? open,
-    TResult? Function(String field0)? preload,
-    TResult? Function(String field0)? playPreload,
+    TResult? Function(String message)? networkStream,
+    TResult? Function(String message)? decode,
+    TResult? Function(String message)? open,
+    TResult? Function(String message)? preload,
   }) {
-    return preload?.call(field0);
+    return preload?.call(message);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? networkStream,
-    TResult Function(String field0)? decode,
-    TResult Function(String field0)? open,
-    TResult Function(String field0)? preload,
-    TResult Function(String field0)? playPreload,
+    TResult Function(String message)? networkStream,
+    TResult Function(String message)? decode,
+    TResult Function(String message)? open,
+    TResult Function(String message)? preload,
     required TResult orElse(),
   }) {
     if (preload != null) {
-      return preload(field0);
+      return preload(message);
     }
     return orElse();
   }
@@ -1444,7 +1428,6 @@ class _$Error_Preload implements Error_Preload {
     required TResult Function(Error_Decode value) decode,
     required TResult Function(Error_Open value) open,
     required TResult Function(Error_Preload value) preload,
-    required TResult Function(Error_PlayPreload value) playPreload,
   }) {
     return preload(this);
   }
@@ -1456,7 +1439,6 @@ class _$Error_Preload implements Error_Preload {
     TResult? Function(Error_Decode value)? decode,
     TResult? Function(Error_Open value)? open,
     TResult? Function(Error_Preload value)? preload,
-    TResult? Function(Error_PlayPreload value)? playPreload,
   }) {
     return preload?.call(this);
   }
@@ -1468,7 +1450,6 @@ class _$Error_Preload implements Error_Preload {
     TResult Function(Error_Decode value)? decode,
     TResult Function(Error_Open value)? open,
     TResult Function(Error_Preload value)? preload,
-    TResult Function(Error_PlayPreload value)? playPreload,
     required TResult orElse(),
   }) {
     if (preload != null) {
@@ -1479,167 +1460,15 @@ class _$Error_Preload implements Error_Preload {
 }
 
 abstract class Error_Preload implements Error {
-  const factory Error_Preload(final String field0) = _$Error_Preload;
+  const factory Error_Preload({required final String message}) =
+      _$Error_Preload;
 
   @override
-  String get field0;
+
+  /// The error message.
+  String get message;
   @override
   @JsonKey(ignore: true)
   _$$Error_PreloadCopyWith<_$Error_Preload> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$Error_PlayPreloadCopyWith<$Res>
-    implements $ErrorCopyWith<$Res> {
-  factory _$$Error_PlayPreloadCopyWith(
-          _$Error_PlayPreload value, $Res Function(_$Error_PlayPreload) then) =
-      __$$Error_PlayPreloadCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String field0});
-}
-
-/// @nodoc
-class __$$Error_PlayPreloadCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_PlayPreload>
-    implements _$$Error_PlayPreloadCopyWith<$Res> {
-  __$$Error_PlayPreloadCopyWithImpl(
-      _$Error_PlayPreload _value, $Res Function(_$Error_PlayPreload) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? field0 = null,
-  }) {
-    return _then(_$Error_PlayPreload(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$Error_PlayPreload implements Error_PlayPreload {
-  const _$Error_PlayPreload(this.field0);
-
-  @override
-  final String field0;
-
-  @override
-  String toString() {
-    return 'Error.playPreload(field0: $field0)';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$Error_PlayPreload &&
-            (identical(other.field0, field0) || other.field0 == field0));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, field0);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$Error_PlayPreloadCopyWith<_$Error_PlayPreload> get copyWith =>
-      __$$Error_PlayPreloadCopyWithImpl<_$Error_PlayPreload>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(String field0) networkStream,
-    required TResult Function(String field0) decode,
-    required TResult Function(String field0) open,
-    required TResult Function(String field0) preload,
-    required TResult Function(String field0) playPreload,
-  }) {
-    return playPreload(field0);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String field0)? networkStream,
-    TResult? Function(String field0)? decode,
-    TResult? Function(String field0)? open,
-    TResult? Function(String field0)? preload,
-    TResult? Function(String field0)? playPreload,
-  }) {
-    return playPreload?.call(field0);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String field0)? networkStream,
-    TResult Function(String field0)? decode,
-    TResult Function(String field0)? open,
-    TResult Function(String field0)? preload,
-    TResult Function(String field0)? playPreload,
-    required TResult orElse(),
-  }) {
-    if (playPreload != null) {
-      return playPreload(field0);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Error_NetworkStream value) networkStream,
-    required TResult Function(Error_Decode value) decode,
-    required TResult Function(Error_Open value) open,
-    required TResult Function(Error_Preload value) preload,
-    required TResult Function(Error_PlayPreload value) playPreload,
-  }) {
-    return playPreload(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Error_NetworkStream value)? networkStream,
-    TResult? Function(Error_Decode value)? decode,
-    TResult? Function(Error_Open value)? open,
-    TResult? Function(Error_Preload value)? preload,
-    TResult? Function(Error_PlayPreload value)? playPreload,
-  }) {
-    return playPreload?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Error_NetworkStream value)? networkStream,
-    TResult Function(Error_Decode value)? decode,
-    TResult Function(Error_Open value)? open,
-    TResult Function(Error_Preload value)? preload,
-    TResult Function(Error_PlayPreload value)? playPreload,
-    required TResult orElse(),
-  }) {
-    if (playPreload != null) {
-      return playPreload(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class Error_PlayPreload implements Error {
-  const factory Error_PlayPreload(final String field0) = _$Error_PlayPreload;
-
-  @override
-  String get field0;
-  @override
-  @JsonKey(ignore: true)
-  _$$Error_PlayPreloadCopyWith<_$Error_PlayPreload> get copyWith =>
       throw _privateConstructorUsedError;
 }

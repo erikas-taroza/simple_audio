@@ -207,7 +207,7 @@ fn wire_play_preload__method__Player_impl(
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Player::play_preload(&api_that)
+            move |task_callback| Result::<_, ()>::Ok(Player::play_preload(&api_that))
         },
     )
 }
@@ -437,11 +437,12 @@ impl rust2dart::IntoIntoDart<Callback> for Callback {
 impl support::IntoDart for Error {
     fn into_dart(self) -> support::DartAbi {
         match self {
-            Self::NetworkStream(field0) => vec![0.into_dart(), field0.into_into_dart().into_dart()],
-            Self::Decode(field0) => vec![1.into_dart(), field0.into_into_dart().into_dart()],
-            Self::Open(field0) => vec![2.into_dart(), field0.into_into_dart().into_dart()],
-            Self::Preload(field0) => vec![3.into_dart(), field0.into_into_dart().into_dart()],
-            Self::PlayPreload(field0) => vec![4.into_dart(), field0.into_into_dart().into_dart()],
+            Self::NetworkStream { message } => {
+                vec![0.into_dart(), message.into_into_dart().into_dart()]
+            }
+            Self::Decode { message } => vec![1.into_dart(), message.into_into_dart().into_dart()],
+            Self::Open { message } => vec![2.into_dart(), message.into_into_dart().into_dart()],
+            Self::Preload { message } => vec![3.into_dart(), message.into_into_dart().into_dart()],
         }
         .into_dart()
     }

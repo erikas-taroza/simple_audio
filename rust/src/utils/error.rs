@@ -4,15 +4,29 @@ pub enum Error
 {
     /// An error occurred when trying to fetch more bytes for
     /// a network stream.
-    NetworkStream(String),
+    NetworkStream
+    {
+        /// The error message.
+        message: String
+    },
     /// An error occurred when decoding the file.
-    Decode(String),
+    Decode
+    {
+        /// The error message.
+        message: String
+    },
     /// An error occurred when trying to open a file.
-    Open(String),
+    Open
+    {
+        /// The error message.
+        message: String
+    },
     /// An error occurred when trying to preload a file.
-    Preload(String),
-    /// An error occurred when trying to play the preloaded file.
-    PlayPreload(String),
+    Preload
+    {
+        /// The error message.
+        message: String
+    },
 }
 
 impl std::error::Error for Error {}
