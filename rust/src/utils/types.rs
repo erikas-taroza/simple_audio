@@ -23,6 +23,8 @@ pub enum PlaybackState
     Pause = 1,
     /// The player has finished playing the file.
     Done = 2,
+    /// The player was stopped
+    Stop = 3,
 }
 
 /// Provides the current progress of the player.

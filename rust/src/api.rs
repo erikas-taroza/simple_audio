@@ -304,6 +304,7 @@ impl Player
             duration: 0,
         };
 
+        update_playback_state_stream(PlaybackState::Stop);
         update_progress_state_stream(progress);
         controls.set_progress(progress);
         update_playback_state_stream(PlaybackState::Pause);
