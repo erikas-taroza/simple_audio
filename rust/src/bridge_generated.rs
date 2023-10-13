@@ -460,6 +460,7 @@ impl support::IntoDart for PlaybackState {
             Self::Play => 0,
             Self::Pause => 1,
             Self::Done => 2,
+            Self::Stop => 3,
         }
         .into_dart()
     }

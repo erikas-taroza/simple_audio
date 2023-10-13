@@ -97,10 +97,10 @@ class _$CallbackCopyWithImpl<$Res, $Val extends Callback>
 }
 
 /// @nodoc
-abstract class _$$Callback_ErrorCopyWith<$Res> {
-  factory _$$Callback_ErrorCopyWith(
-          _$Callback_Error value, $Res Function(_$Callback_Error) then) =
-      __$$Callback_ErrorCopyWithImpl<$Res>;
+abstract class _$$Callback_ErrorImplCopyWith<$Res> {
+  factory _$$Callback_ErrorImplCopyWith(_$Callback_ErrorImpl value,
+          $Res Function(_$Callback_ErrorImpl) then) =
+      __$$Callback_ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({Error field0});
 
@@ -108,11 +108,11 @@ abstract class _$$Callback_ErrorCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$Callback_ErrorCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_Error>
-    implements _$$Callback_ErrorCopyWith<$Res> {
-  __$$Callback_ErrorCopyWithImpl(
-      _$Callback_Error _value, $Res Function(_$Callback_Error) _then)
+class __$$Callback_ErrorImplCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_ErrorImpl>
+    implements _$$Callback_ErrorImplCopyWith<$Res> {
+  __$$Callback_ErrorImplCopyWithImpl(
+      _$Callback_ErrorImpl _value, $Res Function(_$Callback_ErrorImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -120,7 +120,7 @@ class __$$Callback_ErrorCopyWithImpl<$Res>
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$Callback_Error(
+    return _then(_$Callback_ErrorImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -139,8 +139,8 @@ class __$$Callback_ErrorCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Callback_Error implements Callback_Error {
-  const _$Callback_Error(this.field0);
+class _$Callback_ErrorImpl implements Callback_Error {
+  const _$Callback_ErrorImpl(this.field0);
 
   @override
   final Error field0;
@@ -154,7 +154,7 @@ class _$Callback_Error implements Callback_Error {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_Error &&
+            other is _$Callback_ErrorImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
@@ -164,8 +164,9 @@ class _$Callback_Error implements Callback_Error {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Callback_ErrorCopyWith<_$Callback_Error> get copyWith =>
-      __$$Callback_ErrorCopyWithImpl<_$Callback_Error>(this, _$identity);
+  _$$Callback_ErrorImplCopyWith<_$Callback_ErrorImpl> get copyWith =>
+      __$$Callback_ErrorImplCopyWithImpl<_$Callback_ErrorImpl>(
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -254,36 +255,37 @@ class _$Callback_Error implements Callback_Error {
 }
 
 abstract class Callback_Error implements Callback {
-  const factory Callback_Error(final Error field0) = _$Callback_Error;
+  const factory Callback_Error(final Error field0) = _$Callback_ErrorImpl;
 
   Error get field0;
   @JsonKey(ignore: true)
-  _$$Callback_ErrorCopyWith<_$Callback_Error> get copyWith =>
+  _$$Callback_ErrorImplCopyWith<_$Callback_ErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Callback_MediaControlSkipPrevCopyWith<$Res> {
-  factory _$$Callback_MediaControlSkipPrevCopyWith(
-          _$Callback_MediaControlSkipPrev value,
-          $Res Function(_$Callback_MediaControlSkipPrev) then) =
-      __$$Callback_MediaControlSkipPrevCopyWithImpl<$Res>;
+abstract class _$$Callback_MediaControlSkipPrevImplCopyWith<$Res> {
+  factory _$$Callback_MediaControlSkipPrevImplCopyWith(
+          _$Callback_MediaControlSkipPrevImpl value,
+          $Res Function(_$Callback_MediaControlSkipPrevImpl) then) =
+      __$$Callback_MediaControlSkipPrevImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$Callback_MediaControlSkipPrevCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_MediaControlSkipPrev>
-    implements _$$Callback_MediaControlSkipPrevCopyWith<$Res> {
-  __$$Callback_MediaControlSkipPrevCopyWithImpl(
-      _$Callback_MediaControlSkipPrev _value,
-      $Res Function(_$Callback_MediaControlSkipPrev) _then)
+class __$$Callback_MediaControlSkipPrevImplCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_MediaControlSkipPrevImpl>
+    implements _$$Callback_MediaControlSkipPrevImplCopyWith<$Res> {
+  __$$Callback_MediaControlSkipPrevImplCopyWithImpl(
+      _$Callback_MediaControlSkipPrevImpl _value,
+      $Res Function(_$Callback_MediaControlSkipPrevImpl) _then)
       : super(_value, _then);
 }
 
 /// @nodoc
 
-class _$Callback_MediaControlSkipPrev implements Callback_MediaControlSkipPrev {
-  const _$Callback_MediaControlSkipPrev();
+class _$Callback_MediaControlSkipPrevImpl
+    implements Callback_MediaControlSkipPrev {
+  const _$Callback_MediaControlSkipPrevImpl();
 
   @override
   String toString() {
@@ -294,7 +296,7 @@ class _$Callback_MediaControlSkipPrev implements Callback_MediaControlSkipPrev {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_MediaControlSkipPrev);
+            other is _$Callback_MediaControlSkipPrevImpl);
   }
 
   @override
@@ -388,31 +390,32 @@ class _$Callback_MediaControlSkipPrev implements Callback_MediaControlSkipPrev {
 
 abstract class Callback_MediaControlSkipPrev implements Callback {
   const factory Callback_MediaControlSkipPrev() =
-      _$Callback_MediaControlSkipPrev;
+      _$Callback_MediaControlSkipPrevImpl;
 }
 
 /// @nodoc
-abstract class _$$Callback_MediaControlSkipNextCopyWith<$Res> {
-  factory _$$Callback_MediaControlSkipNextCopyWith(
-          _$Callback_MediaControlSkipNext value,
-          $Res Function(_$Callback_MediaControlSkipNext) then) =
-      __$$Callback_MediaControlSkipNextCopyWithImpl<$Res>;
+abstract class _$$Callback_MediaControlSkipNextImplCopyWith<$Res> {
+  factory _$$Callback_MediaControlSkipNextImplCopyWith(
+          _$Callback_MediaControlSkipNextImpl value,
+          $Res Function(_$Callback_MediaControlSkipNextImpl) then) =
+      __$$Callback_MediaControlSkipNextImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$Callback_MediaControlSkipNextCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_MediaControlSkipNext>
-    implements _$$Callback_MediaControlSkipNextCopyWith<$Res> {
-  __$$Callback_MediaControlSkipNextCopyWithImpl(
-      _$Callback_MediaControlSkipNext _value,
-      $Res Function(_$Callback_MediaControlSkipNext) _then)
+class __$$Callback_MediaControlSkipNextImplCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_MediaControlSkipNextImpl>
+    implements _$$Callback_MediaControlSkipNextImplCopyWith<$Res> {
+  __$$Callback_MediaControlSkipNextImplCopyWithImpl(
+      _$Callback_MediaControlSkipNextImpl _value,
+      $Res Function(_$Callback_MediaControlSkipNextImpl) _then)
       : super(_value, _then);
 }
 
 /// @nodoc
 
-class _$Callback_MediaControlSkipNext implements Callback_MediaControlSkipNext {
-  const _$Callback_MediaControlSkipNext();
+class _$Callback_MediaControlSkipNextImpl
+    implements Callback_MediaControlSkipNext {
+  const _$Callback_MediaControlSkipNextImpl();
 
   @override
   String toString() {
@@ -423,7 +426,7 @@ class _$Callback_MediaControlSkipNext implements Callback_MediaControlSkipNext {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_MediaControlSkipNext);
+            other is _$Callback_MediaControlSkipNextImpl);
   }
 
   @override
@@ -517,29 +520,31 @@ class _$Callback_MediaControlSkipNext implements Callback_MediaControlSkipNext {
 
 abstract class Callback_MediaControlSkipNext implements Callback {
   const factory Callback_MediaControlSkipNext() =
-      _$Callback_MediaControlSkipNext;
+      _$Callback_MediaControlSkipNextImpl;
 }
 
 /// @nodoc
-abstract class _$$Callback_PlaybackLoopedCopyWith<$Res> {
-  factory _$$Callback_PlaybackLoopedCopyWith(_$Callback_PlaybackLooped value,
-          $Res Function(_$Callback_PlaybackLooped) then) =
-      __$$Callback_PlaybackLoopedCopyWithImpl<$Res>;
+abstract class _$$Callback_PlaybackLoopedImplCopyWith<$Res> {
+  factory _$$Callback_PlaybackLoopedImplCopyWith(
+          _$Callback_PlaybackLoopedImpl value,
+          $Res Function(_$Callback_PlaybackLoopedImpl) then) =
+      __$$Callback_PlaybackLoopedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$Callback_PlaybackLoopedCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackLooped>
-    implements _$$Callback_PlaybackLoopedCopyWith<$Res> {
-  __$$Callback_PlaybackLoopedCopyWithImpl(_$Callback_PlaybackLooped _value,
-      $Res Function(_$Callback_PlaybackLooped) _then)
+class __$$Callback_PlaybackLoopedImplCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackLoopedImpl>
+    implements _$$Callback_PlaybackLoopedImplCopyWith<$Res> {
+  __$$Callback_PlaybackLoopedImplCopyWithImpl(
+      _$Callback_PlaybackLoopedImpl _value,
+      $Res Function(_$Callback_PlaybackLoopedImpl) _then)
       : super(_value, _then);
 }
 
 /// @nodoc
 
-class _$Callback_PlaybackLooped implements Callback_PlaybackLooped {
-  const _$Callback_PlaybackLooped();
+class _$Callback_PlaybackLoopedImpl implements Callback_PlaybackLooped {
+  const _$Callback_PlaybackLoopedImpl();
 
   @override
   String toString() {
@@ -550,7 +555,7 @@ class _$Callback_PlaybackLooped implements Callback_PlaybackLooped {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_PlaybackLooped);
+            other is _$Callback_PlaybackLoopedImpl);
   }
 
   @override
@@ -643,31 +648,31 @@ class _$Callback_PlaybackLooped implements Callback_PlaybackLooped {
 }
 
 abstract class Callback_PlaybackLooped implements Callback {
-  const factory Callback_PlaybackLooped() = _$Callback_PlaybackLooped;
+  const factory Callback_PlaybackLooped() = _$Callback_PlaybackLoopedImpl;
 }
 
 /// @nodoc
-abstract class _$$Callback_DurationCalculatedCopyWith<$Res> {
-  factory _$$Callback_DurationCalculatedCopyWith(
-          _$Callback_DurationCalculated value,
-          $Res Function(_$Callback_DurationCalculated) then) =
-      __$$Callback_DurationCalculatedCopyWithImpl<$Res>;
+abstract class _$$Callback_DurationCalculatedImplCopyWith<$Res> {
+  factory _$$Callback_DurationCalculatedImplCopyWith(
+          _$Callback_DurationCalculatedImpl value,
+          $Res Function(_$Callback_DurationCalculatedImpl) then) =
+      __$$Callback_DurationCalculatedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$Callback_DurationCalculatedCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_DurationCalculated>
-    implements _$$Callback_DurationCalculatedCopyWith<$Res> {
-  __$$Callback_DurationCalculatedCopyWithImpl(
-      _$Callback_DurationCalculated _value,
-      $Res Function(_$Callback_DurationCalculated) _then)
+class __$$Callback_DurationCalculatedImplCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_DurationCalculatedImpl>
+    implements _$$Callback_DurationCalculatedImplCopyWith<$Res> {
+  __$$Callback_DurationCalculatedImplCopyWithImpl(
+      _$Callback_DurationCalculatedImpl _value,
+      $Res Function(_$Callback_DurationCalculatedImpl) _then)
       : super(_value, _then);
 }
 
 /// @nodoc
 
-class _$Callback_DurationCalculated implements Callback_DurationCalculated {
-  const _$Callback_DurationCalculated();
+class _$Callback_DurationCalculatedImpl implements Callback_DurationCalculated {
+  const _$Callback_DurationCalculatedImpl();
 
   @override
   String toString() {
@@ -678,7 +683,7 @@ class _$Callback_DurationCalculated implements Callback_DurationCalculated {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_DurationCalculated);
+            other is _$Callback_DurationCalculatedImpl);
   }
 
   @override
@@ -771,7 +776,8 @@ class _$Callback_DurationCalculated implements Callback_DurationCalculated {
 }
 
 abstract class Callback_DurationCalculated implements Callback {
-  const factory Callback_DurationCalculated() = _$Callback_DurationCalculated;
+  const factory Callback_DurationCalculated() =
+      _$Callback_DurationCalculatedImpl;
 }
 
 /// @nodoc
@@ -866,22 +872,22 @@ class _$ErrorCopyWithImpl<$Res, $Val extends Error>
 }
 
 /// @nodoc
-abstract class _$$Error_NetworkStreamCopyWith<$Res>
+abstract class _$$Error_NetworkStreamImplCopyWith<$Res>
     implements $ErrorCopyWith<$Res> {
-  factory _$$Error_NetworkStreamCopyWith(_$Error_NetworkStream value,
-          $Res Function(_$Error_NetworkStream) then) =
-      __$$Error_NetworkStreamCopyWithImpl<$Res>;
+  factory _$$Error_NetworkStreamImplCopyWith(_$Error_NetworkStreamImpl value,
+          $Res Function(_$Error_NetworkStreamImpl) then) =
+      __$$Error_NetworkStreamImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String message});
 }
 
 /// @nodoc
-class __$$Error_NetworkStreamCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_NetworkStream>
-    implements _$$Error_NetworkStreamCopyWith<$Res> {
-  __$$Error_NetworkStreamCopyWithImpl(
-      _$Error_NetworkStream _value, $Res Function(_$Error_NetworkStream) _then)
+class __$$Error_NetworkStreamImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_NetworkStreamImpl>
+    implements _$$Error_NetworkStreamImplCopyWith<$Res> {
+  __$$Error_NetworkStreamImplCopyWithImpl(_$Error_NetworkStreamImpl _value,
+      $Res Function(_$Error_NetworkStreamImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -889,7 +895,7 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
   $Res call({
     Object? message = null,
   }) {
-    return _then(_$Error_NetworkStream(
+    return _then(_$Error_NetworkStreamImpl(
       message: null == message
           ? _value.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -900,8 +906,8 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_NetworkStream implements Error_NetworkStream {
-  const _$Error_NetworkStream({required this.message});
+class _$Error_NetworkStreamImpl implements Error_NetworkStream {
+  const _$Error_NetworkStreamImpl({required this.message});
 
   /// The error message.
   @override
@@ -916,7 +922,7 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_NetworkStream &&
+            other is _$Error_NetworkStreamImpl &&
             (identical(other.message, message) || other.message == message));
   }
 
@@ -926,8 +932,8 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_NetworkStreamCopyWith<_$Error_NetworkStream> get copyWith =>
-      __$$Error_NetworkStreamCopyWithImpl<_$Error_NetworkStream>(
+  _$$Error_NetworkStreamImplCopyWith<_$Error_NetworkStreamImpl> get copyWith =>
+      __$$Error_NetworkStreamImplCopyWithImpl<_$Error_NetworkStreamImpl>(
           this, _$identity);
 
   @override
@@ -1007,7 +1013,7 @@ class _$Error_NetworkStream implements Error_NetworkStream {
 
 abstract class Error_NetworkStream implements Error {
   const factory Error_NetworkStream({required final String message}) =
-      _$Error_NetworkStream;
+      _$Error_NetworkStreamImpl;
 
   @override
 
@@ -1015,26 +1021,27 @@ abstract class Error_NetworkStream implements Error {
   String get message;
   @override
   @JsonKey(ignore: true)
-  _$$Error_NetworkStreamCopyWith<_$Error_NetworkStream> get copyWith =>
+  _$$Error_NetworkStreamImplCopyWith<_$Error_NetworkStreamImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Error_DecodeCopyWith<$Res> implements $ErrorCopyWith<$Res> {
-  factory _$$Error_DecodeCopyWith(
-          _$Error_Decode value, $Res Function(_$Error_Decode) then) =
-      __$$Error_DecodeCopyWithImpl<$Res>;
+abstract class _$$Error_DecodeImplCopyWith<$Res>
+    implements $ErrorCopyWith<$Res> {
+  factory _$$Error_DecodeImplCopyWith(
+          _$Error_DecodeImpl value, $Res Function(_$Error_DecodeImpl) then) =
+      __$$Error_DecodeImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String message});
 }
 
 /// @nodoc
-class __$$Error_DecodeCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_Decode>
-    implements _$$Error_DecodeCopyWith<$Res> {
-  __$$Error_DecodeCopyWithImpl(
-      _$Error_Decode _value, $Res Function(_$Error_Decode) _then)
+class __$$Error_DecodeImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_DecodeImpl>
+    implements _$$Error_DecodeImplCopyWith<$Res> {
+  __$$Error_DecodeImplCopyWithImpl(
+      _$Error_DecodeImpl _value, $Res Function(_$Error_DecodeImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1042,7 +1049,7 @@ class __$$Error_DecodeCopyWithImpl<$Res>
   $Res call({
     Object? message = null,
   }) {
-    return _then(_$Error_Decode(
+    return _then(_$Error_DecodeImpl(
       message: null == message
           ? _value.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -1053,8 +1060,8 @@ class __$$Error_DecodeCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_Decode implements Error_Decode {
-  const _$Error_Decode({required this.message});
+class _$Error_DecodeImpl implements Error_Decode {
+  const _$Error_DecodeImpl({required this.message});
 
   /// The error message.
   @override
@@ -1069,7 +1076,7 @@ class _$Error_Decode implements Error_Decode {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_Decode &&
+            other is _$Error_DecodeImpl &&
             (identical(other.message, message) || other.message == message));
   }
 
@@ -1079,8 +1086,8 @@ class _$Error_Decode implements Error_Decode {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_DecodeCopyWith<_$Error_Decode> get copyWith =>
-      __$$Error_DecodeCopyWithImpl<_$Error_Decode>(this, _$identity);
+  _$$Error_DecodeImplCopyWith<_$Error_DecodeImpl> get copyWith =>
+      __$$Error_DecodeImplCopyWithImpl<_$Error_DecodeImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1158,7 +1165,8 @@ class _$Error_Decode implements Error_Decode {
 }
 
 abstract class Error_Decode implements Error {
-  const factory Error_Decode({required final String message}) = _$Error_Decode;
+  const factory Error_Decode({required final String message}) =
+      _$Error_DecodeImpl;
 
   @override
 
@@ -1166,26 +1174,26 @@ abstract class Error_Decode implements Error {
   String get message;
   @override
   @JsonKey(ignore: true)
-  _$$Error_DecodeCopyWith<_$Error_Decode> get copyWith =>
+  _$$Error_DecodeImplCopyWith<_$Error_DecodeImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Error_OpenCopyWith<$Res> implements $ErrorCopyWith<$Res> {
-  factory _$$Error_OpenCopyWith(
-          _$Error_Open value, $Res Function(_$Error_Open) then) =
-      __$$Error_OpenCopyWithImpl<$Res>;
+abstract class _$$Error_OpenImplCopyWith<$Res> implements $ErrorCopyWith<$Res> {
+  factory _$$Error_OpenImplCopyWith(
+          _$Error_OpenImpl value, $Res Function(_$Error_OpenImpl) then) =
+      __$$Error_OpenImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String message});
 }
 
 /// @nodoc
-class __$$Error_OpenCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_Open>
-    implements _$$Error_OpenCopyWith<$Res> {
-  __$$Error_OpenCopyWithImpl(
-      _$Error_Open _value, $Res Function(_$Error_Open) _then)
+class __$$Error_OpenImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_OpenImpl>
+    implements _$$Error_OpenImplCopyWith<$Res> {
+  __$$Error_OpenImplCopyWithImpl(
+      _$Error_OpenImpl _value, $Res Function(_$Error_OpenImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1193,7 +1201,7 @@ class __$$Error_OpenCopyWithImpl<$Res>
   $Res call({
     Object? message = null,
   }) {
-    return _then(_$Error_Open(
+    return _then(_$Error_OpenImpl(
       message: null == message
           ? _value.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -1204,8 +1212,8 @@ class __$$Error_OpenCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_Open implements Error_Open {
-  const _$Error_Open({required this.message});
+class _$Error_OpenImpl implements Error_Open {
+  const _$Error_OpenImpl({required this.message});
 
   /// The error message.
   @override
@@ -1220,7 +1228,7 @@ class _$Error_Open implements Error_Open {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_Open &&
+            other is _$Error_OpenImpl &&
             (identical(other.message, message) || other.message == message));
   }
 
@@ -1230,8 +1238,8 @@ class _$Error_Open implements Error_Open {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_OpenCopyWith<_$Error_Open> get copyWith =>
-      __$$Error_OpenCopyWithImpl<_$Error_Open>(this, _$identity);
+  _$$Error_OpenImplCopyWith<_$Error_OpenImpl> get copyWith =>
+      __$$Error_OpenImplCopyWithImpl<_$Error_OpenImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1309,7 +1317,7 @@ class _$Error_Open implements Error_Open {
 }
 
 abstract class Error_Open implements Error {
-  const factory Error_Open({required final String message}) = _$Error_Open;
+  const factory Error_Open({required final String message}) = _$Error_OpenImpl;
 
   @override
 
@@ -1317,26 +1325,27 @@ abstract class Error_Open implements Error {
   String get message;
   @override
   @JsonKey(ignore: true)
-  _$$Error_OpenCopyWith<_$Error_Open> get copyWith =>
+  _$$Error_OpenImplCopyWith<_$Error_OpenImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Error_PreloadCopyWith<$Res> implements $ErrorCopyWith<$Res> {
-  factory _$$Error_PreloadCopyWith(
-          _$Error_Preload value, $Res Function(_$Error_Preload) then) =
-      __$$Error_PreloadCopyWithImpl<$Res>;
+abstract class _$$Error_PreloadImplCopyWith<$Res>
+    implements $ErrorCopyWith<$Res> {
+  factory _$$Error_PreloadImplCopyWith(
+          _$Error_PreloadImpl value, $Res Function(_$Error_PreloadImpl) then) =
+      __$$Error_PreloadImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String message});
 }
 
 /// @nodoc
-class __$$Error_PreloadCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_Preload>
-    implements _$$Error_PreloadCopyWith<$Res> {
-  __$$Error_PreloadCopyWithImpl(
-      _$Error_Preload _value, $Res Function(_$Error_Preload) _then)
+class __$$Error_PreloadImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_PreloadImpl>
+    implements _$$Error_PreloadImplCopyWith<$Res> {
+  __$$Error_PreloadImplCopyWithImpl(
+      _$Error_PreloadImpl _value, $Res Function(_$Error_PreloadImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1344,7 +1353,7 @@ class __$$Error_PreloadCopyWithImpl<$Res>
   $Res call({
     Object? message = null,
   }) {
-    return _then(_$Error_Preload(
+    return _then(_$Error_PreloadImpl(
       message: null == message
           ? _value.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -1355,8 +1364,8 @@ class __$$Error_PreloadCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_Preload implements Error_Preload {
-  const _$Error_Preload({required this.message});
+class _$Error_PreloadImpl implements Error_Preload {
+  const _$Error_PreloadImpl({required this.message});
 
   /// The error message.
   @override
@@ -1371,7 +1380,7 @@ class _$Error_Preload implements Error_Preload {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_Preload &&
+            other is _$Error_PreloadImpl &&
             (identical(other.message, message) || other.message == message));
   }
 
@@ -1381,8 +1390,8 @@ class _$Error_Preload implements Error_Preload {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_PreloadCopyWith<_$Error_Preload> get copyWith =>
-      __$$Error_PreloadCopyWithImpl<_$Error_Preload>(this, _$identity);
+  _$$Error_PreloadImplCopyWith<_$Error_PreloadImpl> get copyWith =>
+      __$$Error_PreloadImplCopyWithImpl<_$Error_PreloadImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1461,7 +1470,7 @@ class _$Error_Preload implements Error_Preload {
 
 abstract class Error_Preload implements Error {
   const factory Error_Preload({required final String message}) =
-      _$Error_Preload;
+      _$Error_PreloadImpl;
 
   @override
 
@@ -1469,6 +1478,6 @@ abstract class Error_Preload implements Error {
   String get message;
   @override
   @JsonKey(ignore: true)
-  _$$Error_PreloadCopyWith<_$Error_Preload> get copyWith =>
+  _$$Error_PreloadImplCopyWith<_$Error_PreloadImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

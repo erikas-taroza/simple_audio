@@ -306,7 +306,7 @@ impl Player
 
         update_progress_state_stream(progress);
         controls.set_progress(progress);
-        update_playback_state_stream(PlaybackState::Pause);
+        update_playback_state_stream(PlaybackState::Stop);
         controls.set_is_playing(false);
         controls.set_is_stopped(true);
         media_controllers::set_playback_state(PlaybackState::Pause);

@@ -236,6 +236,9 @@ enum PlaybackState {
 
   /// The player has finished playing the file.
   done,
+
+  /// The player was stopped
+  stop,
 }
 
 class Player {
