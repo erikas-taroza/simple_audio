@@ -1,3 +1,8 @@
+## 1.8.0
+
+- Add `stop` event (thanks @dannyglover)
+- Add `uuid` dependency
+
 ## 1.7.0
 
 - Improved error handling. Custom errors are thrown in `open()` and `preload()`. The `onNetworkStreamError` and `onDecodeError` callbacks now have a parameter for the error message.
