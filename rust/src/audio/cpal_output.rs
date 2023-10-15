@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{atomic::AtomicBool, Arc};
-
 use anyhow::Context;
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
@@ -37,7 +35,6 @@ const BASE_VOLUME: f32 = 0.8;
 
 pub struct CpalOutput
 {
-    controls: Controls,
     stream: Stream,
     pub stream_config: StreamConfig,
     pub ring_buffer_reader: BlockingRb<f32, Consumer>,
@@ -52,7 +49,6 @@ impl CpalOutput
 
         // Create the buffers for the stream.
         let rb = BlockingRb::<f32>::new(ring_buffer_size);
-        let rb_clone = rb.clone();
         let ring_buffer_writer = rb.0;
         let ring_buffer_reader = rb.1;
 
@@ -60,6 +56,7 @@ impl CpalOutput
             &stream_config,
             {
                 let controls = controls.clone();
+                let ring_buffer_reader = ring_buffer_reader.clone();
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
                     // TODO: Reimplement buffering
                     let buffering = false;
@@ -85,6 +82,10 @@ impl CpalOutput
 
                     let written = ring_buffer_reader.read(data);
 
+                    if written.is_none() {
+                        return;
+                    }
+
                     // Set the volume.
                     data[0..written.unwrap()]
                         .iter_mut()
@@ -93,6 +94,7 @@ impl CpalOutput
             },
             {
                 let controls = controls.clone();
+                let ring_buffer_writer = ring_buffer_writer.clone();
                 move |err| {
                     match err {
                         cpal::StreamError::DeviceNotAvailable => {
@@ -118,7 +120,6 @@ impl CpalOutput
         stream.play()?;
 
         Ok(Self {
-            controls,
             stream,
             stream_config,
             ring_buffer_reader,
@@ -128,12 +129,12 @@ impl CpalOutput
 
     pub fn play(&self)
     {
-        self.stream.play();
+        _ = self.stream.play();
     }
 
     pub fn pause(&self)
     {
-        self.stream.pause();
+        _ = self.stream.pause();
     }
 
     fn get_config() -> anyhow::Result<(Device, StreamConfig, usize)>
