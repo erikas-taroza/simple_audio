@@ -20,7 +20,6 @@ use std::{
 };
 
 use anyhow::{anyhow, Context};
-use cpal::traits::StreamTrait;
 use crossbeam::channel::Receiver;
 use lazy_static::lazy_static;
 use symphonia::{
@@ -180,15 +179,11 @@ impl Decoder
                 }
                 PlayerEvent::Stop => {
                     self.state = DecoderState::Idle;
+                    self.cpal_output.ring_buffer_reader.skip_all();
                     self.cpal_output.pause();
                     self.output_writer = None;
                     self.playback = None;
                 }
-                // When the device is changed/disconnected,
-                // then we should reestablish a connection.
-                // To make a new connection, dispose of the current cpal_output
-                // and pause playback. Once the user is ready, they can start
-                // playback themselves.
                 PlayerEvent::DeviceChanged => {
                     self.cpal_output = CpalOutput::new(self.controls.clone())?;
                     Player::internal_pause(&self.controls);
@@ -225,6 +220,19 @@ impl Decoder
         // Nothing to do.
         if self.playback.is_none() || self.state.is_idle() || self.state.is_paused() {
             return Ok(false);
+        }
+
+        if let Some(playback) = &self.playback {
+            if playback
+                .buffer_signal
+                .load(std::sync::atomic::Ordering::SeqCst)
+            {
+                self.cpal_output.ring_buffer_reader.skip_all();
+                self.cpal_output.pause();
+            }
+            else {
+                self.cpal_output.play();
+            }
         }
 
         let playback = self.playback.as_mut().unwrap();
@@ -337,6 +345,8 @@ impl Decoder
         if let Some(output_writer) = self.output_writer.as_mut() {
             output_writer.flush();
         }
+
+        self.cpal_output.pause();
 
         // Send the done message once cpal finishes flushing.
         // There may be samples left over and we don't want to

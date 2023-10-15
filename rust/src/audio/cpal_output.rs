@@ -58,38 +58,28 @@ impl CpalOutput
                 let controls = controls.clone();
                 let ring_buffer_reader = ring_buffer_reader.clone();
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                    // TODO: Reimplement buffering
-                    let buffering = false;
-
                     // "Pause" the stream.
                     // What this really does is mute the stream.
                     // With only a return statement, the current sample still plays.
                     // CPAL states that `stream.pause()` may not work for all devices.
                     // `stream.pause()` is the ideal way to play/pause.
-                    if (cfg!(target_os = "windows")
+                    if cfg!(target_os = "windows")
                         && !controls.is_playing()
-                        && !controls.is_stopped())
-                        || buffering
+                        && !controls.is_stopped()
                     {
                         data.iter_mut().for_each(|s| *s = 0.0);
-
-                        if buffering {
-                            ring_buffer_reader.skip_all();
-                        }
-
                         return;
                     }
 
-                    let written = ring_buffer_reader.read(data);
-
-                    if written.is_none() {
-                        return;
+                    if let Some(written) = ring_buffer_reader.read(data) {
+                        data[0..written]
+                            .iter_mut()
+                            // Set the volume.
+                            .for_each(|s| *s *= BASE_VOLUME * *controls.volume());
                     }
-
-                    // Set the volume.
-                    data[0..written.unwrap()]
-                        .iter_mut()
-                        .for_each(|s| *s *= BASE_VOLUME * *controls.volume());
+                    else {
+                        data.iter_mut().for_each(|s| *s = 0.0);
+                    }
                 }
             },
             {
