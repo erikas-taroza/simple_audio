@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{atomic::AtomicBool, Arc, Condvar, Mutex};
+use std::sync::{atomic::AtomicBool, Arc};
 
 use anyhow::Context;
 use cpal::{
@@ -35,47 +35,20 @@ use super::{
 /// will help to reduce it.
 const BASE_VOLUME: f32 = 0.8;
 
-//TODO: Support i16 and u16 instead of only f32.
 pub struct CpalOutput
 {
-    pub stream: Stream,
-    pub spec: SignalSpec,
-    pub duration: u64,
-    pub ring_buffer_reader: BlockingRb<f32, Consumer>,
-    ring_buffer_writer: BlockingRb<f32, Producer>,
-    sample_buffer: SampleBuffer<f32>,
-    resampler: Option<Resampler<f32>>,
-    is_stream_done: Arc<(Mutex<bool>, Condvar)>,
-    normalizer: Normalizer,
     controls: Controls,
+    stream: Stream,
+    pub stream_config: StreamConfig,
+    pub ring_buffer_reader: BlockingRb<f32, Consumer>,
+    pub ring_buffer_writer: BlockingRb<f32, Producer>,
 }
 
 impl CpalOutput
 {
-    /// Starts a new stream on the default device.
-    pub fn new(
-        controls: Controls,
-        buffer_signal: Arc<AtomicBool>,
-        spec: SignalSpec,
-        duration: u64,
-    ) -> anyhow::Result<Self>
+    pub fn new(controls: Controls) -> anyhow::Result<Self>
     {
-        // Get the output config.
-        let (device, config, ring_buffer_size) = Self::get_config(spec)?;
-
-        // Create a resampler only if the code is running on Windows
-        // and if the output config's sample rate doesn't match the audio's.
-        let resampler: Option<Resampler<f32>> =
-            if cfg!(target_os = "windows") && spec.rate != config.sample_rate.0 {
-                Some(Resampler::new(
-                    spec,
-                    config.sample_rate.0 as usize,
-                    duration,
-                ))
-            }
-            else {
-                None
-            };
+        let (device, stream_config, ring_buffer_size) = Self::get_config()?;
 
         // Create the buffers for the stream.
         let rb = BlockingRb::<f32>::new(ring_buffer_size);
@@ -83,17 +56,13 @@ impl CpalOutput
         let ring_buffer_writer = rb.0;
         let ring_buffer_reader = rb.1;
 
-        let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
-
-        let is_stream_done = Arc::new((Mutex::new(false), Condvar::new()));
-
         let stream = device.build_output_stream(
-            &config,
+            &stream_config,
             {
                 let controls = controls.clone();
-                let is_stream_done = is_stream_done.clone();
                 move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                    let buffering = buffer_signal.load(std::sync::atomic::Ordering::SeqCst);
+                    // TODO: Reimplement buffering
+                    let buffering = false;
 
                     // "Pause" the stream.
                     // What this really does is mute the stream.
@@ -115,14 +84,6 @@ impl CpalOutput
                     }
 
                     let written = ring_buffer_reader.read(data);
-
-                    // Notify that the stream was finished reading.
-                    if written.is_none() {
-                        let (mutex, cvar) = &*is_stream_done;
-                        *mutex.lock().unwrap() = true;
-                        cvar.notify_one();
-                        return;
-                    }
 
                     // Set the volume.
                     data[0..written.unwrap()]
@@ -156,23 +117,26 @@ impl CpalOutput
         let stream = stream.context("Could not build the stream.")?;
         stream.play()?;
 
-        let sample_rate = config.sample_rate.0;
-
-        Ok(CpalOutput {
-            stream,
-            spec,
-            duration,
-            ring_buffer_writer: rb_clone.0,
-            ring_buffer_reader: rb_clone.1,
-            sample_buffer,
-            resampler,
-            is_stream_done,
-            normalizer: Normalizer::new(spec.channels.count(), sample_rate),
+        Ok(Self {
             controls,
+            stream,
+            stream_config,
+            ring_buffer_reader,
+            ring_buffer_writer,
         })
     }
 
-    fn get_config(spec: SignalSpec) -> anyhow::Result<(Device, StreamConfig, usize)>
+    pub fn play(&self)
+    {
+        self.stream.play();
+    }
+
+    pub fn pause(&self)
+    {
+        self.stream.pause();
+    }
+
+    fn get_config() -> anyhow::Result<(Device, StreamConfig, usize)>
     {
         let host = cpal::default_host();
         let device = host
@@ -181,9 +145,11 @@ impl CpalOutput
         let default_output_config = device
             .default_output_config()
             .context("Failed to get default output config.")?;
-        let channels = spec.channels.count();
 
-        let default_ring_buf_size = ((200 * spec.rate) / 1000) * channels as u32;
+        let sample_rate = default_output_config.sample_rate();
+        let channels = default_output_config.channels();
+
+        let default_ring_buf_size = ((200 * sample_rate.0) / 1000) * channels as u32;
         let ring_buffer_size: usize = match default_output_config.buffer_size() {
             cpal::SupportedBufferSize::Range { min, max: _ } => {
                 if min <= &default_ring_buf_size {
@@ -214,12 +180,59 @@ impl CpalOutput
         {
             config = cpal::StreamConfig {
                 channels: channels as cpal::ChannelCount,
-                sample_rate: cpal::SampleRate(spec.rate),
+                sample_rate,
                 buffer_size: cpal::BufferSize::Default,
             };
         }
 
         Ok((device, config, ring_buffer_size))
+    }
+}
+
+pub struct OutputWriter
+{
+    controls: Controls,
+    pub ring_buffer_writer: BlockingRb<f32, Producer>,
+    pub spec: SignalSpec,
+    pub duration: u64,
+    sample_buffer: SampleBuffer<f32>,
+    resampler: Option<Resampler<f32>>,
+    normalizer: Normalizer,
+}
+
+impl OutputWriter
+{
+    pub fn new(
+        controls: Controls,
+        ring_buffer_writer: BlockingRb<f32, Producer>,
+        config: StreamConfig,
+        spec: SignalSpec,
+        duration: u64,
+    ) -> Self
+    {
+        let stream_sample_rate = config.sample_rate.0;
+
+        // Create a resampler if the output stream's sample rate doesn't match the audio's.
+        let resampler: Option<Resampler<f32>> = if spec.rate != stream_sample_rate {
+            Some(Resampler::new(spec, stream_sample_rate as usize, duration))
+        }
+        else {
+            None
+        };
+
+        let normalizer = Normalizer::new(spec.channels.count(), stream_sample_rate);
+
+        let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
+
+        Self {
+            controls,
+            ring_buffer_writer,
+            spec,
+            duration,
+            normalizer,
+            resampler,
+            sample_buffer,
+        }
     }
 
     /// Write the `AudioBufferRef` to the buffers.
@@ -262,13 +275,5 @@ impl CpalOutput
                 remaining_samples = &remaining_samples[written..];
             }
         }
-
-        // Wait for all the samples to be read.
-        let (mutex, cvar) = &*self.is_stream_done;
-        let _lock = cvar.wait(mutex.lock().unwrap());
-
-        self.stream.pause().unwrap();
     }
 }
-
-unsafe impl Send for CpalOutput {}
