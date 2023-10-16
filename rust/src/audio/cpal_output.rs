@@ -36,6 +36,7 @@ const BASE_VOLUME: f32 = 0.8;
 pub struct CpalOutput
 {
     stream: Stream,
+    is_playing: bool,
     pub stream_config: StreamConfig,
     pub ring_buffer_reader: BlockingRb<f32, Consumer>,
     pub ring_buffer_writer: BlockingRb<f32, Producer>,
@@ -107,10 +108,10 @@ impl CpalOutput
         );
 
         let stream = stream.context("Could not build the stream.")?;
-        stream.play()?;
 
         Ok(Self {
             stream,
+            is_playing: false,
             stream_config,
             ring_buffer_reader,
             ring_buffer_writer,
@@ -119,11 +120,19 @@ impl CpalOutput
 
     pub fn play(&self)
     {
+        if self.is_playing {
+            return;
+        }
+
         _ = self.stream.play();
     }
 
     pub fn pause(&self)
     {
+        if !self.is_playing {
+            return;
+        }
+
         _ = self.stream.pause();
     }
 

@@ -185,8 +185,9 @@ impl Decoder
                     self.playback = None;
                 }
                 PlayerEvent::DeviceChanged => {
-                    self.cpal_output = CpalOutput::new(self.controls.clone())?;
                     Player::internal_pause(&self.controls);
+                    self.cpal_output = CpalOutput::new(self.controls.clone())?;
+                    self.output_writer = None;
                 }
                 PlayerEvent::Preload(source, buffer_signal) => {
                     self.preload_playback = None;
