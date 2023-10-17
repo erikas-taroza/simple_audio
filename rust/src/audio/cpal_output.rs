@@ -118,22 +118,24 @@ impl CpalOutput
         })
     }
 
-    pub fn play(&self)
+    pub fn play(&mut self)
     {
         if self.is_playing {
             return;
         }
 
         _ = self.stream.play();
+        self.is_playing = true;
     }
 
-    pub fn pause(&self)
+    pub fn pause(&mut self)
     {
         if !self.is_playing {
             return;
         }
 
         _ = self.stream.pause();
+        self.is_playing = false;
     }
 
     fn get_config() -> anyhow::Result<(Device, StreamConfig, usize)>
