@@ -166,6 +166,7 @@ impl Decoder
             None => (),
             Some(message) => match message {
                 PlayerEvent::Open(source, buffer_signal) => {
+                    self.cpal_output.ring_buffer_reader.skip_all();
                     self.output_writer = None;
                     self.playback = Some(Self::open(source, buffer_signal)?);
                 }
