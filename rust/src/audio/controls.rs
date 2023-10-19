@@ -143,4 +143,5 @@ pub enum PlayerEvent
     DeviceChanged,
     Preload(Box<dyn MediaSource>, Arc<AtomicBool>),
     PlayPreload,
+    ClearPreload,
 }

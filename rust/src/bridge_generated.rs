@@ -211,6 +211,22 @@ fn wire_play_preload__method__Player_impl(
         },
     )
 }
+fn wire_clear_preload__method__Player_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<Player> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "clear_preload__method__Player",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Result::<_, ()>::Ok(Player::clear_preload(&api_that))
+        },
+    )
+}
 fn wire_play__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Player> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {

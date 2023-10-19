@@ -422,6 +422,7 @@ class SimpleAudio {
   }
 
   /// Preloads a file or network resource for reading and playing.
+  /// The preloaded file is automatically played when the current file is finished playing.
   ///
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
@@ -432,7 +433,7 @@ class SimpleAudio {
     return await _player.preload(path: path);
   }
 
-  /// Plays the preloaded item from [preload]. The file starts playing automatically.
+  /// Plays the preloaded file.
   Future<void> playPreload() async {
     await _player.playPreload();
 
@@ -441,4 +442,7 @@ class SimpleAudio {
       {"state": PlaybackState.play.index, "position": 0},
     );
   }
+
+  /// Clears the preloaded file so that it doesn't play when the current file is finished.
+  Future<void> clearPreload() async => await _player.clearPreload();
 }

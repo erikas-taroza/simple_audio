@@ -164,6 +164,18 @@ class _MyAppState extends State<MyApp> {
                       await player.playPreload();
                     },
                   ),
+                  const SizedBox(width: 5),
+                  ElevatedButton(
+                    child: const Text("Clear Preload"),
+                    onPressed: () async {
+                      if (!await player.hasPreloaded) {
+                        debugPrint("No preloaded file to clear!");
+                      }
+
+                      debugPrint("Cleared preloaded file.");
+                      await player.clearPreload();
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 20),

@@ -71,6 +71,11 @@ pub extern "C" fn wire_play_preload__method__Player(port_: i64, that: *mut wire_
 }
 
 #[no_mangle]
+pub extern "C" fn wire_clear_preload__method__Player(port_: i64, that: *mut wire_Player) {
+    wire_clear_preload__method__Player_impl(port_, that)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_play__method__Player(port_: i64, that: *mut wire_Player) {
     wire_play__method__Player_impl(port_, that)
 }

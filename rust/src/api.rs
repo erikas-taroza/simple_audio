@@ -214,7 +214,8 @@ impl Player
         Ok(())
     }
 
-    /// Preloads a file or network resource for reading and playing.
+    /// Preloads a file or network resource for playback.
+    /// The preloaded file is automatically played when the current file is finished playing.
     ///
     /// Use this method if you want gapless playback. It reduces
     /// the time spent loading between tracks (especially important
@@ -244,12 +245,21 @@ impl Player
         }
     }
 
-    /// Plays the preloaded item from `preload`. The file starts playing automatically.
+    /// Plays the preloaded file.
     pub fn play_preload(&self)
     {
         self.controls
             .event_handler()
             .send(PlayerEvent::PlayPreload)
+            .unwrap();
+    }
+
+    /// Clears the preloaded file so that it doesn't play when the current file is finished.
+    pub fn clear_preload(&self)
+    {
+        self.controls
+            .event_handler()
+            .send(PlayerEvent::ClearPreload)
             .unwrap();
     }
 

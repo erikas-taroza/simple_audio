@@ -207,6 +207,10 @@ impl Decoder
 
                     Player::internal_play(&self.controls);
                 }
+                PlayerEvent::ClearPreload => {
+                    self.preload_playback = None;
+                    self.controls.set_is_file_preloaded(false);
+                }
             },
         }
 
