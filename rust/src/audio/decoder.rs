@@ -224,6 +224,7 @@ impl Decoder
             return Ok(false);
         }
 
+        // Handle buffering.
         if let Some(playback) = &self.playback {
             if playback
                 .buffer_signal
@@ -341,18 +342,15 @@ impl Decoder
 
     /// Called when the file is finished playing.
     ///
-    /// Flushes `cpal_output` and sends a `Done` message to Dart.
+    /// Flushes the output writer and sends a `Done` message to Dart.
     fn finish_playback(&mut self)
     {
-        if let Some(output_writer) = self.output_writer.as_mut() {
+        if let Some(mut output_writer) = self.output_writer.take() {
             output_writer.flush();
         }
 
         self.cpal_output.pause();
 
-        // Send the done message once cpal finishes flushing.
-        // There may be samples left over and we don't want to
-        // start playing another file before they are read.
         update_playback_state_stream(PlaybackState::Done);
 
         let progress_state = ProgressState {

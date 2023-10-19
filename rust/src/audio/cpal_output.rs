@@ -29,13 +29,13 @@ use super::{
 };
 
 /// The default output volume is way too high.
-/// Multiplying the volume input by this number
-/// will help to reduce it.
 const BASE_VOLUME: f32 = 0.8;
 
 pub struct CpalOutput
 {
     stream: Stream,
+    /// A safety to prevent playing/pausing the stream when it is already in that state.
+    /// If this happens, the Android implementation won't work.
     is_playing: bool,
     pub stream_config: StreamConfig,
     pub ring_buffer_reader: BlockingRb<f32, Consumer>,
