@@ -245,6 +245,9 @@ enum PlaybackState {
 
   /// The player was stopped
   stop,
+
+  /// The player has automatically started playing the preloaded file.
+  preloadPlayed,
 }
 
 class Player {

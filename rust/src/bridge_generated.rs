@@ -477,6 +477,7 @@ impl support::IntoDart for PlaybackState {
             Self::Pause => 1,
             Self::Done => 2,
             Self::Stop => 3,
+            Self::PreloadPlayed => 4,
         }
         .into_dart()
     }

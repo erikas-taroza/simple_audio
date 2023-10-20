@@ -128,7 +128,6 @@ impl Decoder
             match self.do_playback() {
                 Ok(playback_complete) => {
                     if playback_complete {
-                        self.state = DecoderState::Idle;
                         self.finish_playback();
                     }
                 }
@@ -353,9 +352,21 @@ impl Decoder
             output_writer.flush();
         }
 
-        self.cpal_output.pause();
-
-        update_playback_state_stream(PlaybackState::Done);
+        // Use the preloaded playback as the current playback.
+        if let Some(preload) = self.preload_playback.take() {
+            self.playback = Some(preload);
+            self.controls.set_is_file_preloaded(false);
+            update_playback_state_stream(PlaybackState::PreloadPlayed);
+        }
+        // Nothing is preloaded so stop like normal.
+        else {
+            self.state = DecoderState::Idle;
+            self.cpal_output.pause();
+            update_playback_state_stream(PlaybackState::Done);
+            self.controls.set_is_playing(false);
+            self.controls.set_is_stopped(true);
+            crate::media_controllers::set_playback_state(PlaybackState::Done);
+        }
 
         let progress_state = ProgressState {
             position: 0,
@@ -364,10 +375,6 @@ impl Decoder
 
         update_progress_state_stream(progress_state);
         self.controls.set_progress(progress_state);
-
-        self.controls.set_is_playing(false);
-        self.controls.set_is_stopped(true);
-        crate::media_controllers::set_playback_state(PlaybackState::Done);
     }
 
     /// Opens the given source for playback. Returns a `Playback`

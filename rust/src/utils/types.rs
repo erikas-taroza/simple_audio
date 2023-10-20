@@ -18,13 +18,15 @@
 pub enum PlaybackState
 {
     /// The player is currently playing the file.
-    Play = 0,
+    Play,
     /// The player is currently paused and there is no output.
-    Pause = 1,
+    Pause,
     /// The player has finished playing the file.
-    Done = 2,
+    Done,
     /// The player was stopped
-    Stop = 3,
+    Stop,
+    /// The player has automatically started playing the preloaded file.
+    PreloadPlayed,
 }
 
 /// Provides the current progress of the player.
