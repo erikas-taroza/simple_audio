@@ -83,7 +83,7 @@ impl Decoder
         Decoder {
             thread_killer,
             controls,
-            state: DecoderState::Idle,
+            state: DecoderState::Paused,
             cpal_output,
             output_writer: None,
             playback: None,
@@ -154,7 +154,7 @@ impl Decoder
 
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
-        let recv: Option<PlayerEvent> = if self.state.is_idle() || self.state.is_paused() {
+        let recv: Option<PlayerEvent> = if self.state.is_paused() {
             self.controls.event_handler().recv().ok()
         }
         else {
@@ -178,7 +178,7 @@ impl Decoder
                     self.cpal_output.pause();
                 }
                 PlayerEvent::Stop => {
-                    self.state = DecoderState::Idle;
+                    self.state = DecoderState::Paused;
                     self.cpal_output.ring_buffer_reader.skip_all();
                     self.cpal_output.pause();
                     self.output_writer = None;
@@ -223,7 +223,7 @@ impl Decoder
     fn do_playback(&mut self) -> anyhow::Result<bool>
     {
         // Nothing to do.
-        if self.playback.is_none() || self.state.is_idle() || self.state.is_paused() {
+        if self.playback.is_none() || self.state.is_paused() {
             return Ok(false);
         }
 
@@ -360,7 +360,7 @@ impl Decoder
         }
         // Nothing is preloaded so stop like normal.
         else {
-            self.state = DecoderState::Idle;
+            self.state = DecoderState::Paused;
             self.cpal_output.pause();
             update_playback_state_stream(PlaybackState::Done);
             self.controls.set_is_playing(false);
@@ -501,20 +501,10 @@ enum DecoderState
 {
     Playing,
     Paused,
-    Idle,
 }
 
 impl DecoderState
 {
-    fn is_idle(&self) -> bool
-    {
-        if let DecoderState::Idle = self {
-            return true;
-        }
-
-        false
-    }
-
     fn is_paused(&self) -> bool
     {
         if let DecoderState::Paused = self {
