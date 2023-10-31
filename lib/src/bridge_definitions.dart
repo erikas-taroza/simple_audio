@@ -62,7 +62,8 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kOpenMethodPlayerConstMeta;
 
-  /// Preloads a file or network resource for reading and playing.
+  /// Preloads a file or network resource for playback.
+  /// The preloaded file is automatically played when the current file is finished playing.
   ///
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
@@ -72,10 +73,15 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kPreloadMethodPlayerConstMeta;
 
-  /// Plays the preloaded item from `preload`. The file starts playing automatically.
+  /// Plays the preloaded file.
   Future<void> playPreloadMethodPlayer({required Player that, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kPlayPreloadMethodPlayerConstMeta;
+
+  /// Clears the preloaded file so that it doesn't play when the current file is finished.
+  Future<void> clearPreloadMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kClearPreloadMethodPlayerConstMeta;
 
   Future<void> playMethodPlayer({required Player that, dynamic hint});
 
@@ -239,6 +245,9 @@ enum PlaybackState {
 
   /// The player was stopped
   stop,
+
+  /// The player has automatically started playing the preloaded file.
+  preloadPlayed,
 }
 
 class Player {
@@ -298,7 +307,8 @@ class Player {
         autoplay: autoplay,
       );
 
-  /// Preloads a file or network resource for reading and playing.
+  /// Preloads a file or network resource for playback.
+  /// The preloaded file is automatically played when the current file is finished playing.
   ///
   /// Use this method if you want gapless playback. It reduces
   /// the time spent loading between tracks (especially important
@@ -309,8 +319,13 @@ class Player {
         path: path,
       );
 
-  /// Plays the preloaded item from `preload`. The file starts playing automatically.
+  /// Plays the preloaded file.
   Future<void> playPreload({dynamic hint}) => bridge.playPreloadMethodPlayer(
+        that: this,
+      );
+
+  /// Clears the preloaded file so that it doesn't play when the current file is finished.
+  Future<void> clearPreload({dynamic hint}) => bridge.clearPreloadMethodPlayer(
         that: this,
       );
 

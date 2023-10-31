@@ -50,8 +50,10 @@ class _MyAppState extends State<MyApp> {
     },
   );
 
-  PlaybackState playbackState = PlaybackState.done;
-  bool get isPlaying => playbackState == PlaybackState.play;
+  PlaybackState playbackState = PlaybackState.stop;
+  bool get isPlaying =>
+      playbackState == PlaybackState.play ||
+      playbackState == PlaybackState.preloadPlayed;
 
   bool get isMuted => volume == 0;
   double trueVolume = 1;
@@ -157,11 +159,25 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       if (!await player.hasPreloaded) {
                         debugPrint("No preloaded file to play!");
+                        return;
                       }
 
                       debugPrint("Playing preloaded file.");
                       await player.stop();
                       await player.playPreload();
+                    },
+                  ),
+                  const SizedBox(width: 5),
+                  ElevatedButton(
+                    child: const Text("Clear Preload"),
+                    onPressed: () async {
+                      if (!await player.hasPreloaded) {
+                        debugPrint("No preloaded file to clear!");
+                        return;
+                      }
+
+                      debugPrint("Cleared preloaded file.");
+                      await player.clearPreload();
                     },
                   ),
                 ],

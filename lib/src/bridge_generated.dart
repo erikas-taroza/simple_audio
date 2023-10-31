@@ -249,6 +249,25 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that"],
       );
 
+  Future<void> clearPreloadMethodPlayer({required Player that, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_clear_preload__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_unit,
+      parseErrorData: null,
+      constMeta: kClearPreloadMethodPlayerConstMeta,
+      argValues: [that],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kClearPreloadMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "clear_preload__method__Player",
+        argNames: ["that"],
+      );
+
   Future<void> playMethodPlayer({required Player that, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
     return _platform.executeNormal(FlutterRustBridgeTask(
@@ -961,6 +980,24 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
               ffi.Pointer<wire_Player>)>>('wire_play_preload__method__Player');
   late final _wire_play_preload__method__Player =
       _wire_play_preload__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
+  void wire_clear_preload__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+  ) {
+    return _wire_clear_preload__method__Player(
+      port_,
+      that,
+    );
+  }
+
+  late final _wire_clear_preload__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_Player>)>>('wire_clear_preload__method__Player');
+  late final _wire_clear_preload__method__Player =
+      _wire_clear_preload__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
   void wire_play__method__Player(
