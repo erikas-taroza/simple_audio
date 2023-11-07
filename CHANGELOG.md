@@ -1,3 +1,10 @@
+## 1.9.0
+
+- Improved gapless playback
+  - The preloaded file is automatically played when the current file is done playing.
+  - `clearPreload()` removes the preloaded file so that it doesn't automatically play.
+  - `PreloadPlayed` playback state which is sent after the preload was automatically played.
+
 ## 1.8.0
 
 - Add `stop` event (thanks @dannyglover)
