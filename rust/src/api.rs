@@ -41,7 +41,7 @@ impl Player
         {
             use android_logger::Config;
             use log::LevelFilter;
-            android_logger::init_once(Config::default().with_max_level(LevelFilter::Trace));
+            android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
         }
 
         let player_controls = Controls::default();
