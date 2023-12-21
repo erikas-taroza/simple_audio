@@ -95,10 +95,11 @@ impl CpalOutput
         );
 
         let stream = stream.context("Could not build the stream.")?;
+        let _ = stream.play();
 
         Ok(Self {
             stream,
-            is_playing: false,
+            is_playing: true,
             stream_config,
             ring_buffer_reader,
             ring_buffer_writer,
