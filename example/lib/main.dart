@@ -12,8 +12,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SimpleAudio.init();
-  AudioServiceController handler = await AudioServiceController.init();
   final SimpleAudio player = SimpleAudio(shouldNormalizeVolume: false);
+  AudioServiceController handler = await AudioServiceController.init(player);
 
   runApp(MyApp(player, handler));
 }
@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> {
 
     player.playbackState.listen((event) async {
       setState(() => playbackState = event);
-      handler.onPlaybackStateChanged(event);
+      handler.onPlaybackStateChanged(event, position.toInt());
     });
 
     player.progressState.listen((event) {

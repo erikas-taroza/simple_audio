@@ -3,18 +3,31 @@ import 'package:simple_audio/simple_audio.dart' as sa;
 
 import 'media_controllers.dart';
 
-class AudioServiceController extends BaseAudioHandler {
-  static Future<AudioServiceController> init() {
+class AudioServiceController extends BaseAudioHandler with SeekHandler {
+  AudioServiceController(this.player);
+  final sa.SimpleAudio player;
+
+  static Future<AudioServiceController> init(sa.SimpleAudio player) {
     return AudioService.init(
-      builder: () => AudioServiceController(),
+      builder: () => AudioServiceController(player),
       config: const AudioServiceConfig(
         androidNotificationChannelId: "com.erikastaroza.simple_audio.example",
         androidNotificationChannelName: "Simple Audio",
         androidNotificationOngoing: true,
         fastForwardInterval: Duration(seconds: 5),
+        rewindInterval: Duration(seconds: 5),
       ),
     );
   }
+
+  @override
+  Future<void> play() => player.play();
+
+  @override
+  Future<void> pause() => player.pause();
+
+  @override
+  Future<void> seek(Duration position) => player.seek(position.inSeconds);
 
   void setMetadata(Metadata m, int duration) {
     mediaItem.add(
@@ -53,15 +66,25 @@ class AudioServiceController extends BaseAudioHandler {
     );
   }
 
-  void onPlaybackStateChanged(sa.PlaybackState state) {
+  void onPlaybackStateChanged(sa.PlaybackState state, int position) async {
+    bool isPlaying = state == sa.PlaybackState.preloadPlayed ||
+        state == sa.PlaybackState.play;
+
     playbackState.add(
       playbackState.value.copyWith(
-        playing: state == sa.PlaybackState.preloadPlayed ||
-            state == sa.PlaybackState.play,
+        playing: isPlaying,
         processingState:
             state == sa.PlaybackState.stop || state == sa.PlaybackState.done
                 ? AudioProcessingState.completed
                 : AudioProcessingState.ready,
+        controls: [
+          MediaControl.rewind,
+          MediaControl.skipToPrevious,
+          isPlaying ? MediaControl.pause : MediaControl.play,
+          MediaControl.skipToNext,
+          MediaControl.fastForward,
+        ],
+        updatePosition: Duration(seconds: position),
       ),
     );
   }
