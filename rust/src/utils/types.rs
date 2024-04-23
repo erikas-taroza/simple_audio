@@ -40,12 +40,11 @@ pub struct ProgressState
     pub duration: u64,
 }
 
-/// Events that are handled in Dart because they
-/// cannot be handled in Rust or need user action.
+/// Events that are handled in Dart because they need user action.
 pub enum Callback
 {
     Error(super::error::Error),
-    /// The player is in the looping mode and the playback
-    /// just looped to the beginning.
-    PlaybackLooped,
+    /// The player started playing a new file. Contains the duration of the file in seconds.
+    /// This is meant to be used to send a new duration to the media controller.
+    PlaybackStarted(u64),
 }

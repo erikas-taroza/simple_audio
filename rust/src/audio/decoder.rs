@@ -167,6 +167,12 @@ impl Decoder
                     self.cpal_output.ring_buffer_reader.skip_all();
                     self.output_writer = None;
                     self.playback = Some(Self::open(source, buffer_signal)?);
+
+                    if let Some(playback) = &self.playback {
+                        crate::utils::callback_stream::update_callback_stream(
+                            Callback::PlaybackStarted(playback.duration),
+                        );
+                    }
                 }
                 PlayerEvent::Play => {
                     self.state = DecoderState::Playing;
@@ -290,7 +296,9 @@ impl Decoder
             Err(_) => {
                 if self.controls.is_looping() {
                     self.controls.set_seek_ts(Some(0));
-                    crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
+                    crate::utils::callback_stream::update_callback_stream(
+                        Callback::PlaybackStarted(playback.duration),
+                    );
                     return Ok(false);
                 }
 

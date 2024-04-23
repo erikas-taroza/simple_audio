@@ -434,7 +434,9 @@ class SimpleAudioImpl implements SimpleAudio {
           _wire2api_box_autoadd_error(raw[1]),
         );
       case 1:
-        return Callback_PlaybackLooped();
+        return Callback_PlaybackStarted(
+          _wire2api_u64(raw[1]),
+        );
       default:
         throw Exception("unreachable");
     }

@@ -136,9 +136,11 @@ sealed class Callback with _$Callback {
     Error field0,
   ) = Callback_Error;
 
-  /// The player is in the looping mode and the playback
-  /// just looped to the beginning.
-  const factory Callback.playbackLooped() = Callback_PlaybackLooped;
+  /// The player started playing a new file. Contains the duration of the file in seconds.
+  /// This is meant to be used to send a new duration to the media controller.
+  const factory Callback.playbackStarted(
+    int field0,
+  ) = Callback_PlaybackStarted;
 }
 
 @freezed

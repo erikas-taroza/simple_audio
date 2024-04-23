@@ -16,41 +16,42 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Callback {
+  Object get field0 => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function() playbackLooped,
+    required TResult Function(int field0) playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function()? playbackLooped,
+    TResult? Function(int field0)? playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function()? playbackLooped,
+    TResult Function(int field0)? playbackStarted,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
+    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
+    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
+    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -148,7 +149,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function() playbackLooped,
+    required TResult Function(int field0) playbackStarted,
   }) {
     return error(field0);
   }
@@ -157,7 +158,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function()? playbackLooped,
+    TResult? Function(int field0)? playbackStarted,
   }) {
     return error?.call(field0);
   }
@@ -166,7 +167,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function()? playbackLooped,
+    TResult Function(int field0)? playbackStarted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -179,7 +180,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
+    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
   }) {
     return error(this);
   }
@@ -188,7 +189,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
+    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
   }) {
     return error?.call(this);
   }
@@ -197,7 +198,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
+    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -210,6 +211,7 @@ class _$Callback_Error implements Callback_Error {
 abstract class Callback_Error implements Callback {
   const factory Callback_Error(final Error field0) = _$Callback_Error;
 
+  @override
   Error get field0;
   @JsonKey(ignore: true)
   _$$Callback_ErrorCopyWith<_$Callback_Error> get copyWith =>
@@ -217,68 +219,95 @@ abstract class Callback_Error implements Callback {
 }
 
 /// @nodoc
-abstract class _$$Callback_PlaybackLoopedCopyWith<$Res> {
-  factory _$$Callback_PlaybackLoopedCopyWith(_$Callback_PlaybackLooped value,
-          $Res Function(_$Callback_PlaybackLooped) then) =
-      __$$Callback_PlaybackLoopedCopyWithImpl<$Res>;
+abstract class _$$Callback_PlaybackStartedCopyWith<$Res> {
+  factory _$$Callback_PlaybackStartedCopyWith(_$Callback_PlaybackStarted value,
+          $Res Function(_$Callback_PlaybackStarted) then) =
+      __$$Callback_PlaybackStartedCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int field0});
 }
 
 /// @nodoc
-class __$$Callback_PlaybackLoopedCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackLooped>
-    implements _$$Callback_PlaybackLoopedCopyWith<$Res> {
-  __$$Callback_PlaybackLoopedCopyWithImpl(_$Callback_PlaybackLooped _value,
-      $Res Function(_$Callback_PlaybackLooped) _then)
+class __$$Callback_PlaybackStartedCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackStarted>
+    implements _$$Callback_PlaybackStartedCopyWith<$Res> {
+  __$$Callback_PlaybackStartedCopyWithImpl(_$Callback_PlaybackStarted _value,
+      $Res Function(_$Callback_PlaybackStarted) _then)
       : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? field0 = null,
+  }) {
+    return _then(_$Callback_PlaybackStarted(
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
 }
 
 /// @nodoc
 
-class _$Callback_PlaybackLooped implements Callback_PlaybackLooped {
-  const _$Callback_PlaybackLooped();
+class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
+  const _$Callback_PlaybackStarted(this.field0);
+
+  @override
+  final int field0;
 
   @override
   String toString() {
-    return 'Callback.playbackLooped()';
+    return 'Callback.playbackStarted(field0: $field0)';
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_PlaybackLooped);
+            other is _$Callback_PlaybackStarted &&
+            (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  int get hashCode => Object.hash(runtimeType, field0);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
+      get copyWith =>
+          __$$Callback_PlaybackStartedCopyWithImpl<_$Callback_PlaybackStarted>(
+              this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function() playbackLooped,
+    required TResult Function(int field0) playbackStarted,
   }) {
-    return playbackLooped();
+    return playbackStarted(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function()? playbackLooped,
+    TResult? Function(int field0)? playbackStarted,
   }) {
-    return playbackLooped?.call();
+    return playbackStarted?.call(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function()? playbackLooped,
+    TResult Function(int field0)? playbackStarted,
     required TResult orElse(),
   }) {
-    if (playbackLooped != null) {
-      return playbackLooped();
+    if (playbackStarted != null) {
+      return playbackStarted(field0);
     }
     return orElse();
   }
@@ -287,36 +316,43 @@ class _$Callback_PlaybackLooped implements Callback_PlaybackLooped {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
+    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
   }) {
-    return playbackLooped(this);
+    return playbackStarted(this);
   }
 
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
+    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
   }) {
-    return playbackLooped?.call(this);
+    return playbackStarted?.call(this);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
+    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
     required TResult orElse(),
   }) {
-    if (playbackLooped != null) {
-      return playbackLooped(this);
+    if (playbackStarted != null) {
+      return playbackStarted(this);
     }
     return orElse();
   }
 }
 
-abstract class Callback_PlaybackLooped implements Callback {
-  const factory Callback_PlaybackLooped() = _$Callback_PlaybackLooped;
+abstract class Callback_PlaybackStarted implements Callback {
+  const factory Callback_PlaybackStarted(final int field0) =
+      _$Callback_PlaybackStarted;
+
+  @override
+  int get field0;
+  @JsonKey(ignore: true)
+  _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc

@@ -380,7 +380,9 @@ impl support::IntoDart for Callback {
     fn into_dart(self) -> support::DartAbi {
         match self {
             Self::Error(field0) => vec![0.into_dart(), field0.into_into_dart().into_dart()],
-            Self::PlaybackLooped => vec![1.into_dart()],
+            Self::PlaybackStarted(field0) => {
+                vec![1.into_dart(), field0.into_into_dart().into_dart()]
+            }
         }
         .into_dart()
     }
