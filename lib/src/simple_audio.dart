@@ -16,6 +16,8 @@
 
 export 'bridge_definitions.dart' show ProgressState, PlaybackState;
 
+import 'dart:async';
+
 import './ffi.dart' hide PlaybackState;
 import 'bridge_definitions.dart';
 
@@ -23,13 +25,33 @@ late final Player _player;
 
 class SimpleAudio {
   /// A stream that returns a [PlaybackState] when the state of the player is changed.
-  late Stream<PlaybackState> playbackStateStream =
+  late Stream<PlaybackState> playbackState =
       Player.playbackStateStream(bridge: api).asBroadcastStream();
 
   /// A stream that returns a [ProgressState] when the progress of the player
   /// or duration of the file is changed.
-  late Stream<ProgressState> progressStateStream =
+  late Stream<ProgressState> progressState =
       Player.progressStateStream(bridge: api).asBroadcastStream();
+
+  final StreamController<int> _playbackStartedController =
+      StreamController.broadcast();
+
+  /// The callback for when the playback has been started or looped.
+  /// The [duration] is in seconds.
+  late Stream<int> onPlaybackStarted = _playbackStartedController.stream;
+
+  final StreamController<String> _networkErrorController =
+      StreamController.broadcast();
+
+  /// The callback for when an error occurs when trying to fetch
+  /// more bytes for a network stream.
+  late Stream<String> onNetworkStreamError = _networkErrorController.stream;
+
+  final StreamController<String> _decodeErrorController =
+      StreamController.broadcast();
+
+  /// The callback for when an error occurs during the decode loop.
+  late Stream<String> onDecodeError = _decodeErrorController.stream;
 
   /// Returns `true` if the player is playing.
   Future<bool> get isPlaying => _player.isPlaying();
@@ -37,48 +59,26 @@ class SimpleAudio {
   /// Returns `true` if the player has a file preloaded.
   Future<bool> get hasPreloaded => _player.hasPreloaded();
 
-  /// The callback for when the playback has been started or looped.
-  /// The [duration] is in seconds.
-  void Function(SimpleAudio player, int duration)? onPlaybackStarted;
-
-  /// The callback for when an error occurs when trying to fetch
-  /// more bytes for a network stream.
-  void Function(SimpleAudio player, String error)? onNetworkStreamError;
-
-  /// The callback for when an error occurs during the decode loop.
-  void Function(SimpleAudio player, String error)? onDecodeError;
-
   /// **[shouldNormalizeVolume]** Whether or not to normalize the volume
   /// of the playback. You can also change this by calling [normalizeVolume]
   /// when you desire. The normalization uses the `EbuR128` standard and
   /// it normalizes to `-14 LUFS`.
-  ///
-  /// **[onPlaybackStarted]** The callback for when the playback has been started or looped.
-  /// The [duration] is in seconds.
-  ///
-  /// **[onNetworkStreamError]** The callback for when an error occurs when trying to fetch
-  /// more bytes for a network stream.
-  ///
-  /// **[onDecodeError]** The callback for when an error occurs during the decode loop.
   SimpleAudio({
     bool shouldNormalizeVolume = false,
-    this.onPlaybackStarted,
-    this.onNetworkStreamError,
-    this.onDecodeError,
   }) {
     _player.normalizeVolume(shouldNormalize: shouldNormalizeVolume);
 
     Player.callbackStream(bridge: api).listen((event) async {
       switch (event) {
         case Callback_PlaybackStarted(:final field0):
-          onPlaybackStarted?.call(this, field0);
+          _playbackStartedController.add(field0);
           break;
         case Callback_Error(:final field0):
           switch (field0) {
             case Error_Decode(:final message):
-              onDecodeError?.call(this, message);
+              _decodeErrorController.add(message);
             case Error_NetworkStream(:final message):
-              onNetworkStreamError?.call(this, message);
+              _networkErrorController.add(message);
               break;
             default:
               throw UnimplementedError(

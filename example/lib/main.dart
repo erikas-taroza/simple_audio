@@ -13,43 +13,16 @@ void main() async {
 
   await SimpleAudio.init();
   AudioServiceController handler = await AudioServiceController.init();
+  final SimpleAudio player = SimpleAudio(shouldNormalizeVolume: false);
 
-  final SimpleAudio player = SimpleAudio(
-    shouldNormalizeVolume: false,
-    onPlaybackStarted: (player, duration) {
-      // Update your media controller metadata here.
-      handler.onPlaybackStarted();
-      handler.setMetadata(
-        const Metadata(
-          title: "Title",
-          artist: "Artist",
-          album: "Album",
-          artUri: "https://picsum.photos/200",
-        ),
-        duration,
-      );
-      debugPrint("Playback Started: $duration seconds");
-    },
-    onNetworkStreamError: (player, error) {
-      debugPrint("Network Stream Error: $error");
-      player.stop();
-    },
-    onDecodeError: (player, error) {
-      debugPrint("Decode Error: $error");
-      player.stop();
-    },
-  );
-
-  player.playbackStateStream
-      .listen((state) => handler.onPlaybackStateChanged(state));
-
-  runApp(MyApp(player));
+  runApp(MyApp(player, handler));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp(this.player, {super.key});
+  const MyApp(this.player, this.handler, {super.key});
 
   final SimpleAudio player;
+  final AudioServiceController handler;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -57,6 +30,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   SimpleAudio get player => widget.player;
+  AudioServiceController get handler => widget.handler;
 
   PlaybackState playbackState = PlaybackState.stop;
   bool get isPlaying =>
@@ -91,11 +65,37 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    player.playbackStateStream.listen((event) async {
-      setState(() => playbackState = event);
+    player.onPlaybackStarted.listen((duration) {
+      // Update your media controller metadata here.
+      handler.onPlaybackStarted();
+      handler.setMetadata(
+        const Metadata(
+          title: "Title",
+          artist: "Artist",
+          album: "Album",
+          artUri: "https://picsum.photos/200",
+        ),
+        duration,
+      );
+      debugPrint("Playback Started: $duration seconds");
     });
 
-    player.progressStateStream.listen((event) {
+    player.onDecodeError.listen((error) {
+      debugPrint("Decode Error: $error");
+      player.stop();
+    });
+
+    player.onNetworkStreamError.listen((error) {
+      debugPrint("Network Stream Error: $error");
+      player.stop();
+    });
+
+    player.playbackState.listen((event) async {
+      setState(() => playbackState = event);
+      handler.onPlaybackStateChanged(event);
+    });
+
+    player.progressState.listen((event) {
       setState(() {
         position = event.position.toDouble();
         duration = event.duration.toDouble();
