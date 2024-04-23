@@ -6,26 +6,28 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:simple_audio/simple_audio.dart';
 
+import 'media_controllers/media_controllers.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SimpleAudio.init();
+  AudioServiceController handler = await AudioServiceController.init();
 
-  runApp(const MyApp());
-}
-
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
   final SimpleAudio player = SimpleAudio(
     shouldNormalizeVolume: false,
     onPlaybackStarted: (player, duration) {
       // Update your media controller metadata here.
+      handler.onPlaybackStarted();
+      handler.setMetadata(
+        const Metadata(
+          title: "Title",
+          artist: "Artist",
+          album: "Album",
+          artUri: "https://picsum.photos/200",
+        ),
+        duration,
+      );
       debugPrint("Playback Started: $duration seconds");
     },
     onNetworkStreamError: (player, error) {
@@ -37,6 +39,24 @@ class _MyAppState extends State<MyApp> {
       player.stop();
     },
   );
+
+  player.playbackStateStream
+      .listen((state) => handler.onPlaybackStateChanged(state));
+
+  runApp(MyApp(player));
+}
+
+class MyApp extends StatefulWidget {
+  const MyApp(this.player, {super.key});
+
+  final SimpleAudio player;
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  SimpleAudio get player => widget.player;
 
   PlaybackState playbackState = PlaybackState.stop;
   bool get isPlaying =>
