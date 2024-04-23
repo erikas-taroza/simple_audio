@@ -20,8 +20,6 @@ use std::sync::Arc;
 
 // Section: imports
 
-use crate::media_controllers::types::MediaControlAction;
-use crate::media_controllers::types::Metadata;
 use crate::utils::error::Error;
 use crate::utils::types::Callback;
 use crate::utils::types::PlaybackState;
@@ -29,26 +27,14 @@ use crate::utils::types::ProgressState;
 
 // Section: wire functions
 
-fn wire_new__static_method__Player_impl(
-    port_: MessagePort,
-    actions: impl Wire2Api<Vec<MediaControlAction>> + UnwindSafe,
-    dbus_name: impl Wire2Api<String> + UnwindSafe,
-    hwnd: impl Wire2Api<Option<i64>> + UnwindSafe,
-) {
+fn wire_new__static_method__Player_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Player, _>(
         WrapInfo {
             debug_name: "new__static_method__Player",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || {
-            let api_actions = actions.wire2api();
-            let api_dbus_name = dbus_name.wire2api();
-            let api_hwnd = hwnd.wire2api();
-            move |task_callback| {
-                Result::<_, ()>::Ok(Player::new(api_actions, api_dbus_name, api_hwnd))
-            }
-        },
+        move || move |task_callback| Result::<_, ()>::Ok(Player::new()),
     )
 }
 fn wire_dispose__static_method__Player_impl(port_: MessagePort) {
@@ -322,24 +308,6 @@ fn wire_seek__method__Player_impl(
         },
     )
 }
-fn wire_set_metadata__method__Player_impl(
-    port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
-    metadata: impl Wire2Api<Metadata> + UnwindSafe,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
-        WrapInfo {
-            debug_name: "set_metadata__method__Player",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || {
-            let api_that = that.wire2api();
-            let api_metadata = metadata.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::set_metadata(&api_that, api_metadata))
-        },
-    )
-}
 fn wire_normalize_volume__method__Player_impl(
     port_: MessagePort,
     that: impl Wire2Api<Player> + UnwindSafe,
@@ -394,29 +362,6 @@ impl Wire2Api<f32> for f32 {
         self
     }
 }
-impl Wire2Api<i32> for i32 {
-    fn wire2api(self) -> i32 {
-        self
-    }
-}
-impl Wire2Api<i64> for i64 {
-    fn wire2api(self) -> i64 {
-        self
-    }
-}
-
-impl Wire2Api<MediaControlAction> for i32 {
-    fn wire2api(self) -> MediaControlAction {
-        match self {
-            0 => MediaControlAction::Rewind,
-            1 => MediaControlAction::SkipPrev,
-            2 => MediaControlAction::PlayPause,
-            3 => MediaControlAction::SkipNext,
-            4 => MediaControlAction::FastForward,
-            _ => unreachable!("Invalid variant for MediaControlAction: {}", self),
-        }
-    }
-}
 
 impl Wire2Api<u64> for u64 {
     fn wire2api(self) -> u64 {
@@ -435,10 +380,7 @@ impl support::IntoDart for Callback {
     fn into_dart(self) -> support::DartAbi {
         match self {
             Self::Error(field0) => vec![0.into_dart(), field0.into_into_dart().into_dart()],
-            Self::MediaControlSkipPrev => vec![1.into_dart()],
-            Self::MediaControlSkipNext => vec![2.into_dart()],
-            Self::PlaybackLooped => vec![3.into_dart()],
-            Self::DurationCalculated => vec![4.into_dart()],
+            Self::PlaybackLooped => vec![1.into_dart()],
         }
         .into_dart()
     }
@@ -528,3 +470,20 @@ support::lazy_static! {
 mod io;
 #[cfg(not(target_family = "wasm"))]
 pub use io::*;
+
+    // ----------- DUMMY CODE FOR BINDGEN ----------
+
+    // copied from: allo-isolate
+    pub type DartPort = i64;
+    pub type DartPostCObjectFnType = unsafe extern "C" fn(port_id: DartPort, message: *mut std::ffi::c_void) -> bool;
+    #[no_mangle] pub unsafe extern "C" fn store_dart_post_cobject(ptr: DartPostCObjectFnType) { panic!("dummy code") }
+    #[no_mangle] pub unsafe extern "C" fn get_dart_object(ptr: usize) -> Dart_Handle { panic!("dummy code") }
+    #[no_mangle] pub unsafe extern "C" fn drop_dart_object(ptr: usize) { panic!("dummy code") }
+    #[no_mangle] pub unsafe extern "C" fn new_dart_opaque(handle: Dart_Handle) -> usize { panic!("dummy code") }
+    #[no_mangle] pub unsafe extern "C" fn init_frb_dart_api_dl(obj: *mut c_void) -> isize { panic!("dummy code") }
+
+    pub struct DartCObject;
+    pub type WireSyncReturn = *mut DartCObject;
+
+    // ---------------------------------------------
+    

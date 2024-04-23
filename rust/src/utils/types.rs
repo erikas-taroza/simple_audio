@@ -45,13 +45,7 @@ pub struct ProgressState
 pub enum Callback
 {
     Error(super::error::Error),
-    /// The media controller trigged the SkipPrev action.
-    MediaControlSkipPrev,
-    /// The media controller trigged the SkipNext action.
-    MediaControlSkipNext,
     /// The player is in the looping mode and the playback
     /// just looped to the beginning.
     PlaybackLooped,
-    /// The decoder has calculated the duration for the current playback.
-    DurationCalculated,
 }

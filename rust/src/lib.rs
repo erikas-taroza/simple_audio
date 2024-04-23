@@ -17,7 +17,6 @@
 mod api;
 mod audio;
 mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod media_controllers;
 mod utils;
 
 // https://github.com/RustAudio/cpal/issues/720#issuecomment-1311813294
@@ -40,12 +39,11 @@ mod tests
     use std::{thread, time::Duration};
 
     use crate::api::*;
-    use crate::media_controllers::types::{MediaControlAction, Metadata};
 
     #[test]
     fn open_and_play() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.set_volume(0.1);
         player.open("/home/erikas/Downloads/1.mp3".to_string(), true)?;
         thread::sleep(Duration::from_secs(100));
@@ -55,7 +53,7 @@ mod tests
     #[test]
     fn open_network_and_play() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         // You can change the file extension here for different formats ------v
         // https://docs.espressif.com/projects/esp-adf/en/latest/design-guide/audio-samples.html
         player.open(
@@ -74,7 +72,7 @@ mod tests
     #[test]
     fn open_hls_and_play() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.open("https://cf-hls-media.sndcdn.com/playlist/x7uSGJp4rku7.128.mp3/playlist.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLWhscy1tZWRpYS5zbmRjZG4uY29tL3BsYXlsaXN0L3g3dVNHSnA0cmt1Ny4xMjgubXAzL3BsYXlsaXN0Lm0zdTgqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjc1ODA1NTM2fX19XX0_&Signature=Cd6o8KT6AEoLaIHok~438sourFeoHywCDdG09MS38qxmWLsKyJU-eFHOdh8jccvfPaWfjYkEEqfnpp6EMINXP3f99GAwWFPGMrp43lqz2JAL5MBUAc1plLLm1KV~t5Vy5ON6M1X~Fj6nFV7vdD7mGR84lfeafFmXBP4U4oZATI9GoPrUkEgVtCViDg6kBMVKk77e144LFwzZtkiSHj-S7umU5Qf9r2lDCqYaHVVoWSMtJBWMXoKQZCjdR5e6pqINcRQA-348wX8C9bonQGeoCZ3xRQWPq0ZtznmDKdZ-p91YJL8o4LNSPOMreu-ELsXhoftd7iKpZoG7~YwX2Oxg5A__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true)?;
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
@@ -89,7 +87,7 @@ mod tests
     #[test]
     fn play_pause() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
@@ -106,7 +104,7 @@ mod tests
     #[test]
     fn volume() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
         thread::sleep(Duration::from_secs(1));
         println!("Changing volume now");
@@ -118,7 +116,7 @@ mod tests
     #[test]
     fn seeking() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.set_volume(0.5);
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
         thread::sleep(Duration::from_secs(1));
@@ -131,7 +129,7 @@ mod tests
     #[test]
     fn stop() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
@@ -150,42 +148,11 @@ mod tests
     }
 
     #[test]
-    fn mpris() -> anyhow::Result<()>
-    {
-        let player = Player::new(
-            vec![MediaControlAction::PlayPause],
-            "SimpleAudio".to_string(),
-            None,
-        );
-        player.set_volume(0.5);
-
-        player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
-        player.set_metadata(Metadata {
-            title: Some("My Title".to_string()),
-            artist: Some("My Artist".to_string()),
-            album: Some("My Album".to_string()),
-            ..Default::default()
-        });
-
-        thread::sleep(Duration::from_secs(2));
-
-        player.set_metadata(Metadata {
-            title: Some("My Title2".to_string()),
-            artist: Some("My Artist2".to_string()),
-            album: Some("My Album2".to_string()),
-            ..Default::default()
-        });
-
-        thread::sleep(Duration::from_secs(10));
-        Ok(())
-    }
-
-    #[test]
     fn preload() -> anyhow::Result<()>
     {
         let path = "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3".to_string();
 
-        let player = Player::default();
+        let player = Player::new();
         player.open(path.clone(), true)?;
         player.set_volume(0.5);
         println!("Preloading");
@@ -205,7 +172,7 @@ mod tests
     #[test]
     fn silent_adts_file() -> anyhow::Result<()>
     {
-        let player = Player::default();
+        let player = Player::new();
         player.set_volume(0.1);
         player.open("/home/erikas/Downloads/silent.aac".to_string(), true)?;
         thread::sleep(Duration::from_secs(3));

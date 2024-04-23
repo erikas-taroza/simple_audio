@@ -2,13 +2,8 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
-pub extern "C" fn wire_new__static_method__Player(
-    port_: i64,
-    actions: *mut wire_list_media_control_action,
-    dbus_name: *mut wire_uint_8_list,
-    hwnd: *mut i64,
-) {
-    wire_new__static_method__Player_impl(port_, actions, dbus_name, hwnd)
+pub extern "C" fn wire_new__static_method__Player(port_: i64) {
+    wire_new__static_method__Player_impl(port_)
 }
 
 #[no_mangle]
@@ -110,15 +105,6 @@ pub extern "C" fn wire_seek__method__Player(port_: i64, that: *mut wire_Player, 
 }
 
 #[no_mangle]
-pub extern "C" fn wire_set_metadata__method__Player(
-    port_: i64,
-    that: *mut wire_Player,
-    metadata: *mut wire_Metadata,
-) {
-    wire_set_metadata__method__Player_impl(port_, that, metadata)
-}
-
-#[no_mangle]
 pub extern "C" fn wire_normalize_volume__method__Player(
     port_: i64,
     that: *mut wire_Player,
@@ -135,27 +121,8 @@ pub extern "C" fn new_Controls() -> wire_Controls {
 }
 
 #[no_mangle]
-pub extern "C" fn new_box_autoadd_i64_0(value: i64) -> *mut i64 {
-    support::new_leak_box_ptr(value)
-}
-
-#[no_mangle]
-pub extern "C" fn new_box_autoadd_metadata_0() -> *mut wire_Metadata {
-    support::new_leak_box_ptr(wire_Metadata::new_with_null_ptr())
-}
-
-#[no_mangle]
 pub extern "C" fn new_box_autoadd_player_0() -> *mut wire_Player {
     support::new_leak_box_ptr(wire_Player::new_with_null_ptr())
-}
-
-#[no_mangle]
-pub extern "C" fn new_list_media_control_action_0(len: i32) -> *mut wire_list_media_control_action {
-    let wrap = wire_list_media_control_action {
-        ptr: support::new_leak_vec_ptr(Default::default(), len),
-        len,
-    };
-    support::new_leak_box_ptr(wrap)
 }
 
 #[no_mangle]
@@ -198,43 +165,10 @@ impl Wire2Api<String> for *mut wire_uint_8_list {
     }
 }
 
-impl Wire2Api<i64> for *mut i64 {
-    fn wire2api(self) -> i64 {
-        unsafe { *support::box_from_leak_ptr(self) }
-    }
-}
-impl Wire2Api<Metadata> for *mut wire_Metadata {
-    fn wire2api(self) -> Metadata {
-        let wrap = unsafe { support::box_from_leak_ptr(self) };
-        Wire2Api::<Metadata>::wire2api(*wrap).into()
-    }
-}
 impl Wire2Api<Player> for *mut wire_Player {
     fn wire2api(self) -> Player {
         let wrap = unsafe { support::box_from_leak_ptr(self) };
         Wire2Api::<Player>::wire2api(*wrap).into()
-    }
-}
-
-impl Wire2Api<Vec<MediaControlAction>> for *mut wire_list_media_control_action {
-    fn wire2api(self) -> Vec<MediaControlAction> {
-        let vec = unsafe {
-            let wrap = support::box_from_leak_ptr(self);
-            support::vec_from_leak_ptr(wrap.ptr, wrap.len)
-        };
-        vec.into_iter().map(Wire2Api::wire2api).collect()
-    }
-}
-
-impl Wire2Api<Metadata> for wire_Metadata {
-    fn wire2api(self) -> Metadata {
-        Metadata {
-            title: self.title.wire2api(),
-            artist: self.artist.wire2api(),
-            album: self.album.wire2api(),
-            art_uri: self.art_uri.wire2api(),
-            art_bytes: self.art_bytes.wire2api(),
-        }
     }
 }
 
@@ -260,23 +194,6 @@ impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
 #[derive(Clone)]
 pub struct wire_Controls {
     ptr: *const core::ffi::c_void,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub struct wire_list_media_control_action {
-    ptr: *mut i32,
-    len: i32,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub struct wire_Metadata {
-    title: *mut wire_uint_8_list,
-    artist: *mut wire_uint_8_list,
-    album: *mut wire_uint_8_list,
-    art_uri: *mut wire_uint_8_list,
-    art_bytes: *mut wire_uint_8_list,
 }
 
 #[repr(C)]
@@ -309,24 +226,6 @@ impl NewWithNullPtr for wire_Controls {
         Self {
             ptr: core::ptr::null(),
         }
-    }
-}
-
-impl NewWithNullPtr for wire_Metadata {
-    fn new_with_null_ptr() -> Self {
-        Self {
-            title: core::ptr::null_mut(),
-            artist: core::ptr::null_mut(),
-            album: core::ptr::null_mut(),
-            art_uri: core::ptr::null_mut(),
-            art_bytes: core::ptr::null_mut(),
-        }
-    }
-}
-
-impl Default for wire_Metadata {
-    fn default() -> Self {
-        Self::new_with_null_ptr()
     }
 }
 
