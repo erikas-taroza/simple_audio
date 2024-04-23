@@ -9,22 +9,7 @@ import 'package:simple_audio/simple_audio.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize with default values.
-  await SimpleAudio.init(
-    useMediaController: true,
-    shouldNormalizeVolume: false,
-    dbusName: "com.erikas.SimpleAudio",
-    actions: [
-      MediaControlAction.rewind,
-      MediaControlAction.skipPrev,
-      MediaControlAction.playPause,
-      MediaControlAction.skipNext,
-      MediaControlAction.fastForward,
-    ],
-    androidNotificationIconPath: "mipmap/ic_launcher",
-    androidCompactActions: [1, 2, 3],
-    applePreferSkipButtons: true,
-  );
+  await SimpleAudio.init();
 
   runApp(const MyApp());
 }
@@ -38,8 +23,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final SimpleAudio player = SimpleAudio(
-    onSkipNext: (_) => debugPrint("Next"),
-    onSkipPrevious: (_) => debugPrint("Prev"),
+    shouldNormalizeVolume: false,
+    onPlaybackStarted: (player, duration) {
+      // Update your media controller metadata here.
+      debugPrint("Playback Started: $duration seconds");
+    },
     onNetworkStreamError: (player, error) {
       debugPrint("Network Stream Error: $error");
       player.stop();
@@ -130,14 +118,6 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () async {
                   String path = await pickFile();
 
-                  await player.setMetadata(
-                    const Metadata(
-                      title: "Title",
-                      artist: "Artist",
-                      album: "Album",
-                      artUri: "https://picsum.photos/200",
-                    ),
-                  );
                   await player.stop();
                   await player.open(path);
                 },

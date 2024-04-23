@@ -23,7 +23,7 @@ late final Player _player;
 
 class SimpleAudio {
   /// A stream that returns a [PlaybackState] when the state of the player is changed.
-  late Stream<PlaybackState> playback1StateStream =
+  late Stream<PlaybackState> playbackStateStream =
       Player.playbackStateStream(bridge: api).asBroadcastStream();
 
   /// A stream that returns a [ProgressState] when the progress of the player
@@ -37,7 +37,7 @@ class SimpleAudio {
   /// Returns `true` if the player has a file preloaded.
   Future<bool> get hasPreloaded => _player.hasPreloaded();
 
-  /// The callback for when the playback has been started.
+  /// The callback for when the playback has been started or looped.
   /// The [duration] is in seconds.
   void Function(SimpleAudio player, int duration)? onPlaybackStarted;
 
@@ -53,7 +53,7 @@ class SimpleAudio {
   /// when you desire. The normalization uses the `EbuR128` standard and
   /// it normalizes to `-14 LUFS`.
   ///
-  /// **[onPlaybackStarted]** The callback for when the playback has been started.
+  /// **[onPlaybackStarted]** The callback for when the playback has been started or looped.
   /// The [duration] is in seconds.
   ///
   /// **[onNetworkStreamError]** The callback for when an error occurs when trying to fetch
