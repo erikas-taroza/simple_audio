@@ -3,12 +3,10 @@ import 'package:simple_audio/simple_audio.dart' as sa;
 
 import 'media_controllers.dart';
 
-class AudioServiceController extends BaseAudioHandler with SeekHandler {
-  AudioServiceController(this.player);
-  final sa.SimpleAudio player;
-
-  static Future<AudioServiceController> init(sa.SimpleAudio player) {
-    return AudioService.init(
+class AudioServiceController extends BaseAudioHandler
+    with SeekHandler, MediaController {
+  AudioServiceController(this.player) {
+    AudioService.init(
       builder: () => AudioServiceController(player),
       config: const AudioServiceConfig(
         androidNotificationChannelId: "com.erikastaroza.simple_audio.example",
@@ -20,6 +18,8 @@ class AudioServiceController extends BaseAudioHandler with SeekHandler {
     );
   }
 
+  final sa.SimpleAudio player;
+
   @override
   Future<void> play() => player.play();
 
@@ -29,19 +29,21 @@ class AudioServiceController extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> seek(Duration position) => player.seek(position.inSeconds);
 
+  @override
   void setMetadata(Metadata m, int duration) {
     mediaItem.add(
       MediaItem(
         id: m.hashCode.toString(),
-        title: m.title ?? "Unknown Title",
+        title: m.title,
         artist: m.artist,
         album: m.album,
-        artUri: Uri.tryParse(m.artUri ?? ""),
+        artUri: Uri.tryParse(m.artUri),
         duration: Duration(seconds: duration),
       ),
     );
   }
 
+  @override
   void onPlaybackStarted() {
     playbackState.add(
       PlaybackState(
@@ -66,7 +68,8 @@ class AudioServiceController extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  void onPlaybackStateChanged(sa.PlaybackState state, int position) async {
+  @override
+  void onPlaybackStateChanged(sa.PlaybackState state, int position) {
     bool isPlaying = state == sa.PlaybackState.preloadPlayed ||
         state == sa.PlaybackState.play;
 

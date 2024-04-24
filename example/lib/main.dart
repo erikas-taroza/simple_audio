@@ -7,22 +7,31 @@ import 'package:file_picker/file_picker.dart';
 import 'package:simple_audio/simple_audio.dart';
 
 import 'media_controllers/media_controllers.dart';
+import 'media_controllers/mpris.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SimpleAudio.init();
   final SimpleAudio player = SimpleAudio(shouldNormalizeVolume: false);
-  AudioServiceController handler = await AudioServiceController.init(player);
 
-  runApp(MyApp(player, handler));
+  MediaController mediaController;
+  if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+    mediaController = AudioServiceController(player);
+  } else if (Platform.isLinux) {
+    mediaController = Mpris(player);
+  } else {
+    throw UnsupportedError("Platform is not supported");
+  }
+
+  runApp(MyApp(player, mediaController));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp(this.player, this.handler, {super.key});
+  const MyApp(this.player, this.mediaController, {super.key});
 
   final SimpleAudio player;
-  final AudioServiceController handler;
+  final MediaController mediaController;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -30,7 +39,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   SimpleAudio get player => widget.player;
-  AudioServiceController get handler => widget.handler;
+  MediaController get mediaController => widget.mediaController;
 
   PlaybackState playbackState = PlaybackState.stop;
   bool get isPlaying =>
@@ -67,8 +76,8 @@ class _MyAppState extends State<MyApp> {
 
     player.onPlaybackStarted.listen((duration) {
       // Update your media controller metadata here.
-      handler.onPlaybackStarted();
-      handler.setMetadata(
+      mediaController.onPlaybackStarted();
+      mediaController.setMetadata(
         const Metadata(
           title: "Title",
           artist: "Artist",
@@ -92,7 +101,7 @@ class _MyAppState extends State<MyApp> {
 
     player.playbackState.listen((event) async {
       setState(() => playbackState = event);
-      handler.onPlaybackStateChanged(event, position.toInt());
+      mediaController.onPlaybackStateChanged(event, position.toInt());
     });
 
     player.progressState.listen((event) {
