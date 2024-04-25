@@ -1,6 +1,9 @@
 use std::{
     env,
     io::{self, stdout},
+    sync::{Arc, RwLock},
+    thread,
+    time::Duration,
 };
 
 use crossterm::{
@@ -10,7 +13,30 @@ use crossterm::{
 };
 use ratatui::{prelude::*, widgets::*};
 use simple_audio::{types::*, Player};
-use std::time::Duration;
+
+struct App
+{
+    playback_state: PlaybackState,
+    progress_state: ProgressState,
+    looping: bool,
+    volume: f32,
+}
+
+impl App
+{
+    fn new() -> Self
+    {
+        App {
+            playback_state: PlaybackState::Stop,
+            progress_state: ProgressState {
+                position: Duration::ZERO,
+                duration: Duration::ZERO,
+            },
+            looping: false,
+            volume: 1.0,
+        }
+    }
+}
 
 fn main() -> io::Result<()>
 {
@@ -21,8 +47,35 @@ fn main() -> io::Result<()>
         panic!("Enter path or URL of file to play.");
     }
 
+    let app = Arc::new(RwLock::new(App::new()));
     let player = Player::new();
     player.open(args[1].clone(), true).unwrap();
+
+    // Listen to events
+    let receiver_app = app.clone();
+    let receiver = player.event_receiver.clone();
+    thread::spawn(move || {
+        let app = receiver_app;
+        let receiver = receiver;
+
+        loop {
+            match receiver.recv() {
+                Ok(event) => {
+                    let mut lock = app.write().unwrap();
+                    match event {
+                        PlayerEvent::Playback(playback) => {
+                            lock.playback_state = playback;
+                        }
+                        PlayerEvent::Progress(progress) => {
+                            lock.progress_state = progress;
+                        }
+                        PlayerEvent::Error(err) => panic!("Unexpected player error: {err}"),
+                    }
+                }
+                Err(err) => panic!("Unexpected error: {err}"),
+            }
+        }
+    });
 
     enable_raw_mode()?;
     stdout().execute(EnterAlternateScreen)?;
@@ -30,8 +83,8 @@ fn main() -> io::Result<()>
 
     let mut should_quit = false;
     while !should_quit {
-        terminal.draw(|f| ui(f, &player))?;
-        should_quit = handle_events(&player)?;
+        terminal.draw(|f| ui(f, &app.read().unwrap()))?;
+        should_quit = handle_events(&player, &mut app.write().unwrap())?;
     }
 
     disable_raw_mode()?;
@@ -40,7 +93,7 @@ fn main() -> io::Result<()>
     Ok(())
 }
 
-fn ui(frame: &mut Frame, player: &Player)
+fn ui(frame: &mut Frame, app: &App)
 {
     let main_layout = Layout::new(
         Direction::Vertical,
@@ -71,20 +124,20 @@ fn ui(frame: &mut Frame, player: &Player)
     .split(main_layout[1]);
 
     frame.render_widget(
-        Text::from(format!("Playback State: {:?}", player.playback_state())),
+        Text::from(format!("Playback State: {:?}", app.playback_state)),
         info_layout[0],
     );
     frame.render_widget(
-        Text::from(format!("Looping: {}", player.is_looping())),
+        Text::from(format!("Looping: {}", app.looping)),
         info_layout[1],
     );
     frame.render_widget(
-        Text::from(format!("Volume: {}%", (player.volume() * 100.0).ceil())),
+        Text::from(format!("Volume: {}%", (app.volume * 100.0).ceil())),
         info_layout[2],
     );
 
-    let pos = player.progress().position.num_seconds();
-    let dur = player.progress().duration.num_seconds();
+    let pos = app.progress_state.position.as_secs();
+    let dur = app.progress_state.duration.as_secs();
     let progress_bar = Gauge::default()
         .label(format!(
             "{}/{}",
@@ -110,7 +163,7 @@ fn ui(frame: &mut Frame, player: &Player)
     frame.render_widget(Text::from("[Down] Volume Down"), controls_layout[4]);
 }
 
-fn handle_events(player: &Player) -> io::Result<bool>
+fn handle_events(player: &Player, app: &mut App) -> io::Result<bool>
 {
     if event::poll(std::time::Duration::from_millis(50))? {
         if let Event::Key(key) = event::read()? {
@@ -123,9 +176,18 @@ fn handle_events(player: &Player) -> io::Result<bool>
                         PlaybackState::Pause => player.play(),
                         _ => return Ok(false),
                     },
-                    KeyCode::Char('l') => player.loop_playback(!player.is_looping()),
-                    KeyCode::Up => player.set_volume((player.volume() + 0.1).clamp(0.0, 1.0)),
-                    KeyCode::Down => player.set_volume((player.volume() - 0.1).clamp(0.0, 1.0)),
+                    KeyCode::Char('l') => {
+                        player.loop_playback(!player.is_looping());
+                        app.looping = player.is_looping();
+                    }
+                    KeyCode::Up => {
+                        player.set_volume((player.volume() + 0.1).clamp(0.0, 1.0));
+                        app.volume = player.volume();
+                    }
+                    KeyCode::Down => {
+                        player.set_volume((player.volume() - 0.1).clamp(0.0, 1.0));
+                        app.volume = player.volume();
+                    }
                     _ => return Ok(false),
                 }
             }
@@ -134,7 +196,7 @@ fn handle_events(player: &Player) -> io::Result<bool>
     Ok(false)
 }
 
-fn seconds_to_string(seconds: i64) -> String
+fn seconds_to_string(seconds: u64) -> String
 {
     let m = seconds / 60;
     let s = seconds % 60;
