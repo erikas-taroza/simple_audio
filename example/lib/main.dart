@@ -7,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:simple_audio/simple_audio.dart';
 
 import 'media_controllers/media_controllers.dart';
-import 'media_controllers/mpris.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -133,7 +132,7 @@ class _MyAppState extends State<MyApp> {
                       PermissionStatus status =
                           await Permission.storage.request();
 
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text("Storage Permissions: ${status.name}"),
