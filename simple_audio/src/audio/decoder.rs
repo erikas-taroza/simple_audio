@@ -36,10 +36,7 @@ use symphonia::{
 };
 use symphonia_core::codecs::CodecRegistry;
 
-use crate::{
-    audio::opus::OpusDecoder,
-    utils::{error::Error, types::*},
-};
+use crate::{audio::opus::OpusDecoder, types::*, utils::error::Error};
 
 use super::{
     controls::*,
@@ -106,7 +103,8 @@ impl Decoder
                     .0
                     .send(PlayerEvent::Error(Error::Decode {
                         message: err.to_string(),
-                    }));
+                    }))
+                    .unwrap();
             }
 
             // Check for incoming `ThreadMessage`s.
@@ -122,7 +120,8 @@ impl Decoder
                         .0
                         .send(PlayerEvent::Error(Error::Decode {
                             message: err.to_string(),
-                        }));
+                        }))
+                        .unwrap();
                 }
             }
 
@@ -139,7 +138,8 @@ impl Decoder
                         .0
                         .send(PlayerEvent::Error(Error::Decode {
                             message: err.to_string(),
-                        }));
+                        }))
+                        .unwrap();
                 }
             }
         }
@@ -180,7 +180,7 @@ impl Decoder
                             .0
                             .send(PlayerEvent::Playback(PlaybackState::Started(
                                 playback.duration,
-                            )));
+                            )))?;
                     }
                 }
                 DecoderEvent::Play => {
@@ -203,7 +203,7 @@ impl Decoder
                     self.controls
                         .player_event_handler()
                         .0
-                        .send(PlayerEvent::Playback(PlaybackState::Pause));
+                        .send(PlayerEvent::Playback(PlaybackState::Pause))?;
                     self.controls.set_playback_state(PlaybackState::Pause);
 
                     self.cpal_output = CpalOutput::new(self.controls.clone())?;
@@ -227,7 +227,7 @@ impl Decoder
                     self.controls
                         .player_event_handler()
                         .0
-                        .send(PlayerEvent::Playback(PlaybackState::Play));
+                        .send(PlayerEvent::Playback(PlaybackState::Play))?;
                     self.controls.set_playback_state(PlaybackState::Play);
                 }
                 DecoderEvent::ClearPreload => {
@@ -320,7 +320,7 @@ impl Decoder
                         .0
                         .send(PlayerEvent::Playback(PlaybackState::Started(
                             playback.duration,
-                        )));
+                        )))?;
                     return Ok(false);
                 }
 
@@ -353,7 +353,7 @@ impl Decoder
         self.controls
             .player_event_handler()
             .0
-            .send(PlayerEvent::Progress(progress));
+            .send(PlayerEvent::Progress(progress))?;
         self.controls.set_progress(progress);
 
         // Write the decoded packet to CPAL.
@@ -397,7 +397,8 @@ impl Decoder
             self.controls
                 .player_event_handler()
                 .0
-                .send(PlayerEvent::Playback(PlaybackState::Done));
+                .send(PlayerEvent::Playback(PlaybackState::Done))
+                .unwrap();
             self.controls.set_playback_state(PlaybackState::Done);
         }
 
@@ -409,7 +410,8 @@ impl Decoder
         self.controls
             .player_event_handler()
             .0
-            .send(PlayerEvent::Progress(progress));
+            .send(PlayerEvent::Progress(progress))
+            .unwrap();
         self.controls.set_progress(progress);
     }
 

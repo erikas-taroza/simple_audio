@@ -16,4 +16,3 @@
 
 pub mod blocking_rb;
 pub mod error;
-pub mod types;

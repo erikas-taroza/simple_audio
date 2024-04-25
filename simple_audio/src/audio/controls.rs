@@ -20,10 +20,7 @@ use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use symphonia::core::io::MediaSource;
 
-use crate::{
-    utils::{error::Error, types::ProgressState},
-    PlaybackState,
-};
+use crate::{types::*, utils::error::Error};
 
 /// Use this to stop the decoder thread.
 pub static THREAD_KILLER: OnceLock<RwLock<(Sender<bool>, Receiver<bool>)>> = OnceLock::new();
@@ -68,7 +65,7 @@ pub struct Controls
     playback_state: Arc<RwLock<PlaybackState>>,
     is_looping: Arc<AtomicBool>,
     is_normalizing: Arc<AtomicBool>,
-    is_file_preloaded: Arc<AtomicBool>,
+    is_preloaded: Arc<AtomicBool>,
     volume: Arc<RwLock<f32>>,
     seek_ts: Arc<RwLock<Option<Duration>>>,
     progress: Arc<RwLock<ProgressState>>,
@@ -89,7 +86,7 @@ impl Controls
     getset_rwlock!(playback_state, set_playback_state, PlaybackState);
     getset_atomic_bool!(is_looping, set_is_looping);
     getset_atomic_bool!(is_normalizing, set_is_normalizing);
-    getset_atomic_bool!(is_file_preloaded, set_is_file_preloaded);
+    getset_atomic_bool!(is_preloaded, set_is_file_preloaded);
     getset_rwlock!(volume, set_volume, f32);
     getset_rwlock!(seek_ts, set_seek_ts, Option<Duration>);
     getset_rwlock!(progress, set_progress, ProgressState);
@@ -105,7 +102,7 @@ impl Default for Controls
             playback_state: Arc::new(RwLock::new(PlaybackState::Stop)),
             is_looping: Arc::new(AtomicBool::new(false)),
             is_normalizing: Arc::new(AtomicBool::new(false)),
-            is_file_preloaded: Arc::new(AtomicBool::new(false)),
+            is_preloaded: Arc::new(AtomicBool::new(false)),
             volume: Arc::new(RwLock::new(1.0)),
             seek_ts: Arc::new(RwLock::new(None)),
             progress: Arc::new(RwLock::new(ProgressState {

@@ -17,6 +17,7 @@
 use chrono::Duration;
 
 /// The playback state of the player.
+#[derive(Clone, Copy, Debug)]
 pub enum PlaybackState
 {
     /// The player started playing the file.

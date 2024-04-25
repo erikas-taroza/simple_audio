@@ -223,9 +223,9 @@ impl Read for HttpStream
                 let result = Self::read_chunk(tx, url, chunk_write_pos, file_size);
 
                 if let Err(err) = result {
-                    update_callback_stream(Callback::Error(Error::NetworkStream {
-                        message: err.to_string(),
-                    }));
+                    // update_callback_stream(Callback::Error(Error::NetworkStream {
+                    //     message: err.to_string(),
+                    // }));
                 }
             });
         }

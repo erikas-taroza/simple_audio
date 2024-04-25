@@ -15,6 +15,7 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 mod audio;
+pub mod types;
 mod utils;
 
 // https://github.com/RustAudio/cpal/issues/720#issuecomment-1311813294
@@ -42,6 +43,7 @@ use audio::controls::PlayerEvent;
 use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver};
 use symphonia::core::io::MediaSource;
+use types::*;
 
 use crate::{
     audio::{
@@ -49,7 +51,7 @@ use crate::{
         decoder::Decoder,
         sources::{hls::HlsStream, http::HttpStream},
     },
-    utils::{error::Error, types::*},
+    utils::error::Error,
 };
 
 pub use crate::audio::controls::Controls;
@@ -90,14 +92,16 @@ impl Player
             }
         });
 
+        let event_receiver = player_controls.player_event_handler().1.clone();
+
         Player {
             controls: player_controls,
-            event_receiver: player_controls.player_event_handler().1,
+            event_receiver,
         }
     }
 
     // ---------------------------------
-    //          SETTERS/GETTERS
+    //          GETTERS
     // ---------------------------------
 
     pub fn playback_state(&self) -> PlaybackState
@@ -111,9 +115,24 @@ impl Player
     }
 
     /// Returns `true` if there is a file preloaded for playback.
-    pub fn has_preloaded(&self) -> bool
+    pub fn is_preloaded(&self) -> bool
     {
-        self.controls.is_file_preloaded()
+        self.controls.is_preloaded()
+    }
+
+    pub fn is_looping(&self) -> bool
+    {
+        self.controls.is_looping()
+    }
+
+    pub fn is_normalizing(&self) -> bool
+    {
+        self.controls.is_normalizing()
+    }
+
+    pub fn volume(&self) -> f32
+    {
+        *self.controls.volume()
     }
 
     // ---------------------------------

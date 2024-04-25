@@ -214,9 +214,9 @@ impl Read for HlsStream
                     let result = Self::read_chunk(tx, url, start, file_size);
 
                     if let Err(err) = result {
-                        update_callback_stream(Callback::Error(Error::NetworkStream {
-                            message: err.to_string(),
-                        }));
+                        // update_callback_stream(Callback::Error(Error::NetworkStream {
+                        //     message: err.to_string(),
+                        // }));
                     }
                 });
 
