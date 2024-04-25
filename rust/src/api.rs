@@ -7,7 +7,6 @@ use std::{
 use anyhow::Context;
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::{RustOpaque, StreamSink};
-use media_controllers::types::{Event, MediaControlAction, Metadata};
 use symphonia::core::io::MediaSource;
 
 use crate::{
@@ -16,7 +15,6 @@ use crate::{
         decoder::Decoder,
         sources::{hls::HlsStream, http::HttpStream},
     },
-    media_controllers,
     utils::{
         callback_stream::*, error::Error, playback_state_stream::*, progress_state_stream::*,
         types::*,
@@ -32,7 +30,7 @@ pub struct Player
 
 impl Player
 {
-    pub fn new(actions: Vec<MediaControlAction>, dbus_name: String, hwnd: Option<i64>) -> Player
+    pub fn new() -> Player
     {
         // Enable logging from Rust to Android logcat.
         // `android_logger::init_once` can safely be called multiple times
@@ -45,42 +43,6 @@ impl Player
         }
 
         let player_controls = Controls::default();
-
-        media_controllers::init(actions, dbus_name, hwnd, {
-            let controls = player_controls.clone();
-            move |e| match e {
-                Event::Previous => update_callback_stream(Callback::MediaControlSkipPrev),
-                Event::Next => update_callback_stream(Callback::MediaControlSkipNext),
-                Event::Play => Self::internal_play(&controls),
-                Event::Pause => Self::internal_pause(&controls),
-                Event::Stop => Self::internal_stop(&controls),
-                Event::PlayPause => {
-                    if controls.is_playing() {
-                        Self::internal_pause(&controls);
-                    }
-                    else {
-                        Self::internal_play(&controls);
-                    }
-                }
-                Event::Seek(position, is_absolute) => {
-                    if is_absolute {
-                        Self::internal_seek(&controls, position as u64);
-                    }
-                    else {
-                        let progress = controls.progress();
-                        if position.is_negative() {
-                            Self::internal_seek(
-                                &controls,
-                                progress.position.saturating_sub(position.unsigned_abs()),
-                            );
-                        }
-                        else {
-                            Self::internal_seek(&controls, progress.position + position as u64);
-                        }
-                    }
-                }
-            }
-        });
 
         *THREAD_KILLER
             .get_or_init(|| RwLock::new(unbounded()))
@@ -101,14 +63,12 @@ impl Player
         }
     }
 
-    /// Stops media controllers and decoder threads.
+    /// Stops the decoder thread.
     pub fn dispose()
     {
         if let Some(thread_killer) = THREAD_KILLER.get() {
             thread_killer.read().unwrap().0.send(true).unwrap();
         }
-        // Reset the Linux/Windows media controllers.
-        media_controllers::dispose();
     }
 
     // ---------------------------------
@@ -277,7 +237,6 @@ impl Player
         update_playback_state_stream(PlaybackState::Play);
         controls.set_is_playing(true);
         controls.set_is_stopped(false);
-        media_controllers::set_playback_state(PlaybackState::Play);
     }
 
     /// Allows for access in other places
@@ -294,7 +253,6 @@ impl Player
         update_playback_state_stream(PlaybackState::Pause);
         controls.set_is_playing(false);
         controls.set_is_stopped(false);
-        media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
     /// Allows for access in other places
@@ -319,7 +277,6 @@ impl Player
         update_playback_state_stream(PlaybackState::Stop);
         controls.set_is_playing(false);
         controls.set_is_stopped(true);
-        media_controllers::set_playback_state(PlaybackState::Pause);
     }
 
     fn internal_seek(controls: &Controls, seconds: u64)
@@ -365,31 +322,8 @@ impl Player
         Self::internal_seek(&self.controls, seconds);
     }
 
-    pub fn set_metadata(&self, metadata: Metadata)
-    {
-        media_controllers::set_metadata(metadata);
-    }
-
     pub fn normalize_volume(&self, should_normalize: bool)
     {
         self.controls.set_is_normalizing(should_normalize);
-    }
-}
-
-impl Default for Player
-{
-    fn default() -> Self
-    {
-        Player::new(
-            vec![
-                MediaControlAction::Rewind,
-                MediaControlAction::SkipPrev,
-                MediaControlAction::PlayPause,
-                MediaControlAction::SkipNext,
-                MediaControlAction::FastForward,
-            ],
-            "com.erikas.SimpleAudio".to_string(),
-            None,
-        )
     }
 }

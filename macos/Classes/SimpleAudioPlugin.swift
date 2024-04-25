@@ -17,10 +17,6 @@
 import Cocoa
 import FlutterMacOS
 
-@available(macOS 10.12.2, *)
-var simpleAudio:SimpleAudio? = nil
-
-@available(macOS 10.12.2, *)
 public class SimpleAudioPlugin: NSObject, FlutterPlugin
 {
     public static func register(with registrar: FlutterPluginRegistrar)
@@ -30,12 +26,16 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
         registrar.addMethodCallDelegate(instance, channel: channel)
 
         let _ = dummy()
-        simpleAudio = SimpleAudio(channel: channel)
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult)
     {
-        simpleAudio!.handle(call, result: result)
+        switch call.method {
+        case "getPlatformVersion":
+            result("macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
+        default:
+            result(FlutterMethodNotImplemented)
+        }
     }
 
     public static func dummy() -> Int64

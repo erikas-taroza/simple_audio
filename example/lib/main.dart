@@ -6,49 +6,41 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:simple_audio/simple_audio.dart';
 
+import 'media_controllers/media_controllers.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize with default values.
-  await SimpleAudio.init(
-    useMediaController: true,
-    shouldNormalizeVolume: false,
-    dbusName: "com.erikas.SimpleAudio",
-    actions: [
-      MediaControlAction.rewind,
-      MediaControlAction.skipPrev,
-      MediaControlAction.playPause,
-      MediaControlAction.skipNext,
-      MediaControlAction.fastForward,
-    ],
-    androidNotificationIconPath: "mipmap/ic_launcher",
-    androidCompactActions: [1, 2, 3],
-    applePreferSkipButtons: true,
-  );
+  await SimpleAudio.init();
+  final SimpleAudio player = SimpleAudio(shouldNormalizeVolume: false);
 
-  runApp(const MyApp());
+  MediaController mediaController;
+  if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+    mediaController = AudioServiceController(player);
+  } else if (Platform.isLinux) {
+    mediaController = Mpris(player);
+  } else if (Platform.isWindows) {
+    mediaController = Smtc(player);
+  } else {
+    throw UnsupportedError("Platform is not supported");
+  }
+
+  runApp(MyApp(player, mediaController));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp(this.player, this.mediaController, {super.key});
+
+  final SimpleAudio player;
+  final MediaController mediaController;
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  final SimpleAudio player = SimpleAudio(
-    onSkipNext: (_) => debugPrint("Next"),
-    onSkipPrevious: (_) => debugPrint("Prev"),
-    onNetworkStreamError: (player, error) {
-      debugPrint("Network Stream Error: $error");
-      player.stop();
-    },
-    onDecodeError: (player, error) {
-      debugPrint("Decode Error: $error");
-      player.stop();
-    },
-  );
+  SimpleAudio get player => widget.player;
+  MediaController get mediaController => widget.mediaController;
 
   PlaybackState playbackState = PlaybackState.stop;
   bool get isPlaying =>
@@ -83,11 +75,37 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    player.playbackStateStream.listen((event) async {
-      setState(() => playbackState = event);
+    player.onPlaybackStarted.listen((duration) {
+      // Update your media controller metadata here.
+      mediaController.onPlaybackStarted();
+      mediaController.setMetadata(
+        const Metadata(
+          title: "Title",
+          artist: "Artist",
+          album: "Album",
+          artUri: "https://picsum.photos/200",
+        ),
+        duration,
+      );
+      debugPrint("Playback Started: $duration seconds");
     });
 
-    player.progressStateStream.listen((event) {
+    player.onDecodeError.listen((error) {
+      debugPrint("Decode Error: $error");
+      player.stop();
+    });
+
+    player.onNetworkStreamError.listen((error) {
+      debugPrint("Network Stream Error: $error");
+      player.stop();
+    });
+
+    player.playbackState.listen((event) async {
+      setState(() => playbackState = event);
+      mediaController.onPlaybackStateChanged(event, position.toInt());
+    });
+
+    player.progressState.listen((event) {
       setState(() {
         position = event.position.toDouble();
         duration = event.duration.toDouble();
@@ -114,7 +132,7 @@ class _MyAppState extends State<MyApp> {
                       PermissionStatus status =
                           await Permission.storage.request();
 
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text("Storage Permissions: ${status.name}"),
@@ -130,14 +148,6 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () async {
                   String path = await pickFile();
 
-                  await player.setMetadata(
-                    const Metadata(
-                      title: "Title",
-                      artist: "Artist",
-                      album: "Album",
-                      artUri: "https://picsum.photos/200",
-                    ),
-                  );
                   await player.stop();
                   await player.open(path);
                 },

@@ -16,64 +16,42 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Callback {
+  Object get field0 => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function() mediaControlSkipPrev,
-    required TResult Function() mediaControlSkipNext,
-    required TResult Function() playbackLooped,
-    required TResult Function() durationCalculated,
+    required TResult Function(int field0) playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function()? mediaControlSkipPrev,
-    TResult? Function()? mediaControlSkipNext,
-    TResult? Function()? playbackLooped,
-    TResult? Function()? durationCalculated,
+    TResult? Function(int field0)? playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function()? mediaControlSkipPrev,
-    TResult Function()? mediaControlSkipNext,
-    TResult Function()? playbackLooped,
-    TResult Function()? durationCalculated,
+    TResult Function(int field0)? playbackStarted,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_MediaControlSkipPrev value)
-        mediaControlSkipPrev,
-    required TResult Function(Callback_MediaControlSkipNext value)
-        mediaControlSkipNext,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
-    required TResult Function(Callback_DurationCalculated value)
-        durationCalculated,
+    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_MediaControlSkipPrev value)?
-        mediaControlSkipPrev,
-    TResult? Function(Callback_MediaControlSkipNext value)?
-        mediaControlSkipNext,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult? Function(Callback_DurationCalculated value)? durationCalculated,
+    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_MediaControlSkipPrev value)? mediaControlSkipPrev,
-    TResult Function(Callback_MediaControlSkipNext value)? mediaControlSkipNext,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult Function(Callback_DurationCalculated value)? durationCalculated,
+    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -171,10 +149,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function() mediaControlSkipPrev,
-    required TResult Function() mediaControlSkipNext,
-    required TResult Function() playbackLooped,
-    required TResult Function() durationCalculated,
+    required TResult Function(int field0) playbackStarted,
   }) {
     return error(field0);
   }
@@ -183,10 +158,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function()? mediaControlSkipPrev,
-    TResult? Function()? mediaControlSkipNext,
-    TResult? Function()? playbackLooped,
-    TResult? Function()? durationCalculated,
+    TResult? Function(int field0)? playbackStarted,
   }) {
     return error?.call(field0);
   }
@@ -195,10 +167,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function()? mediaControlSkipPrev,
-    TResult Function()? mediaControlSkipNext,
-    TResult Function()? playbackLooped,
-    TResult Function()? durationCalculated,
+    TResult Function(int field0)? playbackStarted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -211,13 +180,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_MediaControlSkipPrev value)
-        mediaControlSkipPrev,
-    required TResult Function(Callback_MediaControlSkipNext value)
-        mediaControlSkipNext,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
-    required TResult Function(Callback_DurationCalculated value)
-        durationCalculated,
+    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
   }) {
     return error(this);
   }
@@ -226,12 +189,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_MediaControlSkipPrev value)?
-        mediaControlSkipPrev,
-    TResult? Function(Callback_MediaControlSkipNext value)?
-        mediaControlSkipNext,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult? Function(Callback_DurationCalculated value)? durationCalculated,
+    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
   }) {
     return error?.call(this);
   }
@@ -240,10 +198,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_MediaControlSkipPrev value)? mediaControlSkipPrev,
-    TResult Function(Callback_MediaControlSkipNext value)? mediaControlSkipNext,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult Function(Callback_DurationCalculated value)? durationCalculated,
+    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -256,6 +211,7 @@ class _$Callback_Error implements Callback_Error {
 abstract class Callback_Error implements Callback {
   const factory Callback_Error(final Error field0) = _$Callback_Error;
 
+  @override
   Error get field0;
   @JsonKey(ignore: true)
   _$$Callback_ErrorCopyWith<_$Callback_Error> get copyWith =>
@@ -263,79 +219,95 @@ abstract class Callback_Error implements Callback {
 }
 
 /// @nodoc
-abstract class _$$Callback_MediaControlSkipPrevCopyWith<$Res> {
-  factory _$$Callback_MediaControlSkipPrevCopyWith(
-          _$Callback_MediaControlSkipPrev value,
-          $Res Function(_$Callback_MediaControlSkipPrev) then) =
-      __$$Callback_MediaControlSkipPrevCopyWithImpl<$Res>;
+abstract class _$$Callback_PlaybackStartedCopyWith<$Res> {
+  factory _$$Callback_PlaybackStartedCopyWith(_$Callback_PlaybackStarted value,
+          $Res Function(_$Callback_PlaybackStarted) then) =
+      __$$Callback_PlaybackStartedCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int field0});
 }
 
 /// @nodoc
-class __$$Callback_MediaControlSkipPrevCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_MediaControlSkipPrev>
-    implements _$$Callback_MediaControlSkipPrevCopyWith<$Res> {
-  __$$Callback_MediaControlSkipPrevCopyWithImpl(
-      _$Callback_MediaControlSkipPrev _value,
-      $Res Function(_$Callback_MediaControlSkipPrev) _then)
+class __$$Callback_PlaybackStartedCopyWithImpl<$Res>
+    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackStarted>
+    implements _$$Callback_PlaybackStartedCopyWith<$Res> {
+  __$$Callback_PlaybackStartedCopyWithImpl(_$Callback_PlaybackStarted _value,
+      $Res Function(_$Callback_PlaybackStarted) _then)
       : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? field0 = null,
+  }) {
+    return _then(_$Callback_PlaybackStarted(
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
 }
 
 /// @nodoc
 
-class _$Callback_MediaControlSkipPrev implements Callback_MediaControlSkipPrev {
-  const _$Callback_MediaControlSkipPrev();
+class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
+  const _$Callback_PlaybackStarted(this.field0);
+
+  @override
+  final int field0;
 
   @override
   String toString() {
-    return 'Callback.mediaControlSkipPrev()';
+    return 'Callback.playbackStarted(field0: $field0)';
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Callback_MediaControlSkipPrev);
+            other is _$Callback_PlaybackStarted &&
+            (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  int get hashCode => Object.hash(runtimeType, field0);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
+      get copyWith =>
+          __$$Callback_PlaybackStartedCopyWithImpl<_$Callback_PlaybackStarted>(
+              this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function() mediaControlSkipPrev,
-    required TResult Function() mediaControlSkipNext,
-    required TResult Function() playbackLooped,
-    required TResult Function() durationCalculated,
+    required TResult Function(int field0) playbackStarted,
   }) {
-    return mediaControlSkipPrev();
+    return playbackStarted(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function()? mediaControlSkipPrev,
-    TResult? Function()? mediaControlSkipNext,
-    TResult? Function()? playbackLooped,
-    TResult? Function()? durationCalculated,
+    TResult? Function(int field0)? playbackStarted,
   }) {
-    return mediaControlSkipPrev?.call();
+    return playbackStarted?.call(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function()? mediaControlSkipPrev,
-    TResult Function()? mediaControlSkipNext,
-    TResult Function()? playbackLooped,
-    TResult Function()? durationCalculated,
+    TResult Function(int field0)? playbackStarted,
     required TResult orElse(),
   }) {
-    if (mediaControlSkipPrev != null) {
-      return mediaControlSkipPrev();
+    if (playbackStarted != null) {
+      return playbackStarted(field0);
     }
     return orElse();
   }
@@ -344,434 +316,43 @@ class _$Callback_MediaControlSkipPrev implements Callback_MediaControlSkipPrev {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_MediaControlSkipPrev value)
-        mediaControlSkipPrev,
-    required TResult Function(Callback_MediaControlSkipNext value)
-        mediaControlSkipNext,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
-    required TResult Function(Callback_DurationCalculated value)
-        durationCalculated,
+    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
   }) {
-    return mediaControlSkipPrev(this);
+    return playbackStarted(this);
   }
 
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_MediaControlSkipPrev value)?
-        mediaControlSkipPrev,
-    TResult? Function(Callback_MediaControlSkipNext value)?
-        mediaControlSkipNext,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult? Function(Callback_DurationCalculated value)? durationCalculated,
+    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
   }) {
-    return mediaControlSkipPrev?.call(this);
+    return playbackStarted?.call(this);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_MediaControlSkipPrev value)? mediaControlSkipPrev,
-    TResult Function(Callback_MediaControlSkipNext value)? mediaControlSkipNext,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult Function(Callback_DurationCalculated value)? durationCalculated,
+    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
     required TResult orElse(),
   }) {
-    if (mediaControlSkipPrev != null) {
-      return mediaControlSkipPrev(this);
+    if (playbackStarted != null) {
+      return playbackStarted(this);
     }
     return orElse();
   }
 }
 
-abstract class Callback_MediaControlSkipPrev implements Callback {
-  const factory Callback_MediaControlSkipPrev() =
-      _$Callback_MediaControlSkipPrev;
-}
-
-/// @nodoc
-abstract class _$$Callback_MediaControlSkipNextCopyWith<$Res> {
-  factory _$$Callback_MediaControlSkipNextCopyWith(
-          _$Callback_MediaControlSkipNext value,
-          $Res Function(_$Callback_MediaControlSkipNext) then) =
-      __$$Callback_MediaControlSkipNextCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$Callback_MediaControlSkipNextCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_MediaControlSkipNext>
-    implements _$$Callback_MediaControlSkipNextCopyWith<$Res> {
-  __$$Callback_MediaControlSkipNextCopyWithImpl(
-      _$Callback_MediaControlSkipNext _value,
-      $Res Function(_$Callback_MediaControlSkipNext) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$Callback_MediaControlSkipNext implements Callback_MediaControlSkipNext {
-  const _$Callback_MediaControlSkipNext();
+abstract class Callback_PlaybackStarted implements Callback {
+  const factory Callback_PlaybackStarted(final int field0) =
+      _$Callback_PlaybackStarted;
 
   @override
-  String toString() {
-    return 'Callback.mediaControlSkipNext()';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$Callback_MediaControlSkipNext);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(Error field0) error,
-    required TResult Function() mediaControlSkipPrev,
-    required TResult Function() mediaControlSkipNext,
-    required TResult Function() playbackLooped,
-    required TResult Function() durationCalculated,
-  }) {
-    return mediaControlSkipNext();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Error field0)? error,
-    TResult? Function()? mediaControlSkipPrev,
-    TResult? Function()? mediaControlSkipNext,
-    TResult? Function()? playbackLooped,
-    TResult? Function()? durationCalculated,
-  }) {
-    return mediaControlSkipNext?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Error field0)? error,
-    TResult Function()? mediaControlSkipPrev,
-    TResult Function()? mediaControlSkipNext,
-    TResult Function()? playbackLooped,
-    TResult Function()? durationCalculated,
-    required TResult orElse(),
-  }) {
-    if (mediaControlSkipNext != null) {
-      return mediaControlSkipNext();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_MediaControlSkipPrev value)
-        mediaControlSkipPrev,
-    required TResult Function(Callback_MediaControlSkipNext value)
-        mediaControlSkipNext,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
-    required TResult Function(Callback_DurationCalculated value)
-        durationCalculated,
-  }) {
-    return mediaControlSkipNext(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_MediaControlSkipPrev value)?
-        mediaControlSkipPrev,
-    TResult? Function(Callback_MediaControlSkipNext value)?
-        mediaControlSkipNext,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult? Function(Callback_DurationCalculated value)? durationCalculated,
-  }) {
-    return mediaControlSkipNext?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_MediaControlSkipPrev value)? mediaControlSkipPrev,
-    TResult Function(Callback_MediaControlSkipNext value)? mediaControlSkipNext,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult Function(Callback_DurationCalculated value)? durationCalculated,
-    required TResult orElse(),
-  }) {
-    if (mediaControlSkipNext != null) {
-      return mediaControlSkipNext(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class Callback_MediaControlSkipNext implements Callback {
-  const factory Callback_MediaControlSkipNext() =
-      _$Callback_MediaControlSkipNext;
-}
-
-/// @nodoc
-abstract class _$$Callback_PlaybackLoopedCopyWith<$Res> {
-  factory _$$Callback_PlaybackLoopedCopyWith(_$Callback_PlaybackLooped value,
-          $Res Function(_$Callback_PlaybackLooped) then) =
-      __$$Callback_PlaybackLoopedCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$Callback_PlaybackLoopedCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackLooped>
-    implements _$$Callback_PlaybackLoopedCopyWith<$Res> {
-  __$$Callback_PlaybackLoopedCopyWithImpl(_$Callback_PlaybackLooped _value,
-      $Res Function(_$Callback_PlaybackLooped) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$Callback_PlaybackLooped implements Callback_PlaybackLooped {
-  const _$Callback_PlaybackLooped();
-
-  @override
-  String toString() {
-    return 'Callback.playbackLooped()';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$Callback_PlaybackLooped);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(Error field0) error,
-    required TResult Function() mediaControlSkipPrev,
-    required TResult Function() mediaControlSkipNext,
-    required TResult Function() playbackLooped,
-    required TResult Function() durationCalculated,
-  }) {
-    return playbackLooped();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Error field0)? error,
-    TResult? Function()? mediaControlSkipPrev,
-    TResult? Function()? mediaControlSkipNext,
-    TResult? Function()? playbackLooped,
-    TResult? Function()? durationCalculated,
-  }) {
-    return playbackLooped?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Error field0)? error,
-    TResult Function()? mediaControlSkipPrev,
-    TResult Function()? mediaControlSkipNext,
-    TResult Function()? playbackLooped,
-    TResult Function()? durationCalculated,
-    required TResult orElse(),
-  }) {
-    if (playbackLooped != null) {
-      return playbackLooped();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_MediaControlSkipPrev value)
-        mediaControlSkipPrev,
-    required TResult Function(Callback_MediaControlSkipNext value)
-        mediaControlSkipNext,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
-    required TResult Function(Callback_DurationCalculated value)
-        durationCalculated,
-  }) {
-    return playbackLooped(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_MediaControlSkipPrev value)?
-        mediaControlSkipPrev,
-    TResult? Function(Callback_MediaControlSkipNext value)?
-        mediaControlSkipNext,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult? Function(Callback_DurationCalculated value)? durationCalculated,
-  }) {
-    return playbackLooped?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_MediaControlSkipPrev value)? mediaControlSkipPrev,
-    TResult Function(Callback_MediaControlSkipNext value)? mediaControlSkipNext,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult Function(Callback_DurationCalculated value)? durationCalculated,
-    required TResult orElse(),
-  }) {
-    if (playbackLooped != null) {
-      return playbackLooped(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class Callback_PlaybackLooped implements Callback {
-  const factory Callback_PlaybackLooped() = _$Callback_PlaybackLooped;
-}
-
-/// @nodoc
-abstract class _$$Callback_DurationCalculatedCopyWith<$Res> {
-  factory _$$Callback_DurationCalculatedCopyWith(
-          _$Callback_DurationCalculated value,
-          $Res Function(_$Callback_DurationCalculated) then) =
-      __$$Callback_DurationCalculatedCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$Callback_DurationCalculatedCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_DurationCalculated>
-    implements _$$Callback_DurationCalculatedCopyWith<$Res> {
-  __$$Callback_DurationCalculatedCopyWithImpl(
-      _$Callback_DurationCalculated _value,
-      $Res Function(_$Callback_DurationCalculated) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$Callback_DurationCalculated implements Callback_DurationCalculated {
-  const _$Callback_DurationCalculated();
-
-  @override
-  String toString() {
-    return 'Callback.durationCalculated()';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$Callback_DurationCalculated);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(Error field0) error,
-    required TResult Function() mediaControlSkipPrev,
-    required TResult Function() mediaControlSkipNext,
-    required TResult Function() playbackLooped,
-    required TResult Function() durationCalculated,
-  }) {
-    return durationCalculated();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Error field0)? error,
-    TResult? Function()? mediaControlSkipPrev,
-    TResult? Function()? mediaControlSkipNext,
-    TResult? Function()? playbackLooped,
-    TResult? Function()? durationCalculated,
-  }) {
-    return durationCalculated?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Error field0)? error,
-    TResult Function()? mediaControlSkipPrev,
-    TResult Function()? mediaControlSkipNext,
-    TResult Function()? playbackLooped,
-    TResult Function()? durationCalculated,
-    required TResult orElse(),
-  }) {
-    if (durationCalculated != null) {
-      return durationCalculated();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_MediaControlSkipPrev value)
-        mediaControlSkipPrev,
-    required TResult Function(Callback_MediaControlSkipNext value)
-        mediaControlSkipNext,
-    required TResult Function(Callback_PlaybackLooped value) playbackLooped,
-    required TResult Function(Callback_DurationCalculated value)
-        durationCalculated,
-  }) {
-    return durationCalculated(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_MediaControlSkipPrev value)?
-        mediaControlSkipPrev,
-    TResult? Function(Callback_MediaControlSkipNext value)?
-        mediaControlSkipNext,
-    TResult? Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult? Function(Callback_DurationCalculated value)? durationCalculated,
-  }) {
-    return durationCalculated?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_MediaControlSkipPrev value)? mediaControlSkipPrev,
-    TResult Function(Callback_MediaControlSkipNext value)? mediaControlSkipNext,
-    TResult Function(Callback_PlaybackLooped value)? playbackLooped,
-    TResult Function(Callback_DurationCalculated value)? durationCalculated,
-    required TResult orElse(),
-  }) {
-    if (durationCalculated != null) {
-      return durationCalculated(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class Callback_DurationCalculated implements Callback {
-  const factory Callback_DurationCalculated() = _$Callback_DurationCalculated;
+  int get field0;
+  @JsonKey(ignore: true)
+  _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc

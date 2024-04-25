@@ -27,11 +27,6 @@ anyhow = "1.0.75"
 lazy_static = "1.4.0"
 audiopus = "0.3.0-rc.0"
 
-# Linux Dependencies
-[target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "android"), not(target_os = "ios")))'.dependencies]
-zbus = "3.14.1"
-pollster = "0.3.0"
-
 # Android Dependencies
 [target.'cfg(target_os = "android")'.dependencies]
 # Debug only.
@@ -39,18 +34,6 @@ android_logger = "0.13.3"
 log = "0.4.20"
 jni = "0.21.1"
 ndk-context = "0.1.1"
-
-# Windows API Dependency
-# target.'cfg(target_os = "windows")'.
-[target.'cfg(target_os = "windows")'.dependencies.windows]
-version = "0.52.0"
-features = [
-	"Foundation",
-	"Media",
-	"Win32_Foundation",
-	"Win32_System_WinRT",
-	"Storage_Streams",
-]
 
 [profile.release]
 lto = true

@@ -12,15 +12,11 @@ import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'bridge_definitions.freezed.dart';
 
 abstract class SimpleAudio {
-  Future<Player> newStaticMethodPlayer(
-      {required List<MediaControlAction> actions,
-      required String dbusName,
-      int? hwnd,
-      dynamic hint});
+  Future<Player> newStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
-  /// Stops media controllers and decoder threads.
+  /// Stops the decoder thread.
   Future<void> disposeStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kDisposeStaticMethodPlayerConstMeta;
@@ -110,11 +106,6 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kSeekMethodPlayerConstMeta;
 
-  Future<void> setMetadataMethodPlayer(
-      {required Player that, required Metadata metadata, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kSetMetadataMethodPlayerConstMeta;
-
   Future<void> normalizeVolumeMethodPlayer(
       {required Player that, required bool shouldNormalize, dynamic hint});
 
@@ -145,18 +136,11 @@ sealed class Callback with _$Callback {
     Error field0,
   ) = Callback_Error;
 
-  /// The media controller trigged the SkipPrev action.
-  const factory Callback.mediaControlSkipPrev() = Callback_MediaControlSkipPrev;
-
-  /// The media controller trigged the SkipNext action.
-  const factory Callback.mediaControlSkipNext() = Callback_MediaControlSkipNext;
-
-  /// The player is in the looping mode and the playback
-  /// just looped to the beginning.
-  const factory Callback.playbackLooped() = Callback_PlaybackLooped;
-
-  /// The decoder has calculated the duration for the current playback.
-  const factory Callback.durationCalculated() = Callback_DurationCalculated;
+  /// The player started playing a new file. Contains the duration of the file in seconds.
+  /// This is meant to be used to send a new duration to the media controller.
+  const factory Callback.playbackStarted(
+    int field0,
+  ) = Callback_PlaybackStarted;
 }
 
 @freezed
@@ -187,51 +171,6 @@ sealed class Error with _$Error {
   }) = Error_Preload;
 }
 
-/// The actions that an OS's media controller can support.
-enum MediaControlAction {
-  /// Seeks backwards by 10 seconds.
-  rewind,
-
-  /// Skip to the previous playing file (you will implement this functionality).
-  skipPrev,
-
-  /// Play/pause the player.
-  playPause,
-
-  /// Skip to the next file to be played (you will implement this functionality).
-  skipNext,
-
-  /// Seeks forwards by 10 seconds.
-  fastForward,
-}
-
-/// The metadata of the currently playing file
-/// that will be shown in the OS's media controller.
-class Metadata {
-  /// The title of the file.
-  final String? title;
-
-  /// The artist/creator of the file.
-  final String? artist;
-
-  /// The album that the song is in.
-  final String? album;
-
-  /// A URI that points to the art for this song.
-  final String? artUri;
-
-  /// The song's art in the form of a byte array.
-  final Uint8List? artBytes;
-
-  const Metadata({
-    this.title,
-    this.artist,
-    this.album,
-    this.artUri,
-    this.artBytes,
-  });
-}
-
 /// The playback state of the player.
 enum PlaybackState {
   /// The player is currently playing the file.
@@ -260,15 +199,10 @@ class Player {
   });
 
   static Future<Player> newPlayer(
-          {required SimpleAudio bridge,
-          required List<MediaControlAction> actions,
-          required String dbusName,
-          int? hwnd,
-          dynamic hint}) =>
-      bridge.newStaticMethodPlayer(
-          actions: actions, dbusName: dbusName, hwnd: hwnd, hint: hint);
+          {required SimpleAudio bridge, dynamic hint}) =>
+      bridge.newStaticMethodPlayer(hint: hint);
 
-  /// Stops media controllers and decoder threads.
+  /// Stops the decoder thread.
   static Future<void> dispose({required SimpleAudio bridge, dynamic hint}) =>
       bridge.disposeStaticMethodPlayer(hint: hint);
 
@@ -357,12 +291,6 @@ class Player {
       bridge.seekMethodPlayer(
         that: this,
         seconds: seconds,
-      );
-
-  Future<void> setMetadata({required Metadata metadata, dynamic hint}) =>
-      bridge.setMetadataMethodPlayer(
-        that: this,
-        metadata: metadata,
       );
 
   Future<void> normalizeVolume({required bool shouldNormalize, dynamic hint}) =>

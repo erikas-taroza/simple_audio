@@ -17,8 +17,6 @@
 import Flutter
 import UIKit
 
-var simpleAudio:SimpleAudio? = nil
-
 public class SwiftSimpleAudioPlugin: NSObject, FlutterPlugin
 {
     public static func register(with registrar: FlutterPluginRegistrar)
@@ -28,12 +26,11 @@ public class SwiftSimpleAudioPlugin: NSObject, FlutterPlugin
         registrar.addMethodCallDelegate(instance, channel: channel)
         
         let _ = dummy()
-        simpleAudio = SimpleAudio(channel: channel)
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult)
     {
-        simpleAudio!.handle(call, result: result)
+        result("iOS " + UIDevice.current.systemVersion)
     }
 
     public static func dummy() -> Int64

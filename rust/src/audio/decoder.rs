@@ -38,7 +38,6 @@ use symphonia_core::codecs::CodecRegistry;
 use crate::{
     api::Player,
     audio::opus::OpusDecoder,
-    media_controllers,
     utils::{
         callback_stream::update_callback_stream, error::Error,
         playback_state_stream::update_playback_state_stream, progress_state_stream::*, types::*,
@@ -168,6 +167,12 @@ impl Decoder
                     self.cpal_output.ring_buffer_reader.skip_all();
                     self.output_writer = None;
                     self.playback = Some(Self::open(source, buffer_signal)?);
+
+                    if let Some(playback) = &self.playback {
+                        crate::utils::callback_stream::update_callback_stream(
+                            Callback::PlaybackStarted(playback.duration),
+                        );
+                    }
                 }
                 PlayerEvent::Play => {
                     self.state = DecoderState::Playing;
@@ -291,7 +296,9 @@ impl Decoder
             Err(_) => {
                 if self.controls.is_looping() {
                     self.controls.set_seek_ts(Some(0));
-                    crate::utils::callback_stream::update_callback_stream(Callback::PlaybackLooped);
+                    crate::utils::callback_stream::update_callback_stream(
+                        Callback::PlaybackStarted(playback.duration),
+                    );
                     return Ok(false);
                 }
 
@@ -321,7 +328,6 @@ impl Decoder
             duration: playback.duration,
         };
 
-        Self::notify_media_controllers_with_progress(&self.controls.progress(), &progress);
         update_progress_state_stream(progress);
         self.controls.set_progress(progress);
 
@@ -365,7 +371,6 @@ impl Decoder
             update_playback_state_stream(PlaybackState::Done);
             self.controls.set_is_playing(false);
             self.controls.set_is_stopped(true);
-            crate::media_controllers::set_playback_state(PlaybackState::Done);
         }
 
         let progress_state = ProgressState {
@@ -477,23 +482,6 @@ impl Decoder
         self.controls.set_is_file_preloaded(true);
 
         Ok(())
-    }
-
-    fn notify_media_controllers_with_progress(
-        curr_progress: &ProgressState,
-        new_progress: &ProgressState,
-    )
-    {
-        // Notify OS media controllers about the new duration.
-        if curr_progress.duration == 0 {
-            update_callback_stream(Callback::DurationCalculated);
-            media_controllers::set_duration(new_progress.duration);
-        }
-
-        // Notify OS media controllers about the new position.
-        if curr_progress.position < new_progress.position {
-            media_controllers::set_position(new_progress.position);
-        }
     }
 }
 

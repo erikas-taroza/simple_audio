@@ -183,8 +183,6 @@ pub struct OutputWriter
 {
     controls: Controls,
     pub ring_buffer_writer: BlockingRb<f32, Producer>,
-    pub spec: SignalSpec,
-    pub duration: u64,
     sample_buffer: SampleBuffer<f32>,
     resampler: Option<Resampler<f32>>,
     normalizer: Normalizer,
@@ -217,8 +215,6 @@ impl OutputWriter
         Self {
             controls,
             ring_buffer_writer,
-            spec,
-            duration,
             normalizer,
             resampler,
             sample_buffer,
