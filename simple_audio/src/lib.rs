@@ -137,6 +137,7 @@ impl Player
 
     /// Returns a Symphonia `MediaSource` for playback.
     fn source_from_path(
+        &self,
         path: String,
         buffer_signal: Arc<AtomicBool>,
     ) -> anyhow::Result<Box<dyn MediaSource>>
@@ -146,14 +147,22 @@ impl Player
         let source: Box<dyn MediaSource> = if path.contains("http") {
             if path.contains("m3u") {
                 Box::new(
-                    HlsStream::new(path, buffer_signal)
-                        .context(format!("Could not open HLS stream at \"{path2}\""))?,
+                    HlsStream::new(
+                        path,
+                        buffer_signal,
+                        self.controls.player_event_handler().0.clone(),
+                    )
+                    .context(format!("Could not open HLS stream at \"{path2}\""))?,
                 )
             }
             else {
                 Box::new(
-                    HttpStream::new(path, buffer_signal)
-                        .context(format!("Could not open HTTP stream at \"{path2}\""))?,
+                    HttpStream::new(
+                        path,
+                        buffer_signal,
+                        self.controls.player_event_handler().0.clone(),
+                    )
+                    .context(format!("Could not open HTTP stream at \"{path2}\""))?,
                 )
             }
         }
@@ -169,7 +178,7 @@ impl Player
     pub fn open(&self, path: String, autoplay: bool) -> Result<(), Error>
     {
         let buffer_signal = Arc::new(AtomicBool::new(false));
-        let source = match Self::source_from_path(path, buffer_signal.clone()) {
+        let source = match self.source_from_path(path, buffer_signal.clone()) {
             Ok(source) => source,
             Err(err) => {
                 return Err(Error::Open {
@@ -209,7 +218,7 @@ impl Player
     pub fn preload(&self, path: String) -> Result<(), Error>
     {
         let buffer_signal = Arc::new(AtomicBool::new(false));
-        let source = match Self::source_from_path(path, buffer_signal.clone()) {
+        let source = match self.source_from_path(path, buffer_signal.clone()) {
             Ok(source) => source,
             Err(err) => {
                 return Err(Error::Preload {

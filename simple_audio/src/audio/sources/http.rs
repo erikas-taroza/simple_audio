@@ -25,6 +25,9 @@ use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
+use crate::error::Error;
+use crate::PlayerEvent;
+
 use super::{streamable::*, Receiver};
 
 pub struct HttpStream
@@ -36,11 +39,16 @@ pub struct HttpStream
     requested: RangeSet<usize>,
     receivers: Vec<Receiver>,
     buffer_signal: Arc<AtomicBool>,
+    error_sender: crossbeam::channel::Sender<PlayerEvent>,
 }
 
 impl HttpStream
 {
-    pub fn new(url: String, buffer_signal: Arc<AtomicBool>) -> anyhow::Result<Self>
+    pub fn new(
+        url: String,
+        buffer_signal: Arc<AtomicBool>,
+        error_sender: crossbeam::channel::Sender<PlayerEvent>,
+    ) -> anyhow::Result<Self>
     {
         // Get the size of the file we are streaming.
         let res = Client::new().head(&url).send()?.error_for_status()?;
@@ -77,6 +85,7 @@ impl HttpStream
             requested,
             receivers: Vec::new(),
             buffer_signal,
+            error_sender,
         })
     }
 }
@@ -217,13 +226,14 @@ impl Read for HttpStream
                 .as_millis();
             self.receivers.push(Receiver { id, receiver });
 
+            let error_sender = self.error_sender.clone();
             thread::spawn(move || {
                 let result = Self::read_chunk(tx, url, chunk_write_pos, file_size);
 
                 if let Err(err) = result {
-                    // update_callback_stream(Callback::Error(Error::NetworkStream {
-                    //     message: err.to_string(),
-                    // }));
+                    let _ = error_sender.send(PlayerEvent::Error(Error::NetworkStream {
+                        message: err.to_string(),
+                    }));
                 }
             });
         }

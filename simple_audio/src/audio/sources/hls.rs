@@ -26,6 +26,9 @@ use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
+use crate::error::Error;
+use crate::PlayerEvent;
+
 use super::{streamable::*, Receiver};
 
 // NOTE: Most of the implementation is the same as HttpStream.
@@ -42,11 +45,16 @@ pub struct HlsStream
     requested: RangeSet<usize>,
     receivers: Vec<Receiver>,
     buffer_signal: Arc<AtomicBool>,
+    error_sender: crossbeam::channel::Sender<PlayerEvent>,
 }
 
 impl HlsStream
 {
-    pub fn new(url: String, buffer_signal: Arc<AtomicBool>) -> anyhow::Result<Self>
+    pub fn new(
+        url: String,
+        buffer_signal: Arc<AtomicBool>,
+        error_sender: crossbeam::channel::Sender<PlayerEvent>,
+    ) -> anyhow::Result<Self>
     {
         let mut urls = Vec::new();
         let mut total_size = 0;
@@ -98,6 +106,7 @@ impl HlsStream
             requested,
             receivers: Vec::new(),
             buffer_signal,
+            error_sender,
         })
     }
 }
@@ -208,13 +217,14 @@ impl Read for HlsStream
                     .as_millis();
                 self.receivers.push(Receiver { id, receiver });
 
+                let error_sender = self.error_sender.clone();
                 thread::spawn(move || {
                     let result = Self::read_chunk(tx, url, start, file_size);
 
                     if let Err(err) = result {
-                        // update_callback_stream(Callback::Error(Error::NetworkStream {
-                        //     message: err.to_string(),
-                        // }));
+                        let _ = error_sender.send(PlayerEvent::Error(Error::NetworkStream {
+                            message: err.to_string(),
+                        }));
                     }
                 });
 
