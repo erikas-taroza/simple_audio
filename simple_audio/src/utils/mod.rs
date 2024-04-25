@@ -15,4 +15,3 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 pub mod blocking_rb;
-pub mod error;

@@ -20,7 +20,7 @@ use crossbeam::channel::{unbounded, Receiver, Sender};
 use std::time::Duration;
 use symphonia::core::io::MediaSource;
 
-use crate::{types::*, utils::error::Error};
+use crate::{error::Error, types::*};
 
 /// Use this to stop the decoder thread.
 pub static THREAD_KILLER: OnceLock<RwLock<(Sender<bool>, Receiver<bool>)>> = OnceLock::new();

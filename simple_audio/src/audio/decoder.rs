@@ -36,7 +36,7 @@ use symphonia::{
 };
 use symphonia_core::codecs::CodecRegistry;
 
-use crate::{audio::opus::OpusDecoder, types::*, utils::error::Error};
+use crate::{audio::opus::OpusDecoder, error::Error, types::*};
 
 use super::{
     controls::*,

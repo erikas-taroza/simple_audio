@@ -25,8 +25,6 @@ use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use crate::utils::error::Error;
-
 use super::{streamable::*, Receiver};
 
 pub struct HttpStream
