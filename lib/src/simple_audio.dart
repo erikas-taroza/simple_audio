@@ -33,12 +33,11 @@ class SimpleAudio {
   late Stream<ProgressState> progressState =
       Player.progressStateStream(bridge: api).asBroadcastStream();
 
-  final StreamController<int> _playbackStartedController =
+  final StreamController<Duration> _playbackStartedController =
       StreamController.broadcast();
 
   /// The callback for when the playback has been started or looped.
-  /// The [duration] is in seconds.
-  late Stream<int> onPlaybackStarted = _playbackStartedController.stream;
+  late Stream<Duration> onPlaybackStarted = _playbackStartedController.stream;
 
   final StreamController<String> _networkErrorController =
       StreamController.broadcast();
@@ -133,8 +132,8 @@ class SimpleAudio {
 
   /// Seek to a certain spot in the file and play from there.
   ///
-  /// **[seconds]** The position, in seconds, to seek to.
-  Future<void> seek(int seconds) => _player.seek(seconds: seconds);
+  /// **[position]** The position to seek to.
+  Future<void> seek(Duration position) => _player.seek(position: position);
 
   /// Whether or not to normalize the volume
   /// of the playback. The normalization uses the `EbuR128` standard and

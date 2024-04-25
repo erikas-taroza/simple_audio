@@ -100,8 +100,8 @@ pub extern "C" fn wire_set_volume__method__Player(port_: i64, that: *mut wire_Pl
 }
 
 #[no_mangle]
-pub extern "C" fn wire_seek__method__Player(port_: i64, that: *mut wire_Player, seconds: u64) {
-    wire_seek__method__Player_impl(port_, that, seconds)
+pub extern "C" fn wire_seek__method__Player(port_: i64, that: *mut wire_Player, position: i64) {
+    wire_seek__method__Player_impl(port_, that, position)
 }
 
 #[no_mangle]
@@ -153,6 +153,11 @@ pub extern "C" fn share_opaque_Controls(ptr: *const c_void) -> *const c_void {
 
 // Section: impl Wire2Api
 
+impl Wire2Api<chrono::Duration> for i64 {
+    fn wire2api(self) -> chrono::Duration {
+        chrono::Duration::microseconds(self)
+    }
+}
 impl Wire2Api<RustOpaque<Controls>> for wire_Controls {
     fn wire2api(self) -> RustOpaque<Controls> {
         unsafe { support::opaque_from_dart(self.ptr as _) }

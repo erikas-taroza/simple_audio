@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::Duration;
+
 /// The playback state of the player.
 pub enum PlaybackState
 {
@@ -33,18 +35,17 @@ pub enum PlaybackState
 #[derive(Clone, Copy)]
 pub struct ProgressState
 {
-    /// The position, in seconds, of the player.
-    pub position: u64,
-    /// The duration, in seconds, of the file that
-    /// is being played.
-    pub duration: u64,
+    /// The position of the player.
+    pub position: Duration,
+    /// The duration of the file that is being played.
+    pub duration: Duration,
 }
 
 /// Events that are handled in Dart because they need user action.
 pub enum Callback
 {
     Error(super::error::Error),
-    /// The player started playing a new file. Contains the duration of the file in seconds.
+    /// The player started playing a new file. Contains the duration of the file.
     /// This is meant to be used to send a new duration to the media controller.
-    PlaybackStarted(u64),
+    PlaybackStarted(Duration),
 }

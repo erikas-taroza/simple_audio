@@ -5,9 +5,9 @@ export 'mpris.dart';
 export 'smtc.dart';
 
 abstract class MediaController {
-  void setMetadata(Metadata m, int duration);
+  void setMetadata(Metadata m, Duration duration);
   void onPlaybackStarted();
-  void onPlaybackStateChanged(PlaybackState state, int position);
+  void onPlaybackStateChanged(PlaybackState state, Duration position);
 }
 
 class Metadata {

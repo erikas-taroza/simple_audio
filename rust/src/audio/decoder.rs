@@ -20,6 +20,7 @@ use std::{
 };
 
 use anyhow::{anyhow, Context};
+use chrono::Duration;
 use crossbeam::channel::Receiver;
 use lazy_static::lazy_static;
 use symphonia::{
@@ -272,7 +273,7 @@ impl Decoder
 
         if let Some(seek_ts) = *self.controls.seek_ts() {
             let seek_to = SeekTo::Time {
-                time: Time::from(seek_ts),
+                time: Time::from(seek_ts.num_seconds() as u64),
                 track_id: Some(playback.track_id),
             };
             playback.reader.seek(SeekMode::Coarse, seek_to)?;
@@ -295,7 +296,7 @@ impl Decoder
             // has reached the end of the audio.
             Err(_) => {
                 if self.controls.is_looping() {
-                    self.controls.set_seek_ts(Some(0));
+                    self.controls.set_seek_ts(Some(Duration::zero()));
                     crate::utils::callback_stream::update_callback_stream(
                         Callback::PlaybackStarted(playback.duration),
                     );
@@ -324,7 +325,7 @@ impl Decoder
 
         // Update the progress stream with calculated times.
         let progress = ProgressState {
-            position,
+            position: Duration::seconds(position as i64),
             duration: playback.duration,
         };
 
@@ -374,8 +375,8 @@ impl Decoder
         }
 
         let progress_state = ProgressState {
-            position: 0,
-            duration: 0,
+            position: Duration::zero(),
+            duration: Duration::zero(),
         };
 
         update_progress_state_stream(progress_state);
@@ -431,7 +432,7 @@ impl Decoder
             decoder,
             track_id,
             timebase,
-            duration,
+            duration: Duration::seconds(duration as i64),
             buffer_signal,
             preload: None,
         })
@@ -512,7 +513,7 @@ struct Playback
     track_id: u32,
     decoder: Box<dyn symphonia::core::codecs::Decoder>,
     timebase: Option<TimeBase>,
-    duration: u64,
+    duration: Duration,
     buffer_signal: Arc<AtomicBool>,
     /// A buffer of already decoded samples.
     preload: Option<AudioBuffer<f32>>,

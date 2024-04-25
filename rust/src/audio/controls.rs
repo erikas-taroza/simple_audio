@@ -16,6 +16,7 @@
 
 use std::sync::{atomic::AtomicBool, Arc, OnceLock, RwLock, RwLockReadGuard};
 
+use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver, RecvError, SendError, Sender, TryRecvError};
 use symphonia::core::io::MediaSource;
 
@@ -94,7 +95,7 @@ pub struct Controls
     is_normalizing: Arc<AtomicBool>,
     is_file_preloaded: Arc<AtomicBool>,
     volume: Arc<RwLock<f32>>,
-    seek_ts: Arc<RwLock<Option<u64>>>,
+    seek_ts: Arc<RwLock<Option<Duration>>>,
     progress: Arc<RwLock<ProgressState>>,
 }
 
@@ -107,7 +108,7 @@ impl Controls
     getset_atomic_bool!(is_normalizing, set_is_normalizing);
     getset_atomic_bool!(is_file_preloaded, set_is_file_preloaded);
     getset_rwlock!(volume, set_volume, f32);
-    getset_rwlock!(seek_ts, set_seek_ts, Option<u64>);
+    getset_rwlock!(seek_ts, set_seek_ts, Option<Duration>);
     getset_rwlock!(progress, set_progress, ProgressState);
 }
 
@@ -125,8 +126,8 @@ impl Default for Controls
             volume: Arc::new(RwLock::new(1.0)),
             seek_ts: Arc::new(RwLock::new(None)),
             progress: Arc::new(RwLock::new(ProgressState {
-                position: 0,
-                duration: 0,
+                position: Duration::zero(),
+                duration: Duration::zero(),
             })),
         }
     }

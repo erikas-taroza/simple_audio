@@ -75,7 +75,7 @@ void wire_loop_playback__method__Player(int64_t port_, struct wire_Player *that,
 
 void wire_set_volume__method__Player(int64_t port_, struct wire_Player *that, float volume);
 
-void wire_seek__method__Player(int64_t port_, struct wire_Player *that, uint64_t seconds);
+void wire_seek__method__Player(int64_t port_, struct wire_Player *that, int64_t position);
 
 void wire_normalize_volume__method__Player(int64_t port_,
                                            struct wire_Player *that,

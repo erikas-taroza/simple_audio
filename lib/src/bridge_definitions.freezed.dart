@@ -20,19 +20,19 @@ mixin _$Callback {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function(int field0) playbackStarted,
+    required TResult Function(Duration field0) playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function(int field0)? playbackStarted,
+    TResult? Function(Duration field0)? playbackStarted,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function(int field0)? playbackStarted,
+    TResult Function(Duration field0)? playbackStarted,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -149,7 +149,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function(int field0) playbackStarted,
+    required TResult Function(Duration field0) playbackStarted,
   }) {
     return error(field0);
   }
@@ -158,7 +158,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function(int field0)? playbackStarted,
+    TResult? Function(Duration field0)? playbackStarted,
   }) {
     return error?.call(field0);
   }
@@ -167,7 +167,7 @@ class _$Callback_Error implements Callback_Error {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function(int field0)? playbackStarted,
+    TResult Function(Duration field0)? playbackStarted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -224,7 +224,7 @@ abstract class _$$Callback_PlaybackStartedCopyWith<$Res> {
           $Res Function(_$Callback_PlaybackStarted) then) =
       __$$Callback_PlaybackStartedCopyWithImpl<$Res>;
   @useResult
-  $Res call({int field0});
+  $Res call({Duration field0});
 }
 
 /// @nodoc
@@ -244,7 +244,7 @@ class __$$Callback_PlaybackStartedCopyWithImpl<$Res>
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
-              as int,
+              as Duration,
     ));
   }
 }
@@ -255,7 +255,7 @@ class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
   const _$Callback_PlaybackStarted(this.field0);
 
   @override
-  final int field0;
+  final Duration field0;
 
   @override
   String toString() {
@@ -285,7 +285,7 @@ class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(Error field0) error,
-    required TResult Function(int field0) playbackStarted,
+    required TResult Function(Duration field0) playbackStarted,
   }) {
     return playbackStarted(field0);
   }
@@ -294,7 +294,7 @@ class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(Error field0)? error,
-    TResult? Function(int field0)? playbackStarted,
+    TResult? Function(Duration field0)? playbackStarted,
   }) {
     return playbackStarted?.call(field0);
   }
@@ -303,7 +303,7 @@ class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(Error field0)? error,
-    TResult Function(int field0)? playbackStarted,
+    TResult Function(Duration field0)? playbackStarted,
     required TResult orElse(),
   }) {
     if (playbackStarted != null) {
@@ -345,11 +345,11 @@ class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
 }
 
 abstract class Callback_PlaybackStarted implements Callback {
-  const factory Callback_PlaybackStarted(final int field0) =
+  const factory Callback_PlaybackStarted(final Duration field0) =
       _$Callback_PlaybackStarted;
 
   @override
-  int get field0;
+  Duration get field0;
   @JsonKey(ignore: true)
   _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
       get copyWith => throw _privateConstructorUsedError;
