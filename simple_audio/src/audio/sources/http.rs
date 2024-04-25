@@ -25,9 +25,7 @@ use rangemap::RangeSet;
 use reqwest::blocking::Client;
 use symphonia::core::io::MediaSource;
 
-use crate::utils::callback_stream::update_callback_stream;
 use crate::utils::error::Error;
-use crate::utils::types::Callback;
 
 use super::{streamable::*, Receiver};
 

@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-mod api;
 mod audio;
-mod bridge_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
 mod utils;
 
 // https://github.com/RustAudio/cpal/issues/720#issuecomment-1311813294
@@ -33,12 +31,298 @@ extern "C" fn JNI_OnLoad(vm: jni::JavaVM, res: *mut std::os::raw::c_void) -> jni
     jni::JNIVersion::V6.into()
 }
 
+use std::{
+    fs::File,
+    sync::{atomic::AtomicBool, Arc, RwLock},
+    thread,
+};
+
+use anyhow::Context;
+use audio::controls::PlayerEvent;
+use chrono::Duration;
+use crossbeam::channel::{unbounded, Receiver};
+use symphonia::core::io::MediaSource;
+
+use crate::{
+    audio::{
+        controls::{DecoderEvent, THREAD_KILLER},
+        decoder::Decoder,
+        sources::{hls::HlsStream, http::HttpStream},
+    },
+    utils::{error::Error, types::*},
+};
+
+pub use crate::audio::controls::Controls;
+
+pub struct Player
+{
+    controls: Controls,
+    pub event_receiver: Receiver<PlayerEvent>,
+}
+
+impl Player
+{
+    pub fn new() -> Player
+    {
+        // Enable logging from Rust to Android logcat.
+        // `android_logger::init_once` can safely be called multiple times
+        // but will only initialize once.
+        #[cfg(all(debug_assertions, target_os = "android"))]
+        {
+            use android_logger::Config;
+            use log::LevelFilter;
+            android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
+        }
+
+        let player_controls = Controls::default();
+
+        *THREAD_KILLER
+            .get_or_init(|| RwLock::new(unbounded()))
+            .write()
+            .unwrap() = unbounded();
+
+        // Start the decoding thread.
+        thread::spawn({
+            let controls = player_controls.clone();
+            move || {
+                let decoder = Decoder::new(controls);
+                decoder.start();
+            }
+        });
+
+        Player {
+            controls: player_controls,
+            event_receiver: player_controls.player_event_handler().1,
+        }
+    }
+
+    // ---------------------------------
+    //          SETTERS/GETTERS
+    // ---------------------------------
+
+    pub fn playback_state(&self) -> PlaybackState
+    {
+        *self.controls.playback_state()
+    }
+
+    pub fn progress(&self) -> ProgressState
+    {
+        *self.controls.progress()
+    }
+
+    /// Returns `true` if there is a file preloaded for playback.
+    pub fn has_preloaded(&self) -> bool
+    {
+        self.controls.is_file_preloaded()
+    }
+
+    // ---------------------------------
+    //            PLAYBACK
+    // ---------------------------------
+
+    /// Returns a Symphonia `MediaSource` for playback.
+    fn source_from_path(
+        path: String,
+        buffer_signal: Arc<AtomicBool>,
+    ) -> anyhow::Result<Box<dyn MediaSource>>
+    {
+        let path2 = path.clone();
+
+        let source: Box<dyn MediaSource> = if path.contains("http") {
+            if path.contains("m3u") {
+                Box::new(
+                    HlsStream::new(path, buffer_signal)
+                        .context(format!("Could not open HLS stream at \"{path2}\""))?,
+                )
+            }
+            else {
+                Box::new(
+                    HttpStream::new(path, buffer_signal)
+                        .context(format!("Could not open HTTP stream at \"{path2}\""))?,
+                )
+            }
+        }
+        else {
+            let file = File::open(path).context(format!("Could not open file at \"{path2}\""))?;
+            Box::new(file)
+        };
+
+        Ok(source)
+    }
+
+    /// Opens a file or network resource for reading and playing.
+    pub fn open(&self, path: String, autoplay: bool) -> Result<(), Error>
+    {
+        let buffer_signal = Arc::new(AtomicBool::new(false));
+        let source = match Self::source_from_path(path, buffer_signal.clone()) {
+            Ok(source) => source,
+            Err(err) => {
+                return Err(Error::Open {
+                    message: err.to_string(),
+                })
+            }
+        };
+
+        let send_event = self
+            .controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::Open(source, buffer_signal));
+
+        if let Err(err) = send_event {
+            return Err(Error::Open {
+                message: err.to_string(),
+            });
+        }
+
+        if autoplay {
+            self.play();
+        }
+        else {
+            self.pause();
+        }
+
+        Ok(())
+    }
+
+    /// Preloads a file or network resource for playback.
+    /// The preloaded file is automatically played when the current file is finished playing.
+    ///
+    /// Use this method if you want gapless playback. It reduces
+    /// the time spent loading between tracks (especially important
+    /// for streaming network files).
+    pub fn preload(&self, path: String) -> Result<(), Error>
+    {
+        let buffer_signal = Arc::new(AtomicBool::new(false));
+        let source = match Self::source_from_path(path, buffer_signal.clone()) {
+            Ok(source) => source,
+            Err(err) => {
+                return Err(Error::Preload {
+                    message: err.to_string(),
+                })
+            }
+        };
+
+        let send_event = self
+            .controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::Preload(source, buffer_signal));
+
+        match send_event {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Error::Preload {
+                message: err.to_string(),
+            }),
+        }
+    }
+
+    /// Plays the preloaded file.
+    pub fn play_preload(&self)
+    {
+        self.controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::PlayPreload)
+            .unwrap();
+    }
+
+    /// Clears the preloaded file so that it doesn't play when the current file is finished.
+    pub fn clear_preload(&self)
+    {
+        self.controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::ClearPreload)
+            .unwrap();
+    }
+
+    pub fn play(&self)
+    {
+        if matches!(*(self.controls.playback_state()), PlaybackState::Play) {
+            return;
+        }
+
+        self.controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::Play)
+            .unwrap();
+        self.controls.set_playback_state(PlaybackState::Play);
+    }
+
+    pub fn pause(&self)
+    {
+        if matches!(*(self.controls.playback_state()), PlaybackState::Pause) {
+            return;
+        }
+
+        self.controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::Pause)
+            .unwrap();
+        self.controls.set_playback_state(PlaybackState::Pause);
+    }
+
+    pub fn stop(&self)
+    {
+        if matches!(*(self.controls.playback_state()), PlaybackState::Stop) {
+            return;
+        }
+
+        self.controls
+            .decoder_event_handler()
+            .0
+            .send(DecoderEvent::Stop)
+            .unwrap();
+
+        let progress = ProgressState {
+            position: Duration::zero(),
+            duration: Duration::zero(),
+        };
+
+        self.controls.set_progress(progress);
+        self.controls.set_playback_state(PlaybackState::Stop);
+    }
+
+    pub fn seek(&self, position: Duration)
+    {
+        self.controls.set_seek_ts(Some(position));
+    }
+
+    pub fn loop_playback(&self, should_loop: bool)
+    {
+        self.controls.set_is_looping(should_loop);
+    }
+
+    pub fn set_volume(&self, volume: f32)
+    {
+        self.controls.set_volume(volume);
+    }
+
+    pub fn normalize_volume(&self, should_normalize: bool)
+    {
+        self.controls.set_is_normalizing(should_normalize);
+    }
+}
+
+impl Drop for Player
+{
+    fn drop(&mut self)
+    {
+        if let Some(thread_killer) = THREAD_KILLER.get() {
+            thread_killer.read().unwrap().0.send(true).unwrap();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests
 {
     use std::{thread, time::Duration};
 
-    use crate::api::*;
+    use crate::*;
 
     #[test]
     fn open_and_play() -> anyhow::Result<()>

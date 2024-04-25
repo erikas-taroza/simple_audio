@@ -19,6 +19,8 @@ use chrono::Duration;
 /// The playback state of the player.
 pub enum PlaybackState
 {
+    /// The player started playing the file.
+    Started(Duration),
     /// The player is currently playing the file.
     Play,
     /// The player is currently paused and there is no output.
@@ -39,13 +41,4 @@ pub struct ProgressState
     pub position: Duration,
     /// The duration of the file that is being played.
     pub duration: Duration,
-}
-
-/// Events that are handled in Dart because they need user action.
-pub enum Callback
-{
-    Error(super::error::Error),
-    /// The player started playing a new file. Contains the duration of the file.
-    /// This is meant to be used to send a new duration to the media controller.
-    PlaybackStarted(Duration),
 }

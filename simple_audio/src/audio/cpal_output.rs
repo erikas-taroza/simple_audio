@@ -79,8 +79,9 @@ impl CpalOutput
                             // Tell the decoder that there is no longer a valid device.
                             // The decoder will make a new `cpal_output`.
                             controls
-                                .event_handler()
-                                .send(PlayerEvent::DeviceChanged)
+                                .decoder_event_handler()
+                                .0
+                                .send(DecoderEvent::DeviceChanged)
                                 .unwrap();
                             ring_buffer_writer.cancel_write();
                         }

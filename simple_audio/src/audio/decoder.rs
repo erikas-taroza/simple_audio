@@ -37,12 +37,8 @@ use symphonia::{
 use symphonia_core::codecs::CodecRegistry;
 
 use crate::{
-    api::Player,
     audio::opus::OpusDecoder,
-    utils::{
-        callback_stream::update_callback_stream, error::Error,
-        playback_state_stream::update_playback_state_stream, progress_state_stream::*, types::*,
-    },
+    utils::{error::Error, types::*},
 };
 
 use super::{
@@ -105,9 +101,12 @@ impl Decoder
         loop {
             // Check if the preload thread is done.
             if let Err(err) = self.poll_preload_thread() {
-                update_callback_stream(Callback::Error(Error::Decode {
-                    message: err.to_string(),
-                }));
+                self.controls
+                    .player_event_handler()
+                    .0
+                    .send(PlayerEvent::Error(Error::Decode {
+                        message: err.to_string(),
+                    }));
             }
 
             // Check for incoming `ThreadMessage`s.
@@ -118,9 +117,12 @@ impl Decoder
                     }
                 }
                 Err(err) => {
-                    update_callback_stream(Callback::Error(Error::Decode {
-                        message: err.to_string(),
-                    }));
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Error(Error::Decode {
+                            message: err.to_string(),
+                        }));
                 }
             }
 
@@ -132,9 +134,12 @@ impl Decoder
                     }
                 }
                 Err(err) => {
-                    update_callback_stream(Callback::Error(Error::Decode {
-                        message: err.to_string(),
-                    }));
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Error(Error::Decode {
+                            message: err.to_string(),
+                        }));
                 }
             }
         }
@@ -154,54 +159,63 @@ impl Decoder
 
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
-        let recv: Option<PlayerEvent> = if self.state.is_paused() {
-            self.controls.event_handler().recv().ok()
+        let recv: Option<DecoderEvent> = if self.state.is_paused() {
+            self.controls.decoder_event_handler().1.recv().ok()
         }
         else {
-            self.controls.event_handler().try_recv().ok()
+            self.controls.decoder_event_handler().1.try_recv().ok()
         };
 
         match recv {
             None => (),
             Some(message) => match message {
-                PlayerEvent::Open(source, buffer_signal) => {
+                DecoderEvent::Open(source, buffer_signal) => {
                     self.cpal_output.ring_buffer_reader.skip_all();
                     self.output_writer = None;
                     self.playback = Some(Self::open(source, buffer_signal)?);
 
                     if let Some(playback) = &self.playback {
-                        crate::utils::callback_stream::update_callback_stream(
-                            Callback::PlaybackStarted(playback.duration),
-                        );
+                        self.controls
+                            .player_event_handler()
+                            .0
+                            .send(PlayerEvent::Playback(PlaybackState::Started(
+                                playback.duration,
+                            )));
                     }
                 }
-                PlayerEvent::Play => {
+                DecoderEvent::Play => {
                     self.state = DecoderState::Playing;
                     self.cpal_output.play();
                 }
-                PlayerEvent::Pause => {
+                DecoderEvent::Pause => {
                     self.state = DecoderState::Paused;
                     self.cpal_output.pause();
                 }
-                PlayerEvent::Stop => {
+                DecoderEvent::Stop => {
                     self.state = DecoderState::Paused;
                     self.cpal_output.ring_buffer_reader.skip_all();
                     self.cpal_output.pause();
                     self.output_writer = None;
                     self.playback = None;
                 }
-                PlayerEvent::DeviceChanged => {
-                    Player::internal_pause(&self.controls);
+                DecoderEvent::DeviceChanged => {
+                    self.state = DecoderState::Paused;
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Playback(PlaybackState::Pause));
+                    self.controls.set_playback_state(PlaybackState::Pause);
+
                     self.cpal_output = CpalOutput::new(self.controls.clone())?;
                     self.output_writer = None;
                 }
-                PlayerEvent::Preload(source, buffer_signal) => {
+                DecoderEvent::Preload(source, buffer_signal) => {
                     self.preload_playback = None;
                     self.controls.set_is_file_preloaded(false);
                     let handle = self.preload(source, buffer_signal);
                     self.preload_thread = Some(handle);
                 }
-                PlayerEvent::PlayPreload => {
+                DecoderEvent::PlayPreload => {
                     if self.preload_playback.is_none() {
                         return Ok(false);
                     }
@@ -210,9 +224,13 @@ impl Decoder
                     self.playback = Some(playback);
                     self.controls.set_is_file_preloaded(false);
 
-                    Player::internal_play(&self.controls);
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Playback(PlaybackState::Play));
+                    self.controls.set_playback_state(PlaybackState::Play);
                 }
-                PlayerEvent::ClearPreload => {
+                DecoderEvent::ClearPreload => {
                     self.preload_playback = None;
                     self.controls.set_is_file_preloaded(false);
                 }
@@ -297,9 +315,12 @@ impl Decoder
             Err(_) => {
                 if self.controls.is_looping() {
                     self.controls.set_seek_ts(Some(Duration::zero()));
-                    crate::utils::callback_stream::update_callback_stream(
-                        Callback::PlaybackStarted(playback.duration),
-                    );
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Playback(PlaybackState::Started(
+                            playback.duration,
+                        )));
                     return Ok(false);
                 }
 
@@ -329,7 +350,10 @@ impl Decoder
             duration: playback.duration,
         };
 
-        update_progress_state_stream(progress);
+        self.controls
+            .player_event_handler()
+            .0
+            .send(PlayerEvent::Progress(progress));
         self.controls.set_progress(progress);
 
         // Write the decoded packet to CPAL.
@@ -363,24 +387,30 @@ impl Decoder
         if let Some(preload) = self.preload_playback.take() {
             self.playback = Some(preload);
             self.controls.set_is_file_preloaded(false);
-            update_playback_state_stream(PlaybackState::PreloadPlayed);
+            self.controls
+                .set_playback_state(PlaybackState::PreloadPlayed);
         }
         // Nothing is preloaded so stop like normal.
         else {
             self.state = DecoderState::Paused;
             self.cpal_output.pause();
-            update_playback_state_stream(PlaybackState::Done);
-            self.controls.set_is_playing(false);
-            self.controls.set_is_stopped(true);
+            self.controls
+                .player_event_handler()
+                .0
+                .send(PlayerEvent::Playback(PlaybackState::Done));
+            self.controls.set_playback_state(PlaybackState::Done);
         }
 
-        let progress_state = ProgressState {
+        let progress = ProgressState {
             position: Duration::zero(),
             duration: Duration::zero(),
         };
 
-        update_progress_state_stream(progress_state);
-        self.controls.set_progress(progress_state);
+        self.controls
+            .player_event_handler()
+            .0
+            .send(PlayerEvent::Progress(progress));
+        self.controls.set_progress(progress);
     }
 
     /// Opens the given source for playback. Returns a `Playback`

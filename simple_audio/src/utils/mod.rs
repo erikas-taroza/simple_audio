@@ -15,8 +15,5 @@
 // If not, see <https://www.gnu.org/licenses/>.
 
 pub mod blocking_rb;
-pub mod callback_stream;
 pub mod error;
-pub mod playback_state_stream;
-pub mod progress_state_stream;
 pub mod types;

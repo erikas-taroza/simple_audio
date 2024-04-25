@@ -17,10 +17,13 @@
 use std::sync::{atomic::AtomicBool, Arc, OnceLock, RwLock, RwLockReadGuard};
 
 use chrono::Duration;
-use crossbeam::channel::{unbounded, Receiver, RecvError, SendError, Sender, TryRecvError};
+use crossbeam::channel::{unbounded, Receiver, Sender};
 use symphonia::core::io::MediaSource;
 
-use crate::utils::types::ProgressState;
+use crate::{
+    utils::{error::Error, types::ProgressState},
+    PlaybackState,
+};
 
 /// Use this to stop the decoder thread.
 pub static THREAD_KILLER: OnceLock<RwLock<(Sender<bool>, Receiver<bool>)>> = OnceLock::new();
@@ -55,42 +58,14 @@ macro_rules! getset_rwlock {
     };
 }
 
-pub struct EventHandler
-{
-    sender: Sender<PlayerEvent>,
-    receiver: Receiver<PlayerEvent>,
-}
-
-impl EventHandler
-{
-    fn new() -> EventHandler
-    {
-        let (sender, receiver) = unbounded();
-        Self { sender, receiver }
-    }
-
-    pub fn send(&self, event: PlayerEvent) -> Result<(), SendError<PlayerEvent>>
-    {
-        self.sender.send(event)
-    }
-
-    pub fn recv(&self) -> Result<PlayerEvent, RecvError>
-    {
-        self.receiver.recv()
-    }
-
-    pub fn try_recv(&self) -> Result<PlayerEvent, TryRecvError>
-    {
-        self.receiver.try_recv()
-    }
-}
+type EventHandler<T> = (Sender<T>, Receiver<T>);
 
 #[derive(Clone)]
 pub struct Controls
 {
-    event_handler: Arc<RwLock<EventHandler>>,
-    is_playing: Arc<AtomicBool>,
-    is_stopped: Arc<AtomicBool>,
+    decoder_event_handler: Arc<RwLock<EventHandler<DecoderEvent>>>,
+    player_event_handler: Arc<RwLock<EventHandler<PlayerEvent>>>,
+    playback_state: Arc<RwLock<PlaybackState>>,
     is_looping: Arc<AtomicBool>,
     is_normalizing: Arc<AtomicBool>,
     is_file_preloaded: Arc<AtomicBool>,
@@ -101,9 +76,17 @@ pub struct Controls
 
 impl Controls
 {
-    getset_rwlock!(event_handler, _set_event_handler, EventHandler);
-    getset_atomic_bool!(is_playing, set_is_playing);
-    getset_atomic_bool!(is_stopped, set_is_stopped);
+    getset_rwlock!(
+        decoder_event_handler,
+        _set_decoder_event_handler,
+        EventHandler<DecoderEvent>
+    );
+    getset_rwlock!(
+        player_event_handler,
+        _set_player_event_handler,
+        EventHandler<PlayerEvent>
+    );
+    getset_rwlock!(playback_state, set_playback_state, PlaybackState);
     getset_atomic_bool!(is_looping, set_is_looping);
     getset_atomic_bool!(is_normalizing, set_is_normalizing);
     getset_atomic_bool!(is_file_preloaded, set_is_file_preloaded);
@@ -117,9 +100,9 @@ impl Default for Controls
     fn default() -> Self
     {
         Controls {
-            event_handler: Arc::new(RwLock::new(EventHandler::new())),
-            is_playing: Arc::new(AtomicBool::new(false)),
-            is_stopped: Arc::new(AtomicBool::new(true)),
+            decoder_event_handler: Arc::new(RwLock::new(unbounded())),
+            player_event_handler: Arc::new(RwLock::new(unbounded())),
+            playback_state: Arc::new(RwLock::new(PlaybackState::Stop)),
             is_looping: Arc::new(AtomicBool::new(false)),
             is_normalizing: Arc::new(AtomicBool::new(false)),
             is_file_preloaded: Arc::new(AtomicBool::new(false)),
@@ -133,7 +116,8 @@ impl Default for Controls
     }
 }
 
-pub enum PlayerEvent
+/// Messages to communicate with the decoder from the player.
+pub enum DecoderEvent
 {
     Open(Box<dyn MediaSource>, Arc<AtomicBool>),
     Play,
@@ -145,4 +129,12 @@ pub enum PlayerEvent
     Preload(Box<dyn MediaSource>, Arc<AtomicBool>),
     PlayPreload,
     ClearPreload,
+}
+
+/// Messages to communicate with the player from the decoder.
+pub enum PlayerEvent
+{
+    Playback(PlaybackState),
+    Progress(ProgressState),
+    Error(Error),
 }
