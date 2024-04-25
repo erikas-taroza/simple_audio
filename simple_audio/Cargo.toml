@@ -3,9 +3,6 @@ name = "simple_audio"
 version = "1.9.0"
 edition = "2021"
 
-[lib]
-crate-type = ["staticlib", "cdylib"]
-
 [dependencies]
 cpal = "0.15.2"
 reqwest = { version = "0", features = [
@@ -34,6 +31,10 @@ android_logger = "0.13.3"
 log = "0.4.20"
 jni = "0.21.1"
 ndk-context = "0.1.1"
+
+[dev-dependencies]
+ratatui = "0.26.2"
+crossterm = "0.27.0"
 
 [profile.release]
 lto = true
