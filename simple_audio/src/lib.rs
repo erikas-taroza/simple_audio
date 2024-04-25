@@ -40,8 +40,8 @@ use std::{
 
 use anyhow::Context;
 use audio::controls::PlayerEvent;
-use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver};
+use std::time::Duration;
 use symphonia::core::io::MediaSource;
 use types::*;
 
@@ -297,8 +297,8 @@ impl Player
             .unwrap();
 
         let progress = ProgressState {
-            position: Duration::zero(),
-            duration: Duration::zero(),
+            position: Duration::ZERO,
+            duration: Duration::ZERO,
         };
 
         self.controls.set_progress(progress);
@@ -365,9 +365,9 @@ mod tests
         )?;
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
-        player.seek(chrono::Duration::seconds(90));
+        player.seek(std::time::Duration::from_secs(90));
         thread::sleep(Duration::from_secs(10));
-        player.seek(chrono::Duration::seconds(60));
+        player.seek(std::time::Duration::from_secs(60));
         thread::sleep(Duration::from_secs(187));
         Ok(())
     }
@@ -379,9 +379,9 @@ mod tests
         player.open("https://cf-hls-media.sndcdn.com/playlist/x7uSGJp4rku7.128.mp3/playlist.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLWhscy1tZWRpYS5zbmRjZG4uY29tL3BsYXlsaXN0L3g3dVNHSnA0cmt1Ny4xMjgubXAzL3BsYXlsaXN0Lm0zdTgqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjc1ODA1NTM2fX19XX0_&Signature=Cd6o8KT6AEoLaIHok~438sourFeoHywCDdG09MS38qxmWLsKyJU-eFHOdh8jccvfPaWfjYkEEqfnpp6EMINXP3f99GAwWFPGMrp43lqz2JAL5MBUAc1plLLm1KV~t5Vy5ON6M1X~Fj6nFV7vdD7mGR84lfeafFmXBP4U4oZATI9GoPrUkEgVtCViDg6kBMVKk77e144LFwzZtkiSHj-S7umU5Qf9r2lDCqYaHVVoWSMtJBWMXoKQZCjdR5e6pqINcRQA-348wX8C9bonQGeoCZ3xRQWPq0ZtznmDKdZ-p91YJL8o4LNSPOMreu-ELsXhoftd7iKpZoG7~YwX2Oxg5A__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ".to_string(), true)?;
         player.set_volume(0.1);
         thread::sleep(Duration::from_secs(10));
-        player.seek(chrono::Duration::seconds(90));
+        player.seek(std::time::Duration::from_secs(90));
         thread::sleep(Duration::from_secs(10));
-        player.seek(chrono::Duration::seconds(60));
+        player.seek(std::time::Duration::from_secs(60));
         thread::sleep(Duration::from_secs(187));
         Ok(())
     }
@@ -424,7 +424,7 @@ mod tests
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
         thread::sleep(Duration::from_secs(1));
         println!("Seeking now");
-        player.seek(chrono::Duration::seconds(50));
+        player.seek(std::time::Duration::from_secs(50));
         thread::sleep(Duration::from_secs(10));
         Ok(())
     }
@@ -436,7 +436,7 @@ mod tests
         player.set_volume(0.5);
 
         player.open("/home/erikas/Music/1.mp3".to_string(), true)?;
-        player.seek(chrono::Duration::seconds(10));
+        player.seek(std::time::Duration::from_secs(10));
         thread::sleep(Duration::from_secs(5));
         println!("Stopping now");
         player.stop();

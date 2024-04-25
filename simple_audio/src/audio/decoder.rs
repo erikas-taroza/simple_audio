@@ -20,9 +20,9 @@ use std::{
 };
 
 use anyhow::{anyhow, Context};
-use chrono::Duration;
 use crossbeam::channel::Receiver;
 use lazy_static::lazy_static;
+use std::time::Duration;
 use symphonia::{
     core::{
         audio::{AsAudioBufferRef, AudioBuffer},
@@ -291,7 +291,7 @@ impl Decoder
 
         if let Some(seek_ts) = *self.controls.seek_ts() {
             let seek_to = SeekTo::Time {
-                time: Time::from(seek_ts.num_seconds() as u64),
+                time: Time::from(seek_ts.as_secs()),
                 track_id: Some(playback.track_id),
             };
             playback.reader.seek(SeekMode::Coarse, seek_to)?;
@@ -314,7 +314,7 @@ impl Decoder
             // has reached the end of the audio.
             Err(_) => {
                 if self.controls.is_looping() {
-                    self.controls.set_seek_ts(Some(Duration::zero()));
+                    self.controls.set_seek_ts(Some(Duration::ZERO));
                     self.controls
                         .player_event_handler()
                         .0
@@ -346,7 +346,7 @@ impl Decoder
 
         // Update the progress stream with calculated times.
         let progress = ProgressState {
-            position: Duration::seconds(position as i64),
+            position: Duration::from_secs(position),
             duration: playback.duration,
         };
 
@@ -403,8 +403,8 @@ impl Decoder
         }
 
         let progress = ProgressState {
-            position: Duration::zero(),
-            duration: Duration::zero(),
+            position: Duration::ZERO,
+            duration: Duration::ZERO,
         };
 
         self.controls
@@ -464,7 +464,7 @@ impl Decoder
             decoder,
             track_id,
             timebase,
-            duration: Duration::seconds(duration as i64),
+            duration: Duration::from_secs(duration),
             buffer_signal,
             preload: None,
         })

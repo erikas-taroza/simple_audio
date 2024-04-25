@@ -16,8 +16,8 @@
 
 use std::sync::{atomic::AtomicBool, Arc, OnceLock, RwLock, RwLockReadGuard};
 
-use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver, Sender};
+use std::time::Duration;
 use symphonia::core::io::MediaSource;
 
 use crate::{types::*, utils::error::Error};
@@ -106,8 +106,8 @@ impl Default for Controls
             volume: Arc::new(RwLock::new(1.0)),
             seek_ts: Arc::new(RwLock::new(None)),
             progress: Arc::new(RwLock::new(ProgressState {
-                position: Duration::zero(),
-                duration: Duration::zero(),
+                position: Duration::ZERO,
+                duration: Duration::ZERO,
             })),
         }
     }

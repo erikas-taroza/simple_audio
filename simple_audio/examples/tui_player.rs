@@ -3,7 +3,6 @@ use std::{
     io::{self, stdout},
 };
 
-use chrono::Duration;
 use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -11,6 +10,7 @@ use crossterm::{
 };
 use ratatui::{prelude::*, widgets::*};
 use simple_audio::{types::*, Player};
+use std::time::Duration;
 
 fn main() -> io::Result<()>
 {
