@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:simple_audio/simple_audio.dart' as sa;
 
 import 'media_controllers.dart';
@@ -27,6 +28,12 @@ class AudioServiceController extends BaseAudioHandler
   Future<void> pause() => player.pause();
 
   @override
+  Future<void> skipToNext() async => debugPrint("Skip Next");
+
+  @override
+  Future<void> skipToPrevious() async => debugPrint("Skip Previous");
+
+  @override
   Future<void> seek(Duration position) => player.seek(position.inSeconds);
 
   @override
@@ -48,11 +55,9 @@ class AudioServiceController extends BaseAudioHandler
     playbackState.add(
       PlaybackState(
         controls: [
-          MediaControl.rewind,
           MediaControl.skipToPrevious,
           MediaControl.pause,
           MediaControl.skipToNext,
-          MediaControl.fastForward,
         ],
         systemActions: const {
           MediaAction.seek,
@@ -81,11 +86,9 @@ class AudioServiceController extends BaseAudioHandler
                 ? AudioProcessingState.completed
                 : AudioProcessingState.ready,
         controls: [
-          MediaControl.rewind,
           MediaControl.skipToPrevious,
           isPlaying ? MediaControl.pause : MediaControl.play,
           MediaControl.skipToNext,
-          MediaControl.fastForward,
         ],
         updatePosition: Duration(seconds: position),
       ),

@@ -20,6 +20,8 @@ void main() async {
     mediaController = AudioServiceController(player);
   } else if (Platform.isLinux) {
     mediaController = Mpris(player);
+  } else if (Platform.isWindows) {
+    mediaController = Smtc(player);
   } else {
     throw UnsupportedError("Platform is not supported");
   }

@@ -1,6 +1,8 @@
 import 'package:simple_audio/simple_audio.dart';
 
 export 'audio_service.dart';
+export 'mpris.dart';
+export 'smtc.dart';
 
 abstract class MediaController {
   void setMetadata(Metadata m, int duration);

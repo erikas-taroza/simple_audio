@@ -1,4 +1,5 @@
 import 'package:anni_mpris_service/anni_mpris_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:simple_audio/simple_audio.dart';
 
 import './media_controllers.dart' as mc;
@@ -34,6 +35,12 @@ class Mpris extends MPRISService with mc.MediaController {
 
   @override
   Future<void> onPause() => player.pause();
+
+  @override
+  Future<void> onNext() async => debugPrint("Skip Next");
+
+  @override
+  Future<void> onPrevious() async => debugPrint("Skip Previous");
 
   @override
   Future<void> onSetPosition(String trackId, int position) =>
