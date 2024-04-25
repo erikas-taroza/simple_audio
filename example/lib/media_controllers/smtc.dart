@@ -41,7 +41,7 @@ class Smtc extends MediaController {
   final SMTCWindows smtc;
 
   @override
-  void setMetadata(Metadata m, int duration) {
+  void setMetadata(Metadata m, Duration duration) {
     smtc.updateMetadata(
       MusicMetadata(
         title: m.title,
@@ -55,9 +55,9 @@ class Smtc extends MediaController {
       PlaybackTimeline(
         startTimeMs: 0,
         positionMs: 0,
-        endTimeMs: duration * 1000,
+        endTimeMs: duration.inMilliseconds,
         minSeekTimeMs: 0,
-        maxSeekTimeMs: duration * 1000,
+        maxSeekTimeMs: duration.inMilliseconds,
       ),
     );
   }
@@ -68,7 +68,7 @@ class Smtc extends MediaController {
   }
 
   @override
-  void onPlaybackStateChanged(PlaybackState state, int position) {
+  void onPlaybackStateChanged(PlaybackState state, Duration position) {
     PlaybackStatus playbackStatus = {
       PlaybackState.play: PlaybackStatus.Playing,
       PlaybackState.preloadPlayed: PlaybackStatus.Playing,
@@ -78,7 +78,6 @@ class Smtc extends MediaController {
     }[state]!;
 
     smtc.setPlaybackStatus(playbackStatus);
-
-    smtc.setPosition(Duration(seconds: position));
+    smtc.setPosition(position);
   }
 }

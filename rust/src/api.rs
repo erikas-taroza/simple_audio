@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::Context;
+use chrono::Duration;
 use crossbeam::channel::unbounded;
 use flutter_rust_bridge::{RustOpaque, StreamSink};
 use symphonia::core::io::MediaSource;
@@ -268,8 +269,8 @@ impl Player
         controls.event_handler().send(PlayerEvent::Stop).unwrap();
 
         let progress = ProgressState {
-            position: 0,
-            duration: 0,
+            position: Duration::zero(),
+            duration: Duration::zero(),
         };
 
         update_progress_state_stream(progress);
@@ -279,11 +280,11 @@ impl Player
         controls.set_is_stopped(true);
     }
 
-    fn internal_seek(controls: &Controls, seconds: u64)
+    fn internal_seek(controls: &Controls, position: Duration)
     {
-        controls.set_seek_ts(Some(seconds));
+        controls.set_seek_ts(Some(position));
         update_progress_state_stream(ProgressState {
-            position: seconds,
+            position: position,
             duration: controls.progress().duration,
         });
     }
@@ -317,9 +318,9 @@ impl Player
         self.controls.set_volume(volume);
     }
 
-    pub fn seek(&self, seconds: u64)
+    pub fn seek(&self, position: Duration)
     {
-        Self::internal_seek(&self.controls, seconds);
+        Self::internal_seek(&self.controls, position);
     }
 
     pub fn normalize_volume(&self, should_normalize: bool)

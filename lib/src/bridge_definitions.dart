@@ -102,7 +102,7 @@ abstract class SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kSetVolumeMethodPlayerConstMeta;
 
   Future<void> seekMethodPlayer(
-      {required Player that, required int seconds, dynamic hint});
+      {required Player that, required Duration position, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kSeekMethodPlayerConstMeta;
 
@@ -136,10 +136,10 @@ sealed class Callback with _$Callback {
     Error field0,
   ) = Callback_Error;
 
-  /// The player started playing a new file. Contains the duration of the file in seconds.
+  /// The player started playing a new file. Contains the duration of the file.
   /// This is meant to be used to send a new duration to the media controller.
   const factory Callback.playbackStarted(
-    int field0,
+    Duration field0,
   ) = Callback_PlaybackStarted;
 }
 
@@ -287,10 +287,10 @@ class Player {
         volume: volume,
       );
 
-  Future<void> seek({required int seconds, dynamic hint}) =>
+  Future<void> seek({required Duration position, dynamic hint}) =>
       bridge.seekMethodPlayer(
         that: this,
-        seconds: seconds,
+        position: position,
       );
 
   Future<void> normalizeVolume({required bool shouldNormalize, dynamic hint}) =>
@@ -302,12 +302,11 @@ class Player {
 
 /// Provides the current progress of the player.
 class ProgressState {
-  /// The position, in seconds, of the player.
-  final int position;
+  /// The position of the player.
+  final Duration position;
 
-  /// The duration, in seconds, of the file that
-  /// is being played.
-  final int duration;
+  /// The duration of the file that is being played.
+  final Duration duration;
 
   const ProgressState({
     required this.position,

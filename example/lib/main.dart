@@ -53,12 +53,12 @@ class _MyAppState extends State<MyApp> {
   bool normalize = false;
   bool loop = false;
 
-  double position = 0;
-  double duration = 0;
+  Duration position = Duration.zero;
+  Duration duration = Duration.zero;
 
-  String convertSecondsToReadableString(int seconds) {
-    int m = seconds ~/ 60;
-    int s = seconds % 60;
+  String convertSecondsToReadableString(Duration seconds) {
+    int m = seconds.inSeconds ~/ 60;
+    int s = seconds.inSeconds % 60;
 
     return "$m:${s > 9 ? s : "0$s"}";
   }
@@ -102,13 +102,13 @@ class _MyAppState extends State<MyApp> {
 
     player.playbackState.listen((event) async {
       setState(() => playbackState = event);
-      mediaController.onPlaybackStateChanged(event, position.toInt());
+      mediaController.onPlaybackStateChanged(event, position);
     });
 
     player.progressState.listen((event) {
       setState(() {
-        position = event.position.toDouble();
-        duration = event.duration.toDouble();
+        position = event.position;
+        duration = event.duration;
       });
     });
   }
@@ -304,20 +304,23 @@ class _MyAppState extends State<MyApp> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(convertSecondsToReadableString(position.floor())),
+                    Text(convertSecondsToReadableString(position)),
                     Flexible(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 450),
                         child: Slider(
-                          value: min(position, duration),
-                          max: duration,
+                          value: min(
+                            position.inSeconds.toDouble(),
+                            duration.inSeconds.toDouble(),
+                          ),
+                          max: duration.inSeconds.toDouble(),
                           onChanged: (value) {
-                            player.seek(value.floor());
+                            player.seek(Duration(seconds: value.floor()));
                           },
                         ),
                       ),
                     ),
-                    Text(convertSecondsToReadableString(duration.floor())),
+                    Text(convertSecondsToReadableString(duration)),
                   ],
                 ),
               ),

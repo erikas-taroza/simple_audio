@@ -361,16 +361,16 @@ class SimpleAudioImpl implements SimpleAudio {
       );
 
   Future<void> seekMethodPlayer(
-      {required Player that, required int seconds, dynamic hint}) {
+      {required Player that, required Duration position, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
-    var arg1 = _platform.api2wire_u64(seconds);
+    var arg1 = _platform.api2wire_Chrono_Duration(position);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
           _platform.inner.wire_seek__method__Player(port_, arg0, arg1),
       parseSuccessData: _wire2api_unit,
       parseErrorData: null,
       constMeta: kSeekMethodPlayerConstMeta,
-      argValues: [that, seconds],
+      argValues: [that, position],
       hint: hint,
     ));
   }
@@ -378,7 +378,7 @@ class SimpleAudioImpl implements SimpleAudio {
   FlutterRustBridgeTaskConstMeta get kSeekMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "seek__method__Player",
-        argNames: ["that", "seconds"],
+        argNames: ["that", "position"],
       );
 
   Future<void> normalizeVolumeMethodPlayer(
@@ -411,6 +411,10 @@ class SimpleAudioImpl implements SimpleAudio {
   }
 // Section: wire2api
 
+  Duration _wire2api_Chrono_Duration(dynamic raw) {
+    return wire2apiDuration(_wire2api_i64(raw));
+  }
+
   Controls _wire2api_Controls(dynamic raw) {
     return Controls.fromRaw(raw[0], raw[1], this);
   }
@@ -435,7 +439,7 @@ class SimpleAudioImpl implements SimpleAudio {
         );
       case 1:
         return Callback_PlaybackStarted(
-          _wire2api_u64(raw[1]),
+          _wire2api_Chrono_Duration(raw[1]),
         );
       default:
         throw Exception("unreachable");
@@ -469,6 +473,10 @@ class SimpleAudioImpl implements SimpleAudio {
     return raw as int;
   }
 
+  int _wire2api_i64(dynamic raw) {
+    return castInt(raw);
+  }
+
   PlaybackState _wire2api_playback_state(dynamic raw) {
     return PlaybackState.values[raw as int];
   }
@@ -488,13 +496,9 @@ class SimpleAudioImpl implements SimpleAudio {
     if (arr.length != 2)
       throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
     return ProgressState(
-      position: _wire2api_u64(arr[0]),
-      duration: _wire2api_u64(arr[1]),
+      position: _wire2api_Chrono_Duration(arr[0]),
+      duration: _wire2api_Chrono_Duration(arr[1]),
     );
-  }
-
-  int _wire2api_u64(dynamic raw) {
-    return castInt(raw);
   }
 
   int _wire2api_u8(dynamic raw) {
@@ -535,6 +539,11 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
 // Section: api2wire
 
   @protected
+  int api2wire_Chrono_Duration(Duration raw) {
+    return api2wire_i64(raw.inMicroseconds);
+  }
+
+  @protected
   wire_Controls api2wire_Controls(Controls raw) {
     final ptr = inner.new_Controls();
     _api_fill_to_wire_Controls(raw, ptr);
@@ -554,7 +563,7 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   @protected
-  int api2wire_u64(int raw) {
+  int api2wire_i64(int raw) {
     return raw;
   }
 
@@ -985,19 +994,19 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   void wire_seek__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
-    int seconds,
+    int position,
   ) {
     return _wire_seek__method__Player(
       port_,
       that,
-      seconds,
+      position,
     );
   }
 
   late final _wire_seek__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>,
-              ffi.Uint64)>>('wire_seek__method__Player');
+              ffi.Int64)>>('wire_seek__method__Player');
   late final _wire_seek__method__Player = _wire_seek__method__PlayerPtr
       .asFunction<void Function(int, ffi.Pointer<wire_Player>, int)>();
 

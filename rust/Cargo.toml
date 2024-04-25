@@ -26,6 +26,7 @@ ebur128 = "0.1.8"
 anyhow = "1.0.75"
 lazy_static = "1.4.0"
 audiopus = "0.3.0-rc.0"
+chrono = "0.4.38"
 
 # Android Dependencies
 [target.'cfg(target_os = "android")'.dependencies]

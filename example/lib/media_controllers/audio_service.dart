@@ -34,10 +34,10 @@ class AudioServiceController extends BaseAudioHandler
   Future<void> skipToPrevious() async => debugPrint("Skip Previous");
 
   @override
-  Future<void> seek(Duration position) => player.seek(position.inSeconds);
+  Future<void> seek(Duration position) => player.seek(position);
 
   @override
-  void setMetadata(Metadata m, int duration) {
+  void setMetadata(Metadata m, Duration duration) {
     mediaItem.add(
       MediaItem(
         id: m.hashCode.toString(),
@@ -45,7 +45,7 @@ class AudioServiceController extends BaseAudioHandler
         artist: m.artist,
         album: m.album,
         artUri: Uri.tryParse(m.artUri),
-        duration: Duration(seconds: duration),
+        duration: duration,
       ),
     );
   }
@@ -74,7 +74,7 @@ class AudioServiceController extends BaseAudioHandler
   }
 
   @override
-  void onPlaybackStateChanged(sa.PlaybackState state, int position) {
+  void onPlaybackStateChanged(sa.PlaybackState state, Duration position) {
     bool isPlaying = state == sa.PlaybackState.preloadPlayed ||
         state == sa.PlaybackState.play;
 
@@ -90,7 +90,7 @@ class AudioServiceController extends BaseAudioHandler
           isPlaying ? MediaControl.pause : MediaControl.play,
           MediaControl.skipToNext,
         ],
-        updatePosition: Duration(seconds: position),
+        updatePosition: position,
       ),
     );
   }

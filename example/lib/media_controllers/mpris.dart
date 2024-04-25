@@ -44,16 +44,16 @@ class Mpris extends MPRISService with mc.MediaController {
 
   @override
   Future<void> onSetPosition(String trackId, int position) =>
-      player.seek(Duration(microseconds: position).inSeconds);
+      player.seek(Duration(microseconds: position));
 
   @override
-  void setMetadata(mc.Metadata m, int duration) {
+  void setMetadata(mc.Metadata m, Duration duration) {
     metadata = Metadata(
       trackId: "/${m.hashCode}",
       trackTitle: m.title,
       trackArtist: [m.artist],
       artUrl: m.artUri,
-      trackLength: Duration(seconds: duration),
+      trackLength: duration,
     );
   }
 
@@ -65,7 +65,7 @@ class Mpris extends MPRISService with mc.MediaController {
   }
 
   @override
-  void onPlaybackStateChanged(PlaybackState state, int position) {
+  void onPlaybackStateChanged(PlaybackState state, Duration position) {
     playbackStatus = {
       PlaybackState.play: PlaybackStatus.playing,
       PlaybackState.preloadPlayed: PlaybackStatus.playing,
@@ -74,6 +74,6 @@ class Mpris extends MPRISService with mc.MediaController {
       PlaybackState.done: PlaybackStatus.stopped,
     }[state]!;
 
-    updatePosition(Duration(seconds: position));
+    updatePosition(position);
   }
 }
