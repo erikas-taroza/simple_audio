@@ -186,10 +186,20 @@ impl Decoder
                 DecoderEvent::Play => {
                     self.state = DecoderState::Playing;
                     self.cpal_output.play();
+
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Playback(PlaybackState::Play))?;
                 }
                 DecoderEvent::Pause => {
                     self.state = DecoderState::Paused;
                     self.cpal_output.pause();
+
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Playback(PlaybackState::Pause))?;
                 }
                 DecoderEvent::Stop => {
                     self.state = DecoderState::Paused;
@@ -197,6 +207,11 @@ impl Decoder
                     self.cpal_output.pause();
                     self.output_writer = None;
                     self.playback = None;
+
+                    self.controls
+                        .player_event_handler()
+                        .0
+                        .send(PlayerEvent::Playback(PlaybackState::Stop))?;
                 }
                 DecoderEvent::DeviceChanged => {
                     self.state = DecoderState::Paused;

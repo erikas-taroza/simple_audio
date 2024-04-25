@@ -20,7 +20,7 @@ use crossbeam::channel::{unbounded, Receiver, Sender};
 use std::time::Duration;
 use symphonia::core::io::MediaSource;
 
-use crate::{error::Error, types::*};
+use crate::types::*;
 
 /// Use this to stop the decoder thread.
 pub static THREAD_KILLER: OnceLock<RwLock<(Sender<bool>, Receiver<bool>)>> = OnceLock::new();
@@ -126,12 +126,4 @@ pub enum DecoderEvent
     Preload(Box<dyn MediaSource>, Arc<AtomicBool>),
     PlayPreload,
     ClearPreload,
-}
-
-/// Messages to communicate with the player from the decoder.
-pub enum PlayerEvent
-{
-    Playback(PlaybackState),
-    Progress(ProgressState),
-    Error(Error),
 }

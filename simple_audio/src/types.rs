@@ -16,6 +16,8 @@
 
 use std::time::Duration;
 
+use crate::error::Error;
+
 /// The playback state of the player.
 #[derive(Clone, Copy, Debug)]
 pub enum PlaybackState
@@ -42,4 +44,12 @@ pub struct ProgressState
     pub position: Duration,
     /// The duration of the file that is being played.
     pub duration: Duration,
+}
+
+/// Messages to communicate with the player from the decoder.
+pub enum PlayerEvent
+{
+    Playback(PlaybackState),
+    Progress(ProgressState),
+    Error(Error),
 }

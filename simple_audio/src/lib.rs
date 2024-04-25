@@ -40,20 +40,17 @@ use std::{
 };
 
 use anyhow::Context;
-use audio::controls::PlayerEvent;
 use crossbeam::channel::{unbounded, Receiver};
 use error::Error;
 use std::time::Duration;
 use symphonia::core::io::MediaSource;
 use types::*;
 
-use crate::audio::{
-    controls::{DecoderEvent, THREAD_KILLER},
+use audio::{
+    controls::{Controls, DecoderEvent, THREAD_KILLER},
     decoder::Decoder,
     sources::{hls::HlsStream, http::HttpStream},
 };
-
-pub use crate::audio::controls::Controls;
 
 pub struct Player
 {
