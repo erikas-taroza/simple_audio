@@ -21,6 +21,7 @@ use std::{
 
 use symphonia::core::io::MediaSource;
 
+#[cfg(any(feature = "hls_streaming", feature = "http_streaming"))]
 pub const CHUNK_SIZE: usize = 1024 * 256;
 
 pub trait Streamable: Read + Seek + Send + Sync + MediaSource

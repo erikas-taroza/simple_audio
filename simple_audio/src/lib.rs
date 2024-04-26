@@ -49,7 +49,6 @@ use types::*;
 use audio::{
     controls::{Controls, DecoderEvent, THREAD_KILLER},
     decoder::Decoder,
-    sources::{hls::HlsStream, http::HttpStream},
 };
 
 pub struct Player
@@ -139,15 +138,19 @@ impl Player
     fn source_from_path(
         &self,
         path: String,
-        buffer_signal: Arc<AtomicBool>,
+        #[allow(unused_variables)] buffer_signal: Arc<AtomicBool>,
     ) -> anyhow::Result<Box<dyn MediaSource>>
     {
         let path2 = path.clone();
 
         let source: Box<dyn MediaSource> = if path.contains("http") {
-            if path.contains("m3u") {
+            let _file: Box<dyn MediaSource> = if path.contains("m3u") {
+                #[cfg(not(feature = "hls_streaming"))]
+                panic!("HLS streaming feature not enabled.");
+
+                #[cfg(feature = "hls_streaming")]
                 Box::new(
-                    HlsStream::new(
+                    audio::sources::hls::HlsStream::new(
                         path,
                         buffer_signal,
                         self.controls.player_event_handler().0.clone(),
@@ -156,15 +159,22 @@ impl Player
                 )
             }
             else {
+                #[cfg(not(feature = "http_streaming"))]
+                panic!("HTTP streaming feature not enabled.");
+
+                #[cfg(feature = "http_streaming")]
                 Box::new(
-                    HttpStream::new(
+                    audio::sources::http::HttpStream::new(
                         path,
                         buffer_signal,
                         self.controls.player_event_handler().0.clone(),
                     )
                     .context(format!("Could not open HTTP stream at \"{path2}\""))?,
                 )
-            }
+            };
+
+            #[allow(unreachable_code)]
+            _file
         }
         else {
             let file = File::open(path).context(format!("Could not open file at \"{path2}\""))?;

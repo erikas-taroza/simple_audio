@@ -36,7 +36,7 @@ use symphonia::{
 };
 use symphonia_core::codecs::CodecRegistry;
 
-use crate::{audio::opus::OpusDecoder, error::Error, types::*};
+use crate::{error::Error, types::*};
 
 use super::{
     controls::*,
@@ -47,7 +47,8 @@ lazy_static! {
     static ref CODEC_REGISTRY: CodecRegistry = {
         let mut registry = CodecRegistry::new();
         register_enabled_codecs(&mut registry);
-        registry.register_all::<OpusDecoder>();
+        #[cfg(feature = "opus")]
+        registry.register_all::<crate::audio::opus::OpusDecoder>();
         registry
     };
 }

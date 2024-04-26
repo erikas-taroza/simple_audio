@@ -14,12 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+#[cfg(feature = "hls_streaming")]
 pub mod hls;
+#[cfg(feature = "http_streaming")]
 pub mod http;
 pub mod streamable;
 
 /// A type that holds an ID and a `std::sync::mpsc::Receiver`.
 /// Used for multithreaded download of audio data.
+#[cfg(any(feature = "hls_streaming", feature = "http_streaming"))]
 struct Receiver
 {
     id: u128,

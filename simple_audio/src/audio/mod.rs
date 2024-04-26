@@ -18,5 +18,6 @@ pub mod controls;
 mod cpal_output;
 pub mod decoder;
 mod dsp;
+#[cfg(feature = "opus")]
 mod opus;
 pub mod sources;
