@@ -69,9 +69,8 @@ pub struct Decoder
 impl Decoder
 {
     /// Creates a new decoder.
-    pub fn new(controls: Controls) -> Self
+    pub fn new(controls: Controls, thread_killer: Receiver<bool>) -> Self
     {
-        let thread_killer = THREAD_KILLER.get().unwrap().read().unwrap().1.clone();
         let cpal_output = CpalOutput::new(controls.clone()).unwrap();
 
         Decoder {
@@ -97,6 +96,10 @@ impl Decoder
     pub fn start(mut self)
     {
         loop {
+            if self.thread_killer.try_recv().is_ok() {
+                break;
+            }
+
             // Check if the preload thread is done.
             if let Err(err) = self.poll_preload_thread() {
                 self.controls
@@ -109,21 +112,14 @@ impl Decoder
             }
 
             // Check for incoming `ThreadMessage`s.
-            match self.listen_for_message() {
-                Ok(should_break) => {
-                    if should_break {
-                        break;
-                    }
-                }
-                Err(err) => {
-                    self.controls
-                        .player_event_handler()
-                        .0
-                        .send(PlayerEvent::Error(Error::Decode {
-                            message: err.to_string(),
-                        }))
-                        .unwrap();
-                }
+            if let Err(err) = self.listen_for_message() {
+                self.controls
+                    .player_event_handler()
+                    .0
+                    .send(PlayerEvent::Error(Error::Decode {
+                        message: err.to_string(),
+                    }))
+                    .unwrap();
             }
 
             // Decode and output the samples.
@@ -149,15 +145,8 @@ impl Decoder
     /// Listens for any incoming messages.
     ///
     /// Blocks if the `self.state` is `Idle` or `Paused`.
-    ///
-    /// Returns true if this thread should be stopped.
-    /// Returns false otherwise.
-    fn listen_for_message(&mut self) -> anyhow::Result<bool>
+    fn listen_for_message(&mut self) -> anyhow::Result<()>
     {
-        if self.thread_killer.try_recv().is_ok() {
-            return Ok(true);
-        }
-
         // If the player is paused, then block this thread until a message comes in
         // to save the CPU.
         let recv: Option<DecoderEvent> = if self.state.is_paused() {
@@ -233,7 +222,7 @@ impl Decoder
                 }
                 DecoderEvent::PlayPreload => {
                     if self.preload_playback.is_none() {
-                        return Ok(false);
+                        return Ok(());
                     }
 
                     let playback = self.preload_playback.take().unwrap();
@@ -253,7 +242,7 @@ impl Decoder
             },
         }
 
-        Ok(false)
+        Ok(())
     }
 
     /// Decodes a packet and writes to `cpal_output`.

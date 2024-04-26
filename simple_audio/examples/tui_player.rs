@@ -6,6 +6,7 @@ use std::{
     time::Duration,
 };
 
+use crossbeam::channel::unbounded;
 use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -48,7 +49,8 @@ fn main() -> io::Result<()>
     }
 
     let app = Arc::new(RwLock::new(App::new()));
-    let player = Player::new();
+    let thread_killer = unbounded::<bool>();
+    let player = Player::new(thread_killer.1);
     player.open(args[1].clone(), true).unwrap();
 
     // Listen to events

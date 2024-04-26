@@ -14,16 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::{atomic::AtomicBool, Arc, OnceLock, RwLock, RwLockReadGuard};
+use std::sync::{atomic::AtomicBool, Arc, RwLock, RwLockReadGuard};
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use std::time::Duration;
 use symphonia::core::io::MediaSource;
 
 use crate::types::*;
-
-/// Use this to stop the decoder thread.
-pub static THREAD_KILLER: OnceLock<RwLock<(Sender<bool>, Receiver<bool>)>> = OnceLock::new();
 
 /// Creates a getter and setter for an AtomicBool.
 macro_rules! getset_atomic_bool {

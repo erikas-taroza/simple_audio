@@ -86,10 +86,13 @@ fn calc_gain(loudness: f64) -> f32
 #[cfg(test)]
 mod tests
 {
+    use crossbeam::channel::unbounded;
+
     #[test]
     fn normalize() -> anyhow::Result<()>
     {
-        let player = crate::Player::new();
+        let thread_killer = unbounded();
+        let player = crate::Player::new(thread_killer.1);
         player.set_volume(0.5);
         player.normalize_volume(true);
         // Try out different files here.
