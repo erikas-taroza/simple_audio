@@ -41,6 +41,7 @@ impl PlayerWrapper
 
                 if let Ok(event) = event_receiver.recv() {
                     match event {
+                        PlayerEvent::PlaybackStarted(duration) => todo!(),
                         PlayerEvent::Playback(playback) => todo!(),
                         PlayerEvent::Progress(progress) => todo!(),
                         PlayerEvent::Error(error) => todo!(),
@@ -63,6 +64,11 @@ impl PlayerWrapper
         if let Some(thread_killer) = PLAYER_THREAD_KILLER.get() {
             thread_killer.0.send(true).unwrap();
         }
+    }
+
+    pub fn playback_started_stream(stream: StreamSink<Duration>)
+    {
+        playback_started_stream(stream);
     }
 
     pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
@@ -171,8 +177,6 @@ impl PlayerWrapper
 #[frb(mirror(PlaybackState))]
 pub enum _PlaybackState
 {
-    /// The player started playing the file.
-    Started(Duration),
     /// The player is currently playing the file.
     Play,
     /// The player is currently paused and there is no output.

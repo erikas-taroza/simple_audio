@@ -42,10 +42,10 @@ class _MyAppState extends State<MyApp> {
   SimpleAudio get player => widget.player;
   MediaController get mediaController => widget.mediaController;
 
-  PlaybackState playbackState = PlaybackState.stop;
+  PlaybackState playbackState = const PlaybackState.stop();
   bool get isPlaying =>
-      playbackState == PlaybackState.play ||
-      playbackState == PlaybackState.preloadPlayed;
+      playbackState == const PlaybackState.play() ||
+      playbackState == const PlaybackState.preloadPlayed();
 
   bool get isMuted => volume == 0;
   double trueVolume = 1;

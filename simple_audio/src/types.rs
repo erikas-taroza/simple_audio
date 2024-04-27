@@ -22,8 +22,6 @@ use crate::error::Error;
 #[derive(Clone, Copy, Debug)]
 pub enum PlaybackState
 {
-    /// The player started playing the file.
-    Started(Duration),
     /// The player is currently playing the file.
     Play,
     /// The player is currently paused and there is no output.
@@ -49,6 +47,7 @@ pub struct ProgressState
 /// Messages to communicate with the player from the decoder.
 pub enum PlayerEvent
 {
+    PlaybackStarted(Duration),
     Playback(PlaybackState),
     Progress(ProgressState),
     Error(Error),

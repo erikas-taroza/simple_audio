@@ -65,6 +65,12 @@ fn main() -> io::Result<()>
                 Ok(event) => {
                     let mut lock = app.write().unwrap();
                     match event {
+                        PlayerEvent::PlaybackStarted(duration) => {
+                            lock.progress_state = ProgressState {
+                                position: Duration::ZERO,
+                                duration,
+                            }
+                        }
                         PlayerEvent::Playback(playback) => {
                             lock.playback_state = playback;
                         }

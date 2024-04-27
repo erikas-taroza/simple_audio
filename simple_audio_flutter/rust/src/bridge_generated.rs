@@ -42,6 +42,22 @@ fn wire_dispose__static_method__PlayerWrapper_impl(port_: MessagePort) {
         move || move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::dispose()),
     )
 }
+fn wire_playback_started_stream__static_method__PlayerWrapper_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "playback_started_stream__static_method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || {
+            move |task_callback| {
+                Result::<_, ()>::Ok(PlayerWrapper::playback_started_stream(
+                    task_callback.stream_sink::<_, chrono::Duration>(),
+                ))
+            }
+        },
+    )
+}
 fn wire_playback_state_stream__static_method__PlayerWrapper_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
@@ -52,7 +68,7 @@ fn wire_playback_state_stream__static_method__PlayerWrapper_impl(port_: MessageP
         move || {
             move |task_callback| {
                 Result::<_, ()>::Ok(PlayerWrapper::playback_state_stream(
-                    task_callback.stream_sink::<_, mirror_PlaybackState>(),
+                    task_callback.stream_sink::<_, PlaybackState>(),
                 ))
             }
         },
@@ -94,7 +110,7 @@ fn wire_playback_state__method__PlayerWrapper_impl(
     port_: MessagePort,
     that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, mirror_PlaybackState, _>(
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, PlaybackState, _>(
         WrapInfo {
             debug_name: "playback_state__method__PlayerWrapper",
             port: Some(port_),
@@ -414,9 +430,6 @@ const _: fn() = || {
         }
     }
     match None::<PlaybackState>.unwrap() {
-        PlaybackState::Started(field0) => {
-            let _: chrono::Duration = field0;
-        }
         PlaybackState::Play => {}
         PlaybackState::Pause => {}
         PlaybackState::Done => {}
@@ -496,14 +509,11 @@ impl rust2dart::IntoIntoDart<mirror_Error> for Error {
 impl support::IntoDart for mirror_PlaybackState {
     fn into_dart(self) -> support::DartAbi {
         match self.0 {
-            PlaybackState::Started(field0) => {
-                vec![0.into_dart(), field0.into_into_dart().into_dart()]
-            }
-            PlaybackState::Play => vec![1.into_dart()],
-            PlaybackState::Pause => vec![2.into_dart()],
-            PlaybackState::Done => vec![3.into_dart()],
-            PlaybackState::Stop => vec![4.into_dart()],
-            PlaybackState::PreloadPlayed => vec![5.into_dart()],
+            PlaybackState::Play => 0,
+            PlaybackState::Pause => 1,
+            PlaybackState::Done => 2,
+            PlaybackState::Stop => 3,
+            PlaybackState::PreloadPlayed => 4,
         }
         .into_dart()
     }

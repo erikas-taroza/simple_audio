@@ -162,9 +162,7 @@ impl Decoder
                         self.controls
                             .player_event_handler()
                             .0
-                            .send(PlayerEvent::Playback(PlaybackState::Started(
-                                playback.duration,
-                            )))?;
+                            .send(PlayerEvent::PlaybackStarted(playback.duration))?;
                     }
                 }
                 DecoderEvent::Play => {
@@ -317,9 +315,7 @@ impl Decoder
                     self.controls
                         .player_event_handler()
                         .0
-                        .send(PlayerEvent::Playback(PlaybackState::Started(
-                            playback.duration,
-                        )))?;
+                        .send(PlayerEvent::PlaybackStarted(playback.duration))?;
                     return Ok(false);
                 }
 

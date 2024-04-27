@@ -53,8 +53,11 @@ class SimpleAudio {
   late Stream<String> onDecodeError = _decodeErrorController.stream;
 
   /// Returns `true` if the player is playing.
-  Future<bool> get isPlaying async =>
-      await _player.playbackState() == const PlaybackState.play();
+  Future<bool> get isPlaying async {
+    final state = await _player.playbackState();
+    return state == const PlaybackState.play() ||
+        state == const PlaybackState.preloadPlayed();
+  }
 
   /// Returns `true` if the player has a file preloaded.
   Future<bool> get hasPreloaded => _player.isPreloaded();
