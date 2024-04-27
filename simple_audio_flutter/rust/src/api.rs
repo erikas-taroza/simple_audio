@@ -41,10 +41,12 @@ impl PlayerWrapper
 
                 if let Ok(event) = event_receiver.recv() {
                     match event {
-                        PlayerEvent::PlaybackStarted(duration) => todo!(),
-                        PlayerEvent::Playback(playback) => todo!(),
-                        PlayerEvent::Progress(progress) => todo!(),
-                        PlayerEvent::Error(error) => todo!(),
+                        PlayerEvent::PlaybackStarted(duration) => {
+                            update_playback_started_stream(Duration::from_std(duration))
+                        }
+                        PlayerEvent::Playback(playback) => update_playback_state_stream(playback),
+                        PlayerEvent::Progress(progress) => update_progress_state_stream(progress),
+                        PlayerEvent::Error(error) => update_error_stream(error),
                     }
                 }
             }
