@@ -2,134 +2,175 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
-pub extern "C" fn wire_new__static_method__Player(port_: i64)
+pub extern "C" fn wire_new__static_method__PlayerWrapper(port_: i64)
 {
-    wire_new__static_method__Player_impl(port_)
+    wire_new__static_method__PlayerWrapper_impl(port_)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_dispose__static_method__Player(port_: i64)
+pub extern "C" fn wire_dispose__static_method__PlayerWrapper(port_: i64)
 {
-    wire_dispose__static_method__Player_impl(port_)
+    wire_dispose__static_method__PlayerWrapper_impl(port_)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_playback_state__method__Player(port_: i64, that: *mut wire_Player)
+pub extern "C" fn wire_playback_state_stream__static_method__PlayerWrapper(port_: i64)
 {
-    wire_playback_state__method__Player_impl(port_, that)
+    wire_playback_state_stream__static_method__PlayerWrapper_impl(port_)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_progress__method__Player(port_: i64, that: *mut wire_Player)
+pub extern "C" fn wire_progress_state_stream__static_method__PlayerWrapper(port_: i64)
 {
-    wire_progress__method__Player_impl(port_, that)
+    wire_progress_state_stream__static_method__PlayerWrapper_impl(port_)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_is_preloaded__method__Player(port_: i64, that: *mut wire_Player)
+pub extern "C" fn wire_error_stream__static_method__PlayerWrapper(port_: i64)
 {
-    wire_is_preloaded__method__Player_impl(port_, that)
+    wire_error_stream__static_method__PlayerWrapper_impl(port_)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_is_looping__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_is_looping__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_is_normalizing__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_is_normalizing__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_volume__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_volume__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_open__method__Player(
+pub extern "C" fn wire_playback_state__method__PlayerWrapper(
     port_: i64,
-    that: *mut wire_Player,
+    that: *mut wire_PlayerWrapper,
+)
+{
+    wire_playback_state__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_progress__method__PlayerWrapper(port_: i64, that: *mut wire_PlayerWrapper)
+{
+    wire_progress__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_is_preloaded__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
+)
+{
+    wire_is_preloaded__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_is_looping__method__PlayerWrapper(port_: i64, that: *mut wire_PlayerWrapper)
+{
+    wire_is_looping__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_is_normalizing__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
+)
+{
+    wire_is_normalizing__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_volume__method__PlayerWrapper(port_: i64, that: *mut wire_PlayerWrapper)
+{
+    wire_volume__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_open__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
     path: *mut wire_uint_8_list,
     autoplay: bool,
 )
 {
-    wire_open__method__Player_impl(port_, that, path, autoplay)
+    wire_open__method__PlayerWrapper_impl(port_, that, path, autoplay)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_preload__method__Player(
+pub extern "C" fn wire_preload__method__PlayerWrapper(
     port_: i64,
-    that: *mut wire_Player,
+    that: *mut wire_PlayerWrapper,
     path: *mut wire_uint_8_list,
 )
 {
-    wire_preload__method__Player_impl(port_, that, path)
+    wire_preload__method__PlayerWrapper_impl(port_, that, path)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_play_preload__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_play_preload__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_clear_preload__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_clear_preload__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_play__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_play__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_pause__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_pause__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_stop__method__Player(port_: i64, that: *mut wire_Player)
-{
-    wire_stop__method__Player_impl(port_, that)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_loop_playback__method__Player(
+pub extern "C" fn wire_play_preload__method__PlayerWrapper(
     port_: i64,
-    that: *mut wire_Player,
+    that: *mut wire_PlayerWrapper,
+)
+{
+    wire_play_preload__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_clear_preload__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
+)
+{
+    wire_clear_preload__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_play__method__PlayerWrapper(port_: i64, that: *mut wire_PlayerWrapper)
+{
+    wire_play__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_pause__method__PlayerWrapper(port_: i64, that: *mut wire_PlayerWrapper)
+{
+    wire_pause__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_stop__method__PlayerWrapper(port_: i64, that: *mut wire_PlayerWrapper)
+{
+    wire_stop__method__PlayerWrapper_impl(port_, that)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_loop_playback__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
     should_loop: bool,
 )
 {
-    wire_loop_playback__method__Player_impl(port_, that, should_loop)
+    wire_loop_playback__method__PlayerWrapper_impl(port_, that, should_loop)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_set_volume__method__Player(port_: i64, that: *mut wire_Player, volume: f32)
-{
-    wire_set_volume__method__Player_impl(port_, that, volume)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_seek__method__Player(port_: i64, that: *mut wire_Player, position: i64)
-{
-    wire_seek__method__Player_impl(port_, that, position)
-}
-
-#[no_mangle]
-pub extern "C" fn wire_normalize_volume__method__Player(
+pub extern "C" fn wire_set_volume__method__PlayerWrapper(
     port_: i64,
-    that: *mut wire_Player,
+    that: *mut wire_PlayerWrapper,
+    volume: f32,
+)
+{
+    wire_set_volume__method__PlayerWrapper_impl(port_, that, volume)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_seek__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
+    position: i64,
+)
+{
+    wire_seek__method__PlayerWrapper_impl(port_, that, position)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_normalize_volume__method__PlayerWrapper(
+    port_: i64,
+    that: *mut wire_PlayerWrapper,
     should_normalize: bool,
 )
 {
-    wire_normalize_volume__method__Player_impl(port_, that, should_normalize)
+    wire_normalize_volume__method__PlayerWrapper_impl(port_, that, should_normalize)
 }
 
 // Section: allocate functions
@@ -141,9 +182,9 @@ pub extern "C" fn new_Player() -> wire_Player
 }
 
 #[no_mangle]
-pub extern "C" fn new_box_autoadd_player_0() -> *mut wire_Player
+pub extern "C" fn new_box_autoadd_player_wrapper_0() -> *mut wire_PlayerWrapper
 {
-    support::new_leak_box_ptr(wire_Player::new_with_null_ptr())
+    support::new_leak_box_ptr(wire_PlayerWrapper::new_with_null_ptr())
 }
 
 #[no_mangle]
@@ -200,20 +241,20 @@ impl Wire2Api<String> for *mut wire_uint_8_list
     }
 }
 
-impl Wire2Api<Player> for *mut wire_Player
+impl Wire2Api<PlayerWrapper> for *mut wire_PlayerWrapper
 {
-    fn wire2api(self) -> Player
+    fn wire2api(self) -> PlayerWrapper
     {
         let wrap = unsafe { support::box_from_leak_ptr(self) };
-        Wire2Api::<Player>::wire2api(*wrap).into()
+        Wire2Api::<PlayerWrapper>::wire2api(*wrap).into()
     }
 }
 
-impl Wire2Api<Player> for wire_Player
+impl Wire2Api<PlayerWrapper> for wire_PlayerWrapper
 {
-    fn wire2api(self) -> Player
+    fn wire2api(self) -> PlayerWrapper
     {
-        Player {
+        PlayerWrapper {
             internal: self.internal.wire2api(),
         }
     }
@@ -240,7 +281,7 @@ pub struct wire_Player
 
 #[repr(C)]
 #[derive(Clone)]
-pub struct wire_Player
+pub struct wire_PlayerWrapper
 {
     internal: wire_Player,
 }
@@ -278,7 +319,7 @@ impl NewWithNullPtr for wire_Player
     }
 }
 
-impl NewWithNullPtr for wire_Player
+impl NewWithNullPtr for wire_PlayerWrapper
 {
     fn new_with_null_ptr() -> Self
     {
@@ -288,7 +329,7 @@ impl NewWithNullPtr for wire_Player
     }
 }
 
-impl Default for wire_Player
+impl Default for wire_PlayerWrapper
 {
     fn default() -> Self
     {

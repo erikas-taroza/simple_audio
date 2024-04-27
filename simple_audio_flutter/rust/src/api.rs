@@ -1,36 +1,37 @@
 use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use flutter_rust_bridge::{frb, RustOpaque};
-use simple_audio::types::PlayerEvent;
+use flutter_rust_bridge::{frb, RustOpaque, StreamSink};
 pub use simple_audio::{
     error::Error,
     types::{PlaybackState, ProgressState},
 };
+use simple_audio::{types::PlayerEvent, Player};
 
 use std::{sync::OnceLock, thread};
+
+use crate::streams::*;
 
 static EVENT_THREAD_KILLER: OnceLock<(Sender<bool>, Receiver<bool>)> = OnceLock::new();
 static PLAYER_THREAD_KILLER: OnceLock<(Sender<bool>, Receiver<bool>)> = OnceLock::new();
 
-pub struct Player
+pub struct PlayerWrapper
 {
-    pub(crate) internal: RustOpaque<simple_audio::Player>,
+    pub(crate) internal: RustOpaque<Player>,
 }
 
-impl Player
+impl PlayerWrapper
 {
-    pub fn new() -> Player
+    pub fn new() -> PlayerWrapper
     {
         let _ = EVENT_THREAD_KILLER.set(unbounded());
         let _ = PLAYER_THREAD_KILLER.set(unbounded());
 
-        let internal = simple_audio::Player::new(PLAYER_THREAD_KILLER.get().unwrap().1.clone());
+        let internal = Player::new(PLAYER_THREAD_KILLER.get().unwrap().1.clone());
 
-        let event_receiver = internal.event_receiver.clone();
-        thread::spawn(move || {
+        thread::spawn({
+            let event_receiver = internal.event_receiver.clone();
             let event_thread_killer = EVENT_THREAD_KILLER.get().unwrap().1.clone();
-
-            loop {
+            move || loop {
                 if let Ok(should_stop) = event_thread_killer.try_recv() {
                     if should_stop {
                         println!("Stopped");
@@ -48,7 +49,7 @@ impl Player
             }
         });
 
-        Player {
+        PlayerWrapper {
             internal: RustOpaque::new(internal),
         }
     }
@@ -62,6 +63,21 @@ impl Player
         if let Some(thread_killer) = PLAYER_THREAD_KILLER.get() {
             thread_killer.0.send(true).unwrap();
         }
+    }
+
+    pub fn playback_state_stream(stream: StreamSink<PlaybackState>)
+    {
+        playback_state_stream(stream);
+    }
+
+    pub fn progress_state_stream(stream: StreamSink<ProgressState>)
+    {
+        progress_state_stream(stream);
+    }
+
+    pub fn error_stream(stream: StreamSink<Error>)
+    {
+        error_stream(stream);
     }
 
     pub fn playback_state(&self) -> PlaybackState

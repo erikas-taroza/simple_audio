@@ -22,128 +22,179 @@ use std::sync::Arc;
 
 // Section: wire functions
 
-fn wire_new__static_method__Player_impl(port_: MessagePort) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Player, _>(
+fn wire_new__static_method__PlayerWrapper_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, PlayerWrapper, _>(
         WrapInfo {
-            debug_name: "new__static_method__Player",
+            debug_name: "new__static_method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Result::<_, ()>::Ok(Player::new()),
+        move || move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::new()),
     )
 }
-fn wire_dispose__static_method__Player_impl(port_: MessagePort) {
+fn wire_dispose__static_method__PlayerWrapper_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "dispose__static_method__Player",
+            debug_name: "dispose__static_method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Result::<_, ()>::Ok(Player::dispose()),
+        move || move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::dispose()),
     )
 }
-fn wire_playback_state__method__Player_impl(
+fn wire_playback_state_stream__static_method__PlayerWrapper_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "playback_state_stream__static_method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || {
+            move |task_callback| {
+                Result::<_, ()>::Ok(PlayerWrapper::playback_state_stream(
+                    task_callback.stream_sink::<_, mirror_PlaybackState>(),
+                ))
+            }
+        },
+    )
+}
+fn wire_progress_state_stream__static_method__PlayerWrapper_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "progress_state_stream__static_method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || {
+            move |task_callback| {
+                Result::<_, ()>::Ok(PlayerWrapper::progress_state_stream(
+                    task_callback.stream_sink::<_, mirror_ProgressState>(),
+                ))
+            }
+        },
+    )
+}
+fn wire_error_stream__static_method__PlayerWrapper_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "error_stream__static_method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || {
+            move |task_callback| {
+                Result::<_, ()>::Ok(PlayerWrapper::error_stream(
+                    task_callback.stream_sink::<_, mirror_Error>(),
+                ))
+            }
+        },
+    )
+}
+fn wire_playback_state__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, mirror_PlaybackState, _>(
         WrapInfo {
-            debug_name: "playback_state__method__Player",
+            debug_name: "playback_state__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::playback_state(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::playback_state(&api_that))
         },
     )
 }
-fn wire_progress__method__Player_impl(
+fn wire_progress__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, mirror_ProgressState, _>(
         WrapInfo {
-            debug_name: "progress__method__Player",
+            debug_name: "progress__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::progress(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::progress(&api_that))
         },
     )
 }
-fn wire_is_preloaded__method__Player_impl(
+fn wire_is_preloaded__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, bool, _>(
         WrapInfo {
-            debug_name: "is_preloaded__method__Player",
+            debug_name: "is_preloaded__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::is_preloaded(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::is_preloaded(&api_that))
         },
     )
 }
-fn wire_is_looping__method__Player_impl(
+fn wire_is_looping__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, bool, _>(
         WrapInfo {
-            debug_name: "is_looping__method__Player",
+            debug_name: "is_looping__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::is_looping(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::is_looping(&api_that))
         },
     )
 }
-fn wire_is_normalizing__method__Player_impl(
+fn wire_is_normalizing__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, bool, _>(
         WrapInfo {
-            debug_name: "is_normalizing__method__Player",
+            debug_name: "is_normalizing__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::is_normalizing(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::is_normalizing(&api_that))
         },
     )
 }
-fn wire_volume__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Player> + UnwindSafe) {
+fn wire_volume__method__PlayerWrapper_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
+) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, f32, _>(
         WrapInfo {
-            debug_name: "volume__method__Player",
+            debug_name: "volume__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::volume(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::volume(&api_that))
         },
     )
 }
-fn wire_open__method__Player_impl(
+fn wire_open__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
     path: impl Wire2Api<String> + UnwindSafe,
     autoplay: impl Wire2Api<bool> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "open__method__Player",
+            debug_name: "open__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
@@ -151,107 +202,116 @@ fn wire_open__method__Player_impl(
             let api_that = that.wire2api();
             let api_path = path.wire2api();
             let api_autoplay = autoplay.wire2api();
-            move |task_callback| Player::open(&api_that, api_path, api_autoplay)
+            move |task_callback| PlayerWrapper::open(&api_that, api_path, api_autoplay)
         },
     )
 }
-fn wire_preload__method__Player_impl(
+fn wire_preload__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
     path: impl Wire2Api<String> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "preload__method__Player",
+            debug_name: "preload__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
             let api_path = path.wire2api();
-            move |task_callback| Player::preload(&api_that, api_path)
+            move |task_callback| PlayerWrapper::preload(&api_that, api_path)
         },
     )
 }
-fn wire_play_preload__method__Player_impl(
+fn wire_play_preload__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "play_preload__method__Player",
+            debug_name: "play_preload__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::play_preload(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::play_preload(&api_that))
         },
     )
 }
-fn wire_clear_preload__method__Player_impl(
+fn wire_clear_preload__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "clear_preload__method__Player",
+            debug_name: "clear_preload__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::clear_preload(&api_that))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::clear_preload(&api_that))
         },
     )
 }
-fn wire_play__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Player> + UnwindSafe) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
-        WrapInfo {
-            debug_name: "play__method__Player",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || {
-            let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::play(&api_that))
-        },
-    )
-}
-fn wire_pause__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Player> + UnwindSafe) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
-        WrapInfo {
-            debug_name: "pause__method__Player",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || {
-            let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::pause(&api_that))
-        },
-    )
-}
-fn wire_stop__method__Player_impl(port_: MessagePort, that: impl Wire2Api<Player> + UnwindSafe) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
-        WrapInfo {
-            debug_name: "stop__method__Player",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || {
-            let api_that = that.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::stop(&api_that))
-        },
-    )
-}
-fn wire_loop_playback__method__Player_impl(
+fn wire_play__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "play__method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::play(&api_that))
+        },
+    )
+}
+fn wire_pause__method__PlayerWrapper_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "pause__method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::pause(&api_that))
+        },
+    )
+}
+fn wire_stop__method__PlayerWrapper_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
+        WrapInfo {
+            debug_name: "stop__method__PlayerWrapper",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.wire2api();
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::stop(&api_that))
+        },
+    )
+}
+fn wire_loop_playback__method__PlayerWrapper_impl(
+    port_: MessagePort,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
     should_loop: impl Wire2Api<bool> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "loop_playback__method__Player",
+            debug_name: "loop_playback__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
@@ -259,55 +319,57 @@ fn wire_loop_playback__method__Player_impl(
             let api_that = that.wire2api();
             let api_should_loop = should_loop.wire2api();
             move |task_callback| {
-                Result::<_, ()>::Ok(Player::loop_playback(&api_that, api_should_loop))
+                Result::<_, ()>::Ok(PlayerWrapper::loop_playback(&api_that, api_should_loop))
             }
         },
     )
 }
-fn wire_set_volume__method__Player_impl(
+fn wire_set_volume__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
     volume: impl Wire2Api<f32> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "set_volume__method__Player",
+            debug_name: "set_volume__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
             let api_volume = volume.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::set_volume(&api_that, api_volume))
+            move |task_callback| {
+                Result::<_, ()>::Ok(PlayerWrapper::set_volume(&api_that, api_volume))
+            }
         },
     )
 }
-fn wire_seek__method__Player_impl(
+fn wire_seek__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
     position: impl Wire2Api<chrono::Duration> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "seek__method__Player",
+            debug_name: "seek__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_that = that.wire2api();
             let api_position = position.wire2api();
-            move |task_callback| Result::<_, ()>::Ok(Player::seek(&api_that, api_position))
+            move |task_callback| Result::<_, ()>::Ok(PlayerWrapper::seek(&api_that, api_position))
         },
     )
 }
-fn wire_normalize_volume__method__Player_impl(
+fn wire_normalize_volume__method__PlayerWrapper_impl(
     port_: MessagePort,
-    that: impl Wire2Api<Player> + UnwindSafe,
+    that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
     should_normalize: impl Wire2Api<bool> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, (), _>(
         WrapInfo {
-            debug_name: "normalize_volume__method__Player",
+            debug_name: "normalize_volume__method__PlayerWrapper",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
@@ -315,7 +377,10 @@ fn wire_normalize_volume__method__Player_impl(
             let api_that = that.wire2api();
             let api_should_normalize = should_normalize.wire2api();
             move |task_callback| {
-                Result::<_, ()>::Ok(Player::normalize_volume(&api_that, api_should_normalize))
+                Result::<_, ()>::Ok(PlayerWrapper::normalize_volume(
+                    &api_that,
+                    api_should_normalize,
+                ))
             }
         },
     )
@@ -450,13 +515,13 @@ impl rust2dart::IntoIntoDart<mirror_PlaybackState> for PlaybackState {
     }
 }
 
-impl support::IntoDart for Player {
+impl support::IntoDart for PlayerWrapper {
     fn into_dart(self) -> support::DartAbi {
         vec![self.internal.into_dart()].into_dart()
     }
 }
-impl support::IntoDartExceptPrimitive for Player {}
-impl rust2dart::IntoIntoDart<Player> for Player {
+impl support::IntoDartExceptPrimitive for PlayerWrapper {}
+impl rust2dart::IntoIntoDart<PlayerWrapper> for PlayerWrapper {
     fn into_into_dart(self) -> Self {
         self
     }

@@ -53,10 +53,11 @@ class SimpleAudio {
   late Stream<String> onDecodeError = _decodeErrorController.stream;
 
   /// Returns `true` if the player is playing.
-  Future<bool> get isPlaying => _player.isPlaying();
+  Future<bool> get isPlaying async =>
+      await _player.playbackState() == const PlaybackState.play();
 
   /// Returns `true` if the player has a file preloaded.
-  Future<bool> get hasPreloaded => _player.hasPreloaded();
+  Future<bool> get hasPreloaded => _player.isPreloaded();
 
   /// **[shouldNormalizeVolume]** Whether or not to normalize the volume
   /// of the playback. You can also change this by calling [normalizeVolume]
@@ -67,24 +68,17 @@ class SimpleAudio {
   }) {
     _player.normalizeVolume(shouldNormalize: shouldNormalizeVolume);
 
-    Player.callbackStream(bridge: api).listen((event) async {
+    Player.errorStream(bridge: api).listen((event) async {
       switch (event) {
-        case Callback_PlaybackStarted(:final field0):
-          _playbackStartedController.add(field0);
+        case Error_Decode(:final field0):
+          _decodeErrorController.add(field0);
+        case Error_NetworkStream(:final field0):
+          _networkErrorController.add(field0);
           break;
-        case Callback_Error(:final field0):
-          switch (field0) {
-            case Error_Decode(:final message):
-              _decodeErrorController.add(message);
-            case Error_NetworkStream(:final message):
-              _networkErrorController.add(message);
-              break;
-            default:
-              throw UnimplementedError(
-                "Error $field0 should not be thrown here.",
-              );
-          }
-          break;
+        default:
+          throw UnimplementedError(
+            "Error $event should not be thrown here.",
+          );
       }
     });
   }
