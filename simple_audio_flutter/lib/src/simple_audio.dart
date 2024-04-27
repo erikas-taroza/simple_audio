@@ -21,42 +21,38 @@ import 'dart:async';
 import './ffi.dart' hide PlaybackState;
 import 'bridge_definitions.dart';
 
-late final Player _player;
+late final PlayerWrapper _player;
 
 class SimpleAudio {
+  late final Stream<Error> _error =
+      PlayerWrapper.errorStream(bridge: api).asBroadcastStream();
+
+  /// A stream that returns the [Duration] of the file when it begins playing or looping.
+  /// The [Duration] is meant to be used in a media controller to support seeking and progress bars.
+  late Stream<Duration> playbackStarted =
+      PlayerWrapper.playbackStartedStream(bridge: api).asBroadcastStream();
+
   /// A stream that returns a [PlaybackState] when the state of the player is changed.
   late Stream<PlaybackState> playbackState =
-      Player.playbackStateStream(bridge: api).asBroadcastStream();
+      PlayerWrapper.playbackStateStream(bridge: api).asBroadcastStream();
 
   /// A stream that returns a [ProgressState] when the progress of the player
   /// or duration of the file is changed.
   late Stream<ProgressState> progressState =
-      Player.progressStateStream(bridge: api).asBroadcastStream();
+      PlayerWrapper.progressStateStream(bridge: api).asBroadcastStream();
 
-  final StreamController<Duration> _playbackStartedController =
-      StreamController.broadcast();
+  late Stream<String> decodeError = _error
+      .where((error) => error is Error_Decode)
+      .map((error) => error.field0);
 
-  /// The callback for when the playback has been started or looped.
-  late Stream<Duration> onPlaybackStarted = _playbackStartedController.stream;
-
-  final StreamController<String> _networkErrorController =
-      StreamController.broadcast();
-
-  /// The callback for when an error occurs when trying to fetch
-  /// more bytes for a network stream.
-  late Stream<String> onNetworkStreamError = _networkErrorController.stream;
-
-  final StreamController<String> _decodeErrorController =
-      StreamController.broadcast();
-
-  /// The callback for when an error occurs during the decode loop.
-  late Stream<String> onDecodeError = _decodeErrorController.stream;
+  late Stream<String> networkError = _error
+      .where((error) => error is Error_NetworkStream)
+      .map((error) => error.field0);
 
   /// Returns `true` if the player is playing.
   Future<bool> get isPlaying async {
     final state = await _player.playbackState();
-    return state == const PlaybackState.play() ||
-        state == const PlaybackState.preloadPlayed();
+    return state == PlaybackState.play || state == PlaybackState.preloadPlayed;
   }
 
   /// Returns `true` if the player has a file preloaded.
@@ -70,20 +66,6 @@ class SimpleAudio {
     bool shouldNormalizeVolume = false,
   }) {
     _player.normalizeVolume(shouldNormalize: shouldNormalizeVolume);
-
-    Player.errorStream(bridge: api).listen((event) async {
-      switch (event) {
-        case Error_Decode(:final field0):
-          _decodeErrorController.add(field0);
-        case Error_NetworkStream(:final field0):
-          _networkErrorController.add(field0);
-          break;
-        default:
-          throw UnimplementedError(
-            "Error $event should not be thrown here.",
-          );
-      }
-    });
   }
 
   /// Initialize [SimpleAudio]. This should only be done once in the `main` method.
@@ -91,8 +73,8 @@ class SimpleAudio {
   /// before the app runs.
   static Future<void> init() async {
     // Disposes of any old players and starts the Rust code from a fresh state.
-    Player.dispose(bridge: api);
-    _player = await Player.newPlayer(bridge: api);
+    PlayerWrapper.dispose(bridge: api);
+    _player = await PlayerWrapper.newPlayerWrapper(bridge: api);
   }
 
   /// Open a new file for playback.

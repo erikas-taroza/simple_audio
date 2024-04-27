@@ -42,10 +42,10 @@ class _MyAppState extends State<MyApp> {
   SimpleAudio get player => widget.player;
   MediaController get mediaController => widget.mediaController;
 
-  PlaybackState playbackState = const PlaybackState.stop();
+  PlaybackState playbackState = PlaybackState.stop;
   bool get isPlaying =>
-      playbackState == const PlaybackState.play() ||
-      playbackState == const PlaybackState.preloadPlayed();
+      playbackState == PlaybackState.play ||
+      playbackState == PlaybackState.preloadPlayed;
 
   bool get isMuted => volume == 0;
   double trueVolume = 1;
@@ -75,7 +75,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    player.onPlaybackStarted.listen((duration) {
+    player.playbackStarted.listen((duration) {
       // Update your media controller metadata here.
       mediaController.onPlaybackStarted();
       mediaController.setMetadata(
@@ -90,12 +90,12 @@ class _MyAppState extends State<MyApp> {
       debugPrint("Playback Started: $duration seconds");
     });
 
-    player.onDecodeError.listen((error) {
+    player.decodeError.listen((error) {
       debugPrint("Decode Error: $error");
       player.stop();
     });
 
-    player.onNetworkStreamError.listen((error) {
+    player.networkError.listen((error) {
       debugPrint("Network Stream Error: $error");
       player.stop();
     });
