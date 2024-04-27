@@ -62,118 +62,119 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: [],
       );
 
-  Stream<PlaybackState> playbackStateStreamStaticMethodPlayer({dynamic hint}) {
-    return _platform.executeStream(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner
-          .wire_playback_state_stream__static_method__Player(port_),
-      parseSuccessData: _wire2api_playback_state,
-      parseErrorData: null,
-      constMeta: kPlaybackStateStreamStaticMethodPlayerConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta
-      get kPlaybackStateStreamStaticMethodPlayerConstMeta =>
-          const FlutterRustBridgeTaskConstMeta(
-            debugName: "playback_state_stream__static_method__Player",
-            argNames: [],
-          );
-
-  Stream<ProgressState> progressStateStreamStaticMethodPlayer({dynamic hint}) {
-    return _platform.executeStream(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner
-          .wire_progress_state_stream__static_method__Player(port_),
-      parseSuccessData: _wire2api_progress_state,
-      parseErrorData: null,
-      constMeta: kProgressStateStreamStaticMethodPlayerConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta
-      get kProgressStateStreamStaticMethodPlayerConstMeta =>
-          const FlutterRustBridgeTaskConstMeta(
-            debugName: "progress_state_stream__static_method__Player",
-            argNames: [],
-          );
-
-  Stream<Callback> callbackStreamStaticMethodPlayer({dynamic hint}) {
-    return _platform.executeStream(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_callback_stream__static_method__Player(port_),
-      parseSuccessData: _wire2api_callback,
-      parseErrorData: null,
-      constMeta: kCallbackStreamStaticMethodPlayerConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta
-      get kCallbackStreamStaticMethodPlayerConstMeta =>
-          const FlutterRustBridgeTaskConstMeta(
-            debugName: "callback_stream__static_method__Player",
-            argNames: [],
-          );
-
-  Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint}) {
-    var arg0 = _platform.api2wire_box_autoadd_player(that);
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_is_playing__method__Player(port_, arg0),
-      parseSuccessData: _wire2api_bool,
-      parseErrorData: null,
-      constMeta: kIsPlayingMethodPlayerConstMeta,
-      argValues: [that],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "is_playing__method__Player",
-        argNames: ["that"],
-      );
-
-  Future<bool> hasPreloadedMethodPlayer({required Player that, dynamic hint}) {
-    var arg0 = _platform.api2wire_box_autoadd_player(that);
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_has_preloaded__method__Player(port_, arg0),
-      parseSuccessData: _wire2api_bool,
-      parseErrorData: null,
-      constMeta: kHasPreloadedMethodPlayerConstMeta,
-      argValues: [that],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kHasPreloadedMethodPlayerConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "has_preloaded__method__Player",
-        argNames: ["that"],
-      );
-
-  Future<ProgressState> getProgressMethodPlayer(
+  Future<PlaybackState> playbackStateMethodPlayer(
       {required Player that, dynamic hint}) {
     var arg0 = _platform.api2wire_box_autoadd_player(that);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
-          _platform.inner.wire_get_progress__method__Player(port_, arg0),
-      parseSuccessData: _wire2api_progress_state,
+          _platform.inner.wire_playback_state__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_playback_state,
       parseErrorData: null,
-      constMeta: kGetProgressMethodPlayerConstMeta,
+      constMeta: kPlaybackStateMethodPlayerConstMeta,
       argValues: [that],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kGetProgressMethodPlayerConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kPlaybackStateMethodPlayerConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "get_progress__method__Player",
+        debugName: "playback_state__method__Player",
+        argNames: ["that"],
+      );
+
+  Future<ProgressState> progressMethodPlayer(
+      {required Player that, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_progress__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_progress_state,
+      parseErrorData: null,
+      constMeta: kProgressMethodPlayerConstMeta,
+      argValues: [that],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kProgressMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "progress__method__Player",
+        argNames: ["that"],
+      );
+
+  Future<bool> isPreloadedMethodPlayer({required Player that, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_is_preloaded__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_bool,
+      parseErrorData: null,
+      constMeta: kIsPreloadedMethodPlayerConstMeta,
+      argValues: [that],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kIsPreloadedMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "is_preloaded__method__Player",
+        argNames: ["that"],
+      );
+
+  Future<bool> isLoopingMethodPlayer({required Player that, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_is_looping__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_bool,
+      parseErrorData: null,
+      constMeta: kIsLoopingMethodPlayerConstMeta,
+      argValues: [that],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kIsLoopingMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "is_looping__method__Player",
+        argNames: ["that"],
+      );
+
+  Future<bool> isNormalizingMethodPlayer({required Player that, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_is_normalizing__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_bool,
+      parseErrorData: null,
+      constMeta: kIsNormalizingMethodPlayerConstMeta,
+      argValues: [that],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kIsNormalizingMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "is_normalizing__method__Player",
+        argNames: ["that"],
+      );
+
+  Future<double> volumeMethodPlayer({required Player that, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_player(that);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_volume__method__Player(port_, arg0),
+      parseSuccessData: _wire2api_f32,
+      parseErrorData: null,
+      constMeta: kVolumeMethodPlayerConstMeta,
+      argValues: [that],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kVolumeMethodPlayerConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "volume__method__Player",
         argNames: ["that"],
       );
 
@@ -402,9 +403,9 @@ class SimpleAudioImpl implements SimpleAudio {
         argNames: ["that", "shouldNormalize"],
       );
 
-  DropFnType get dropOpaqueControls => _platform.inner.drop_opaque_Controls;
-  ShareFnType get shareOpaqueControls => _platform.inner.share_opaque_Controls;
-  OpaqueTypeFinalizer get ControlsFinalizer => _platform.ControlsFinalizer;
+  DropFnType get dropOpaquePlayer => _platform.inner.drop_opaque_Player;
+  ShareFnType get shareOpaquePlayer => _platform.inner.share_opaque_Player;
+  OpaqueTypeFinalizer get PlayerFinalizer => _platform.PlayerFinalizer;
 
   void dispose() {
     _platform.dispose();
@@ -415,8 +416,8 @@ class SimpleAudioImpl implements SimpleAudio {
     return wire2apiDuration(_wire2api_i64(raw));
   }
 
-  Controls _wire2api_Controls(dynamic raw) {
-    return Controls.fromRaw(raw[0], raw[1], this);
+  Player _wire2api_Player(dynamic raw) {
+    return Player.fromRaw(raw[0], raw[1], this);
   }
 
   String _wire2api_String(dynamic raw) {
@@ -427,50 +428,31 @@ class SimpleAudioImpl implements SimpleAudio {
     return raw as bool;
   }
 
-  Error _wire2api_box_autoadd_error(dynamic raw) {
-    return _wire2api_error(raw);
-  }
-
-  Callback _wire2api_callback(dynamic raw) {
-    switch (raw[0]) {
-      case 0:
-        return Callback_Error(
-          _wire2api_box_autoadd_error(raw[1]),
-        );
-      case 1:
-        return Callback_PlaybackStarted(
-          _wire2api_Chrono_Duration(raw[1]),
-        );
-      default:
-        throw Exception("unreachable");
-    }
-  }
-
   Error _wire2api_error(dynamic raw) {
     switch (raw[0]) {
       case 0:
         return Error_NetworkStream(
-          message: _wire2api_String(raw[1]),
+          _wire2api_String(raw[1]),
         );
       case 1:
         return Error_Decode(
-          message: _wire2api_String(raw[1]),
+          _wire2api_String(raw[1]),
         );
       case 2:
         return Error_Open(
-          message: _wire2api_String(raw[1]),
+          _wire2api_String(raw[1]),
         );
       case 3:
         return Error_Preload(
-          message: _wire2api_String(raw[1]),
+          _wire2api_String(raw[1]),
         );
       default:
         throw Exception("unreachable");
     }
   }
 
-  int _wire2api_i32(dynamic raw) {
-    return raw as int;
+  double _wire2api_f32(dynamic raw) {
+    return raw as double;
   }
 
   int _wire2api_i64(dynamic raw) {
@@ -478,7 +460,24 @@ class SimpleAudioImpl implements SimpleAudio {
   }
 
   PlaybackState _wire2api_playback_state(dynamic raw) {
-    return PlaybackState.values[raw as int];
+    switch (raw[0]) {
+      case 0:
+        return PlaybackState_Started(
+          _wire2api_Chrono_Duration(raw[1]),
+        );
+      case 1:
+        return PlaybackState_Play();
+      case 2:
+        return PlaybackState_Pause();
+      case 3:
+        return PlaybackState_Done();
+      case 4:
+        return PlaybackState_Stop();
+      case 5:
+        return PlaybackState_PreloadPlayed();
+      default:
+        throw Exception("unreachable");
+    }
   }
 
   Player _wire2api_player(dynamic raw) {
@@ -487,7 +486,7 @@ class SimpleAudioImpl implements SimpleAudio {
       throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
     return Player(
       bridge: this,
-      controls: _wire2api_Controls(arr[0]),
+      internal: _wire2api_Player(arr[0]),
     );
   }
 
@@ -544,9 +543,9 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   @protected
-  wire_Controls api2wire_Controls(Controls raw) {
-    final ptr = inner.new_Controls();
-    _api_fill_to_wire_Controls(raw, ptr);
+  wire_Player api2wire_Player(Player raw) {
+    final ptr = inner.new_Player();
+    _api_fill_to_wire_Player(raw, ptr);
     return ptr;
   }
 
@@ -575,12 +574,12 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 // Section: finalizer
 
-  late final OpaqueTypeFinalizer _ControlsFinalizer =
-      OpaqueTypeFinalizer(inner._drop_opaque_ControlsPtr);
-  OpaqueTypeFinalizer get ControlsFinalizer => _ControlsFinalizer;
+  late final OpaqueTypeFinalizer _PlayerFinalizer =
+      OpaqueTypeFinalizer(inner._drop_opaque_PlayerPtr);
+  OpaqueTypeFinalizer get PlayerFinalizer => _PlayerFinalizer;
 // Section: api_fill_to_wire
 
-  void _api_fill_to_wire_Controls(Controls apiObj, wire_Controls wireObj) {
+  void _api_fill_to_wire_Player(Player apiObj, wire_Player wireObj) {
     wireObj.ptr = apiObj.shareOrMove();
   }
 
@@ -590,7 +589,7 @@ class SimpleAudioPlatform extends FlutterRustBridgeBase<SimpleAudioWire> {
   }
 
   void _api_fill_to_wire_player(Player apiObj, wire_Player wireObj) {
-    wireObj.controls = api2wire_Controls(apiObj.controls);
+    wireObj.internal = api2wire_Player(apiObj.internal);
   }
 }
 
@@ -718,104 +717,111 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _wire_dispose__static_method__Player =
       _wire_dispose__static_method__PlayerPtr.asFunction<void Function(int)>();
 
-  void wire_playback_state_stream__static_method__Player(
-    int port_,
-  ) {
-    return _wire_playback_state_stream__static_method__Player(
-      port_,
-    );
-  }
-
-  late final _wire_playback_state_stream__static_method__PlayerPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_playback_state_stream__static_method__Player');
-  late final _wire_playback_state_stream__static_method__Player =
-      _wire_playback_state_stream__static_method__PlayerPtr
-          .asFunction<void Function(int)>();
-
-  void wire_progress_state_stream__static_method__Player(
-    int port_,
-  ) {
-    return _wire_progress_state_stream__static_method__Player(
-      port_,
-    );
-  }
-
-  late final _wire_progress_state_stream__static_method__PlayerPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_progress_state_stream__static_method__Player');
-  late final _wire_progress_state_stream__static_method__Player =
-      _wire_progress_state_stream__static_method__PlayerPtr
-          .asFunction<void Function(int)>();
-
-  void wire_callback_stream__static_method__Player(
-    int port_,
-  ) {
-    return _wire_callback_stream__static_method__Player(
-      port_,
-    );
-  }
-
-  late final _wire_callback_stream__static_method__PlayerPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_callback_stream__static_method__Player');
-  late final _wire_callback_stream__static_method__Player =
-      _wire_callback_stream__static_method__PlayerPtr
-          .asFunction<void Function(int)>();
-
-  void wire_is_playing__method__Player(
+  void wire_playback_state__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
   ) {
-    return _wire_is_playing__method__Player(
+    return _wire_playback_state__method__Player(
       port_,
       that,
     );
   }
 
-  late final _wire_is_playing__method__PlayerPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_Player>)>>('wire_is_playing__method__Player');
-  late final _wire_is_playing__method__Player =
-      _wire_is_playing__method__PlayerPtr
+  late final _wire_playback_state__method__PlayerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>)>>(
+      'wire_playback_state__method__Player');
+  late final _wire_playback_state__method__Player =
+      _wire_playback_state__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
-  void wire_has_preloaded__method__Player(
+  void wire_progress__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
   ) {
-    return _wire_has_preloaded__method__Player(
+    return _wire_progress__method__Player(
       port_,
       that,
     );
   }
 
-  late final _wire_has_preloaded__method__PlayerPtr = _lookup<
+  late final _wire_progress__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_Player>)>>('wire_has_preloaded__method__Player');
-  late final _wire_has_preloaded__method__Player =
-      _wire_has_preloaded__method__PlayerPtr
-          .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+              ffi.Pointer<wire_Player>)>>('wire_progress__method__Player');
+  late final _wire_progress__method__Player = _wire_progress__method__PlayerPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
-  void wire_get_progress__method__Player(
+  void wire_is_preloaded__method__Player(
     int port_,
     ffi.Pointer<wire_Player> that,
   ) {
-    return _wire_get_progress__method__Player(
+    return _wire_is_preloaded__method__Player(
       port_,
       that,
     );
   }
 
-  late final _wire_get_progress__method__PlayerPtr = _lookup<
+  late final _wire_is_preloaded__method__PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_Player>)>>('wire_get_progress__method__Player');
-  late final _wire_get_progress__method__Player =
-      _wire_get_progress__method__PlayerPtr
+              ffi.Pointer<wire_Player>)>>('wire_is_preloaded__method__Player');
+  late final _wire_is_preloaded__method__Player =
+      _wire_is_preloaded__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
+  void wire_is_looping__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+  ) {
+    return _wire_is_looping__method__Player(
+      port_,
+      that,
+    );
+  }
+
+  late final _wire_is_looping__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_Player>)>>('wire_is_looping__method__Player');
+  late final _wire_is_looping__method__Player =
+      _wire_is_looping__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
+  void wire_is_normalizing__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+  ) {
+    return _wire_is_normalizing__method__Player(
+      port_,
+      that,
+    );
+  }
+
+  late final _wire_is_normalizing__method__PlayerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_Player>)>>(
+      'wire_is_normalizing__method__Player');
+  late final _wire_is_normalizing__method__Player =
+      _wire_is_normalizing__method__PlayerPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
+
+  void wire_volume__method__Player(
+    int port_,
+    ffi.Pointer<wire_Player> that,
+  ) {
+    return _wire_volume__method__Player(
+      port_,
+      that,
+    );
+  }
+
+  late final _wire_volume__method__PlayerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_Player>)>>('wire_volume__method__Player');
+  late final _wire_volume__method__Player = _wire_volume__method__PlayerPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_Player>)>();
 
   void wire_open__method__Player(
     int port_,
@@ -1030,14 +1036,13 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
       _wire_normalize_volume__method__PlayerPtr
           .asFunction<void Function(int, ffi.Pointer<wire_Player>, bool)>();
 
-  wire_Controls new_Controls() {
-    return _new_Controls();
+  wire_Player new_Player() {
+    return _new_Player();
   }
 
-  late final _new_ControlsPtr =
-      _lookup<ffi.NativeFunction<wire_Controls Function()>>('new_Controls');
-  late final _new_Controls =
-      _new_ControlsPtr.asFunction<wire_Controls Function()>();
+  late final _new_PlayerPtr =
+      _lookup<ffi.NativeFunction<wire_Player Function()>>('new_Player');
+  late final _new_Player = _new_PlayerPtr.asFunction<wire_Player Function()>();
 
   ffi.Pointer<wire_Player> new_box_autoadd_player_0() {
     return _new_box_autoadd_player_0();
@@ -1064,33 +1069,33 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
   late final _new_uint_8_list_0 = _new_uint_8_list_0Ptr
       .asFunction<ffi.Pointer<wire_uint_8_list> Function(int)>();
 
-  void drop_opaque_Controls(
+  void drop_opaque_Player(
     ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _drop_opaque_Controls(
+    return _drop_opaque_Player(
       ptr,
     );
   }
 
-  late final _drop_opaque_ControlsPtr =
+  late final _drop_opaque_PlayerPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'drop_opaque_Controls');
-  late final _drop_opaque_Controls = _drop_opaque_ControlsPtr
-      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+          'drop_opaque_Player');
+  late final _drop_opaque_Player =
+      _drop_opaque_PlayerPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
-  ffi.Pointer<ffi.Void> share_opaque_Controls(
+  ffi.Pointer<ffi.Void> share_opaque_Player(
     ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _share_opaque_Controls(
+    return _share_opaque_Player(
       ptr,
     );
   }
 
-  late final _share_opaque_ControlsPtr = _lookup<
+  late final _share_opaque_PlayerPtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Void> Function(
-              ffi.Pointer<ffi.Void>)>>('share_opaque_Controls');
-  late final _share_opaque_Controls = _share_opaque_ControlsPtr
+              ffi.Pointer<ffi.Void>)>>('share_opaque_Player');
+  late final _share_opaque_Player = _share_opaque_PlayerPtr
       .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
 
   void free_WireSyncReturn(
@@ -1110,12 +1115,8 @@ class SimpleAudioWire implements FlutterRustBridgeWireBase {
 
 final class _Dart_Handle extends ffi.Opaque {}
 
-final class wire_Controls extends ffi.Struct {
-  external ffi.Pointer<ffi.Void> ptr;
-}
-
 final class wire_Player extends ffi.Struct {
-  external wire_Controls controls;
+  external ffi.Pointer<ffi.Void> ptr;
 }
 
 final class wire_uint_8_list extends ffi.Struct {
@@ -1129,5 +1130,3 @@ typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<
         ffi.Bool Function(DartPort port_id, ffi.Pointer<ffi.Void> message)>>;
 typedef DartPort = ffi.Int64;
-
-const int CHUNK_SIZE = 262144;

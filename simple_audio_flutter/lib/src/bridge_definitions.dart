@@ -16,40 +16,37 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerConstMeta;
 
-  /// Stops the decoder thread.
   Future<void> disposeStaticMethodPlayer({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kDisposeStaticMethodPlayerConstMeta;
 
-  Stream<PlaybackState> playbackStateStreamStaticMethodPlayer({dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta
-      get kPlaybackStateStreamStaticMethodPlayerConstMeta;
-
-  Stream<ProgressState> progressStateStreamStaticMethodPlayer({dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta
-      get kProgressStateStreamStaticMethodPlayerConstMeta;
-
-  Stream<Callback> callbackStreamStaticMethodPlayer({dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kCallbackStreamStaticMethodPlayerConstMeta;
-
-  Future<bool> isPlayingMethodPlayer({required Player that, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kIsPlayingMethodPlayerConstMeta;
-
-  /// Returns `true` if there is a file preloaded for playback.
-  Future<bool> hasPreloadedMethodPlayer({required Player that, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kHasPreloadedMethodPlayerConstMeta;
-
-  Future<ProgressState> getProgressMethodPlayer(
+  Future<PlaybackState> playbackStateMethodPlayer(
       {required Player that, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kGetProgressMethodPlayerConstMeta;
+  FlutterRustBridgeTaskConstMeta get kPlaybackStateMethodPlayerConstMeta;
 
-  /// Opens a file or network resource for reading and playing.
+  Future<ProgressState> progressMethodPlayer(
+      {required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kProgressMethodPlayerConstMeta;
+
+  /// Returns `true` if there is a file preloaded for playback.
+  Future<bool> isPreloadedMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kIsPreloadedMethodPlayerConstMeta;
+
+  Future<bool> isLoopingMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kIsLoopingMethodPlayerConstMeta;
+
+  Future<bool> isNormalizingMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kIsNormalizingMethodPlayerConstMeta;
+
+  Future<double> volumeMethodPlayer({required Player that, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kVolumeMethodPlayerConstMeta;
+
   Future<void> openMethodPlayer(
       {required Player that,
       required String path,
@@ -58,23 +55,15 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kOpenMethodPlayerConstMeta;
 
-  /// Preloads a file or network resource for playback.
-  /// The preloaded file is automatically played when the current file is finished playing.
-  ///
-  /// Use this method if you want gapless playback. It reduces
-  /// the time spent loading between tracks (especially important
-  /// for streaming network files).
   Future<void> preloadMethodPlayer(
       {required Player that, required String path, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kPreloadMethodPlayerConstMeta;
 
-  /// Plays the preloaded file.
   Future<void> playPreloadMethodPlayer({required Player that, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kPlayPreloadMethodPlayerConstMeta;
 
-  /// Clears the preloaded file so that it doesn't play when the current file is finished.
   Future<void> clearPreloadMethodPlayer({required Player that, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kClearPreloadMethodPlayerConstMeta;
@@ -111,128 +100,115 @@ abstract class SimpleAudio {
 
   FlutterRustBridgeTaskConstMeta get kNormalizeVolumeMethodPlayerConstMeta;
 
-  DropFnType get dropOpaqueControls;
-  ShareFnType get shareOpaqueControls;
-  OpaqueTypeFinalizer get ControlsFinalizer;
+  DropFnType get dropOpaquePlayer;
+  ShareFnType get shareOpaquePlayer;
+  OpaqueTypeFinalizer get PlayerFinalizer;
 }
 
 @sealed
-class Controls extends FrbOpaque {
+class Player extends FrbOpaque {
   final SimpleAudio bridge;
-  Controls.fromRaw(int ptr, int size, this.bridge) : super.unsafe(ptr, size);
+  Player.fromRaw(int ptr, int size, this.bridge) : super.unsafe(ptr, size);
   @override
-  DropFnType get dropFn => bridge.dropOpaqueControls;
+  DropFnType get dropFn => bridge.dropOpaquePlayer;
 
   @override
-  ShareFnType get shareFn => bridge.shareOpaqueControls;
+  ShareFnType get shareFn => bridge.shareOpaquePlayer;
 
   @override
-  OpaqueTypeFinalizer get staticFinalizer => bridge.ControlsFinalizer;
+  OpaqueTypeFinalizer get staticFinalizer => bridge.PlayerFinalizer;
 }
 
 @freezed
-sealed class Callback with _$Callback {
-  const factory Callback.error(
-    Error field0,
-  ) = Callback_Error;
-
-  /// The player started playing a new file. Contains the duration of the file.
-  /// This is meant to be used to send a new duration to the media controller.
-  const factory Callback.playbackStarted(
-    Duration field0,
-  ) = Callback_PlaybackStarted;
-}
-
-@freezed
-sealed class Error with _$Error {
+sealed class Error with _$Error implements FrbException {
   /// An error occurred when trying to fetch more bytes for
   /// a network stream.
-  const factory Error.networkStream({
-    /// The error message.
-    required String message,
-  }) = Error_NetworkStream;
+  const factory Error.networkStream(
+    String field0,
+  ) = Error_NetworkStream;
 
   /// An error occurred when decoding the file.
-  const factory Error.decode({
-    /// The error message.
-    required String message,
-  }) = Error_Decode;
+  const factory Error.decode(
+    String field0,
+  ) = Error_Decode;
 
   /// An error occurred when trying to open a file.
-  const factory Error.open({
-    /// The error message.
-    required String message,
-  }) = Error_Open;
+  const factory Error.open(
+    String field0,
+  ) = Error_Open;
 
   /// An error occurred when trying to preload a file.
-  const factory Error.preload({
-    /// The error message.
-    required String message,
-  }) = Error_Preload;
+  const factory Error.preload(
+    String field0,
+  ) = Error_Preload;
 }
 
-/// The playback state of the player.
-enum PlaybackState {
+@freezed
+sealed class PlaybackState with _$PlaybackState {
+  /// The player started playing the file.
+  const factory PlaybackState.started(
+    Duration field0,
+  ) = PlaybackState_Started;
+
   /// The player is currently playing the file.
-  play,
+  const factory PlaybackState.play() = PlaybackState_Play;
 
   /// The player is currently paused and there is no output.
-  pause,
+  const factory PlaybackState.pause() = PlaybackState_Pause;
 
   /// The player has finished playing the file.
-  done,
+  const factory PlaybackState.done() = PlaybackState_Done;
 
   /// The player was stopped
-  stop,
+  const factory PlaybackState.stop() = PlaybackState_Stop;
 
   /// The player has automatically started playing the preloaded file.
-  preloadPlayed,
+  const factory PlaybackState.preloadPlayed() = PlaybackState_PreloadPlayed;
 }
 
 class Player {
   final SimpleAudio bridge;
-  final Controls controls;
+  final Player internal;
 
   const Player({
     required this.bridge,
-    required this.controls,
+    required this.internal,
   });
 
   static Future<Player> newPlayer(
           {required SimpleAudio bridge, dynamic hint}) =>
       bridge.newStaticMethodPlayer(hint: hint);
 
-  /// Stops the decoder thread.
   static Future<void> dispose({required SimpleAudio bridge, dynamic hint}) =>
       bridge.disposeStaticMethodPlayer(hint: hint);
 
-  static Stream<PlaybackState> playbackStateStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
-      bridge.playbackStateStreamStaticMethodPlayer(hint: hint);
+  Future<PlaybackState> playbackState({dynamic hint}) =>
+      bridge.playbackStateMethodPlayer(
+        that: this,
+      );
 
-  static Stream<ProgressState> progressStateStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
-      bridge.progressStateStreamStaticMethodPlayer(hint: hint);
-
-  static Stream<Callback> callbackStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
-      bridge.callbackStreamStaticMethodPlayer(hint: hint);
-
-  Future<bool> isPlaying({dynamic hint}) => bridge.isPlayingMethodPlayer(
+  Future<ProgressState> progress({dynamic hint}) => bridge.progressMethodPlayer(
         that: this,
       );
 
   /// Returns `true` if there is a file preloaded for playback.
-  Future<bool> hasPreloaded({dynamic hint}) => bridge.hasPreloadedMethodPlayer(
+  Future<bool> isPreloaded({dynamic hint}) => bridge.isPreloadedMethodPlayer(
         that: this,
       );
 
-  Future<ProgressState> getProgress({dynamic hint}) =>
-      bridge.getProgressMethodPlayer(
+  Future<bool> isLooping({dynamic hint}) => bridge.isLoopingMethodPlayer(
         that: this,
       );
 
-  /// Opens a file or network resource for reading and playing.
+  Future<bool> isNormalizing({dynamic hint}) =>
+      bridge.isNormalizingMethodPlayer(
+        that: this,
+      );
+
+  Future<double> volume({dynamic hint}) => bridge.volumeMethodPlayer(
+        that: this,
+      );
+
   Future<void> open(
           {required String path, required bool autoplay, dynamic hint}) =>
       bridge.openMethodPlayer(
@@ -241,24 +217,16 @@ class Player {
         autoplay: autoplay,
       );
 
-  /// Preloads a file or network resource for playback.
-  /// The preloaded file is automatically played when the current file is finished playing.
-  ///
-  /// Use this method if you want gapless playback. It reduces
-  /// the time spent loading between tracks (especially important
-  /// for streaming network files).
   Future<void> preload({required String path, dynamic hint}) =>
       bridge.preloadMethodPlayer(
         that: this,
         path: path,
       );
 
-  /// Plays the preloaded file.
   Future<void> playPreload({dynamic hint}) => bridge.playPreloadMethodPlayer(
         that: this,
       );
 
-  /// Clears the preloaded file so that it doesn't play when the current file is finished.
   Future<void> clearPreload({dynamic hint}) => bridge.clearPreloadMethodPlayer(
         that: this,
       );
@@ -300,7 +268,6 @@ class Player {
       );
 }
 
-/// Provides the current progress of the player.
 class ProgressState {
   /// The position of the player.
   final Duration position;

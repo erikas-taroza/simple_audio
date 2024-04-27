@@ -15,372 +15,30 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
 /// @nodoc
-mixin _$Callback {
-  Object get field0 => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(Error field0) error,
-    required TResult Function(Duration field0) playbackStarted,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Error field0)? error,
-    TResult? Function(Duration field0)? playbackStarted,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Error field0)? error,
-    TResult Function(Duration field0)? playbackStarted,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $CallbackCopyWith<$Res> {
-  factory $CallbackCopyWith(Callback value, $Res Function(Callback) then) =
-      _$CallbackCopyWithImpl<$Res, Callback>;
-}
-
-/// @nodoc
-class _$CallbackCopyWithImpl<$Res, $Val extends Callback>
-    implements $CallbackCopyWith<$Res> {
-  _$CallbackCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-}
-
-/// @nodoc
-abstract class _$$Callback_ErrorCopyWith<$Res> {
-  factory _$$Callback_ErrorCopyWith(
-          _$Callback_Error value, $Res Function(_$Callback_Error) then) =
-      __$$Callback_ErrorCopyWithImpl<$Res>;
-  @useResult
-  $Res call({Error field0});
-
-  $ErrorCopyWith<$Res> get field0;
-}
-
-/// @nodoc
-class __$$Callback_ErrorCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_Error>
-    implements _$$Callback_ErrorCopyWith<$Res> {
-  __$$Callback_ErrorCopyWithImpl(
-      _$Callback_Error _value, $Res Function(_$Callback_Error) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? field0 = null,
-  }) {
-    return _then(_$Callback_Error(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
-              as Error,
-    ));
-  }
-
-  @override
-  @pragma('vm:prefer-inline')
-  $ErrorCopyWith<$Res> get field0 {
-    return $ErrorCopyWith<$Res>(_value.field0, (value) {
-      return _then(_value.copyWith(field0: value));
-    });
-  }
-}
-
-/// @nodoc
-
-class _$Callback_Error implements Callback_Error {
-  const _$Callback_Error(this.field0);
-
-  @override
-  final Error field0;
-
-  @override
-  String toString() {
-    return 'Callback.error(field0: $field0)';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$Callback_Error &&
-            (identical(other.field0, field0) || other.field0 == field0));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, field0);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$Callback_ErrorCopyWith<_$Callback_Error> get copyWith =>
-      __$$Callback_ErrorCopyWithImpl<_$Callback_Error>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(Error field0) error,
-    required TResult Function(Duration field0) playbackStarted,
-  }) {
-    return error(field0);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Error field0)? error,
-    TResult? Function(Duration field0)? playbackStarted,
-  }) {
-    return error?.call(field0);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Error field0)? error,
-    TResult Function(Duration field0)? playbackStarted,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(field0);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
-  }) {
-    return error(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
-  }) {
-    return error?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class Callback_Error implements Callback {
-  const factory Callback_Error(final Error field0) = _$Callback_Error;
-
-  @override
-  Error get field0;
-  @JsonKey(ignore: true)
-  _$$Callback_ErrorCopyWith<_$Callback_Error> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$Callback_PlaybackStartedCopyWith<$Res> {
-  factory _$$Callback_PlaybackStartedCopyWith(_$Callback_PlaybackStarted value,
-          $Res Function(_$Callback_PlaybackStarted) then) =
-      __$$Callback_PlaybackStartedCopyWithImpl<$Res>;
-  @useResult
-  $Res call({Duration field0});
-}
-
-/// @nodoc
-class __$$Callback_PlaybackStartedCopyWithImpl<$Res>
-    extends _$CallbackCopyWithImpl<$Res, _$Callback_PlaybackStarted>
-    implements _$$Callback_PlaybackStartedCopyWith<$Res> {
-  __$$Callback_PlaybackStartedCopyWithImpl(_$Callback_PlaybackStarted _value,
-      $Res Function(_$Callback_PlaybackStarted) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? field0 = null,
-  }) {
-    return _then(_$Callback_PlaybackStarted(
-      null == field0
-          ? _value.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
-              as Duration,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$Callback_PlaybackStarted implements Callback_PlaybackStarted {
-  const _$Callback_PlaybackStarted(this.field0);
-
-  @override
-  final Duration field0;
-
-  @override
-  String toString() {
-    return 'Callback.playbackStarted(field0: $field0)';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$Callback_PlaybackStarted &&
-            (identical(other.field0, field0) || other.field0 == field0));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, field0);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
-      get copyWith =>
-          __$$Callback_PlaybackStartedCopyWithImpl<_$Callback_PlaybackStarted>(
-              this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(Error field0) error,
-    required TResult Function(Duration field0) playbackStarted,
-  }) {
-    return playbackStarted(field0);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Error field0)? error,
-    TResult? Function(Duration field0)? playbackStarted,
-  }) {
-    return playbackStarted?.call(field0);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Error field0)? error,
-    TResult Function(Duration field0)? playbackStarted,
-    required TResult orElse(),
-  }) {
-    if (playbackStarted != null) {
-      return playbackStarted(field0);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(Callback_Error value) error,
-    required TResult Function(Callback_PlaybackStarted value) playbackStarted,
-  }) {
-    return playbackStarted(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(Callback_Error value)? error,
-    TResult? Function(Callback_PlaybackStarted value)? playbackStarted,
-  }) {
-    return playbackStarted?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(Callback_Error value)? error,
-    TResult Function(Callback_PlaybackStarted value)? playbackStarted,
-    required TResult orElse(),
-  }) {
-    if (playbackStarted != null) {
-      return playbackStarted(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class Callback_PlaybackStarted implements Callback {
-  const factory Callback_PlaybackStarted(final Duration field0) =
-      _$Callback_PlaybackStarted;
-
-  @override
-  Duration get field0;
-  @JsonKey(ignore: true)
-  _$$Callback_PlaybackStartedCopyWith<_$Callback_PlaybackStarted>
-      get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
 mixin _$Error {
-  /// The error message.
-  String get message => throw _privateConstructorUsedError;
+  String get field0 => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String message) networkStream,
-    required TResult Function(String message) decode,
-    required TResult Function(String message) open,
-    required TResult Function(String message) preload,
+    required TResult Function(String field0) networkStream,
+    required TResult Function(String field0) decode,
+    required TResult Function(String field0) open,
+    required TResult Function(String field0) preload,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String message)? networkStream,
-    TResult? Function(String message)? decode,
-    TResult? Function(String message)? open,
-    TResult? Function(String message)? preload,
+    TResult? Function(String field0)? networkStream,
+    TResult? Function(String field0)? decode,
+    TResult? Function(String field0)? open,
+    TResult? Function(String field0)? preload,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String message)? networkStream,
-    TResult Function(String message)? decode,
-    TResult Function(String message)? open,
-    TResult Function(String message)? preload,
+    TResult Function(String field0)? networkStream,
+    TResult Function(String field0)? decode,
+    TResult Function(String field0)? open,
+    TResult Function(String field0)? preload,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -419,7 +77,7 @@ abstract class $ErrorCopyWith<$Res> {
   factory $ErrorCopyWith(Error value, $Res Function(Error) then) =
       _$ErrorCopyWithImpl<$Res, Error>;
   @useResult
-  $Res call({String message});
+  $Res call({String field0});
 }
 
 /// @nodoc
@@ -435,12 +93,12 @@ class _$ErrorCopyWithImpl<$Res, $Val extends Error>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? message = null,
+    Object? field0 = null,
   }) {
     return _then(_value.copyWith(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
+      field0: null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
               as String,
     ) as $Val);
   }
@@ -454,7 +112,7 @@ abstract class _$$Error_NetworkStreamCopyWith<$Res>
       __$$Error_NetworkStreamCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String message});
+  $Res call({String field0});
 }
 
 /// @nodoc
@@ -468,12 +126,12 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? message = null,
+    Object? field0 = null,
   }) {
     return _then(_$Error_NetworkStream(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -482,15 +140,14 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_NetworkStream implements Error_NetworkStream {
-  const _$Error_NetworkStream({required this.message});
+  const _$Error_NetworkStream(this.field0);
 
-  /// The error message.
   @override
-  final String message;
+  final String field0;
 
   @override
   String toString() {
-    return 'Error.networkStream(message: $message)';
+    return 'Error.networkStream(field0: $field0)';
   }
 
   @override
@@ -498,11 +155,11 @@ class _$Error_NetworkStream implements Error_NetworkStream {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_NetworkStream &&
-            (identical(other.message, message) || other.message == message));
+            (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, message);
+  int get hashCode => Object.hash(runtimeType, field0);
 
   @JsonKey(ignore: true)
   @override
@@ -514,36 +171,36 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String message) networkStream,
-    required TResult Function(String message) decode,
-    required TResult Function(String message) open,
-    required TResult Function(String message) preload,
+    required TResult Function(String field0) networkStream,
+    required TResult Function(String field0) decode,
+    required TResult Function(String field0) open,
+    required TResult Function(String field0) preload,
   }) {
-    return networkStream(message);
+    return networkStream(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String message)? networkStream,
-    TResult? Function(String message)? decode,
-    TResult? Function(String message)? open,
-    TResult? Function(String message)? preload,
+    TResult? Function(String field0)? networkStream,
+    TResult? Function(String field0)? decode,
+    TResult? Function(String field0)? open,
+    TResult? Function(String field0)? preload,
   }) {
-    return networkStream?.call(message);
+    return networkStream?.call(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String message)? networkStream,
-    TResult Function(String message)? decode,
-    TResult Function(String message)? open,
-    TResult Function(String message)? preload,
+    TResult Function(String field0)? networkStream,
+    TResult Function(String field0)? decode,
+    TResult Function(String field0)? open,
+    TResult Function(String field0)? preload,
     required TResult orElse(),
   }) {
     if (networkStream != null) {
-      return networkStream(message);
+      return networkStream(field0);
     }
     return orElse();
   }
@@ -587,13 +244,11 @@ class _$Error_NetworkStream implements Error_NetworkStream {
 }
 
 abstract class Error_NetworkStream implements Error {
-  const factory Error_NetworkStream({required final String message}) =
+  const factory Error_NetworkStream(final String field0) =
       _$Error_NetworkStream;
 
   @override
-
-  /// The error message.
-  String get message;
+  String get field0;
   @override
   @JsonKey(ignore: true)
   _$$Error_NetworkStreamCopyWith<_$Error_NetworkStream> get copyWith =>
@@ -607,7 +262,7 @@ abstract class _$$Error_DecodeCopyWith<$Res> implements $ErrorCopyWith<$Res> {
       __$$Error_DecodeCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String message});
+  $Res call({String field0});
 }
 
 /// @nodoc
@@ -621,12 +276,12 @@ class __$$Error_DecodeCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? message = null,
+    Object? field0 = null,
   }) {
     return _then(_$Error_Decode(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -635,15 +290,14 @@ class __$$Error_DecodeCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_Decode implements Error_Decode {
-  const _$Error_Decode({required this.message});
+  const _$Error_Decode(this.field0);
 
-  /// The error message.
   @override
-  final String message;
+  final String field0;
 
   @override
   String toString() {
-    return 'Error.decode(message: $message)';
+    return 'Error.decode(field0: $field0)';
   }
 
   @override
@@ -651,11 +305,11 @@ class _$Error_Decode implements Error_Decode {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_Decode &&
-            (identical(other.message, message) || other.message == message));
+            (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, message);
+  int get hashCode => Object.hash(runtimeType, field0);
 
   @JsonKey(ignore: true)
   @override
@@ -666,36 +320,36 @@ class _$Error_Decode implements Error_Decode {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String message) networkStream,
-    required TResult Function(String message) decode,
-    required TResult Function(String message) open,
-    required TResult Function(String message) preload,
+    required TResult Function(String field0) networkStream,
+    required TResult Function(String field0) decode,
+    required TResult Function(String field0) open,
+    required TResult Function(String field0) preload,
   }) {
-    return decode(message);
+    return decode(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String message)? networkStream,
-    TResult? Function(String message)? decode,
-    TResult? Function(String message)? open,
-    TResult? Function(String message)? preload,
+    TResult? Function(String field0)? networkStream,
+    TResult? Function(String field0)? decode,
+    TResult? Function(String field0)? open,
+    TResult? Function(String field0)? preload,
   }) {
-    return decode?.call(message);
+    return decode?.call(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String message)? networkStream,
-    TResult Function(String message)? decode,
-    TResult Function(String message)? open,
-    TResult Function(String message)? preload,
+    TResult Function(String field0)? networkStream,
+    TResult Function(String field0)? decode,
+    TResult Function(String field0)? open,
+    TResult Function(String field0)? preload,
     required TResult orElse(),
   }) {
     if (decode != null) {
-      return decode(message);
+      return decode(field0);
     }
     return orElse();
   }
@@ -739,12 +393,10 @@ class _$Error_Decode implements Error_Decode {
 }
 
 abstract class Error_Decode implements Error {
-  const factory Error_Decode({required final String message}) = _$Error_Decode;
+  const factory Error_Decode(final String field0) = _$Error_Decode;
 
   @override
-
-  /// The error message.
-  String get message;
+  String get field0;
   @override
   @JsonKey(ignore: true)
   _$$Error_DecodeCopyWith<_$Error_Decode> get copyWith =>
@@ -758,7 +410,7 @@ abstract class _$$Error_OpenCopyWith<$Res> implements $ErrorCopyWith<$Res> {
       __$$Error_OpenCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String message});
+  $Res call({String field0});
 }
 
 /// @nodoc
@@ -772,12 +424,12 @@ class __$$Error_OpenCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? message = null,
+    Object? field0 = null,
   }) {
     return _then(_$Error_Open(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -786,15 +438,14 @@ class __$$Error_OpenCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_Open implements Error_Open {
-  const _$Error_Open({required this.message});
+  const _$Error_Open(this.field0);
 
-  /// The error message.
   @override
-  final String message;
+  final String field0;
 
   @override
   String toString() {
-    return 'Error.open(message: $message)';
+    return 'Error.open(field0: $field0)';
   }
 
   @override
@@ -802,11 +453,11 @@ class _$Error_Open implements Error_Open {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_Open &&
-            (identical(other.message, message) || other.message == message));
+            (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, message);
+  int get hashCode => Object.hash(runtimeType, field0);
 
   @JsonKey(ignore: true)
   @override
@@ -817,36 +468,36 @@ class _$Error_Open implements Error_Open {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String message) networkStream,
-    required TResult Function(String message) decode,
-    required TResult Function(String message) open,
-    required TResult Function(String message) preload,
+    required TResult Function(String field0) networkStream,
+    required TResult Function(String field0) decode,
+    required TResult Function(String field0) open,
+    required TResult Function(String field0) preload,
   }) {
-    return open(message);
+    return open(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String message)? networkStream,
-    TResult? Function(String message)? decode,
-    TResult? Function(String message)? open,
-    TResult? Function(String message)? preload,
+    TResult? Function(String field0)? networkStream,
+    TResult? Function(String field0)? decode,
+    TResult? Function(String field0)? open,
+    TResult? Function(String field0)? preload,
   }) {
-    return open?.call(message);
+    return open?.call(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String message)? networkStream,
-    TResult Function(String message)? decode,
-    TResult Function(String message)? open,
-    TResult Function(String message)? preload,
+    TResult Function(String field0)? networkStream,
+    TResult Function(String field0)? decode,
+    TResult Function(String field0)? open,
+    TResult Function(String field0)? preload,
     required TResult orElse(),
   }) {
     if (open != null) {
-      return open(message);
+      return open(field0);
     }
     return orElse();
   }
@@ -890,12 +541,10 @@ class _$Error_Open implements Error_Open {
 }
 
 abstract class Error_Open implements Error {
-  const factory Error_Open({required final String message}) = _$Error_Open;
+  const factory Error_Open(final String field0) = _$Error_Open;
 
   @override
-
-  /// The error message.
-  String get message;
+  String get field0;
   @override
   @JsonKey(ignore: true)
   _$$Error_OpenCopyWith<_$Error_Open> get copyWith =>
@@ -909,7 +558,7 @@ abstract class _$$Error_PreloadCopyWith<$Res> implements $ErrorCopyWith<$Res> {
       __$$Error_PreloadCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String message});
+  $Res call({String field0});
 }
 
 /// @nodoc
@@ -923,12 +572,12 @@ class __$$Error_PreloadCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? message = null,
+    Object? field0 = null,
   }) {
     return _then(_$Error_Preload(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -937,15 +586,14 @@ class __$$Error_PreloadCopyWithImpl<$Res>
 /// @nodoc
 
 class _$Error_Preload implements Error_Preload {
-  const _$Error_Preload({required this.message});
+  const _$Error_Preload(this.field0);
 
-  /// The error message.
   @override
-  final String message;
+  final String field0;
 
   @override
   String toString() {
-    return 'Error.preload(message: $message)';
+    return 'Error.preload(field0: $field0)';
   }
 
   @override
@@ -953,11 +601,11 @@ class _$Error_Preload implements Error_Preload {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$Error_Preload &&
-            (identical(other.message, message) || other.message == message));
+            (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, message);
+  int get hashCode => Object.hash(runtimeType, field0);
 
   @JsonKey(ignore: true)
   @override
@@ -968,36 +616,36 @@ class _$Error_Preload implements Error_Preload {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String message) networkStream,
-    required TResult Function(String message) decode,
-    required TResult Function(String message) open,
-    required TResult Function(String message) preload,
+    required TResult Function(String field0) networkStream,
+    required TResult Function(String field0) decode,
+    required TResult Function(String field0) open,
+    required TResult Function(String field0) preload,
   }) {
-    return preload(message);
+    return preload(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String message)? networkStream,
-    TResult? Function(String message)? decode,
-    TResult? Function(String message)? open,
-    TResult? Function(String message)? preload,
+    TResult? Function(String field0)? networkStream,
+    TResult? Function(String field0)? decode,
+    TResult? Function(String field0)? open,
+    TResult? Function(String field0)? preload,
   }) {
-    return preload?.call(message);
+    return preload?.call(field0);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String message)? networkStream,
-    TResult Function(String message)? decode,
-    TResult Function(String message)? open,
-    TResult Function(String message)? preload,
+    TResult Function(String field0)? networkStream,
+    TResult Function(String field0)? decode,
+    TResult Function(String field0)? open,
+    TResult Function(String field0)? preload,
     required TResult orElse(),
   }) {
     if (preload != null) {
-      return preload(message);
+      return preload(field0);
     }
     return orElse();
   }
@@ -1041,15 +689,888 @@ class _$Error_Preload implements Error_Preload {
 }
 
 abstract class Error_Preload implements Error {
-  const factory Error_Preload({required final String message}) =
-      _$Error_Preload;
+  const factory Error_Preload(final String field0) = _$Error_Preload;
 
   @override
-
-  /// The error message.
-  String get message;
+  String get field0;
   @override
   @JsonKey(ignore: true)
   _$$Error_PreloadCopyWith<_$Error_Preload> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$PlaybackState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PlaybackStateCopyWith<$Res> {
+  factory $PlaybackStateCopyWith(
+          PlaybackState value, $Res Function(PlaybackState) then) =
+      _$PlaybackStateCopyWithImpl<$Res, PlaybackState>;
+}
+
+/// @nodoc
+class _$PlaybackStateCopyWithImpl<$Res, $Val extends PlaybackState>
+    implements $PlaybackStateCopyWith<$Res> {
+  _$PlaybackStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$PlaybackState_StartedCopyWith<$Res> {
+  factory _$$PlaybackState_StartedCopyWith(_$PlaybackState_Started value,
+          $Res Function(_$PlaybackState_Started) then) =
+      __$$PlaybackState_StartedCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Duration field0});
+}
+
+/// @nodoc
+class __$$PlaybackState_StartedCopyWithImpl<$Res>
+    extends _$PlaybackStateCopyWithImpl<$Res, _$PlaybackState_Started>
+    implements _$$PlaybackState_StartedCopyWith<$Res> {
+  __$$PlaybackState_StartedCopyWithImpl(_$PlaybackState_Started _value,
+      $Res Function(_$PlaybackState_Started) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? field0 = null,
+  }) {
+    return _then(_$PlaybackState_Started(
+      null == field0
+          ? _value.field0
+          : field0 // ignore: cast_nullable_to_non_nullable
+              as Duration,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$PlaybackState_Started implements PlaybackState_Started {
+  const _$PlaybackState_Started(this.field0);
+
+  @override
+  final Duration field0;
+
+  @override
+  String toString() {
+    return 'PlaybackState.started(field0: $field0)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PlaybackState_Started &&
+            (identical(other.field0, field0) || other.field0 == field0));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, field0);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PlaybackState_StartedCopyWith<_$PlaybackState_Started> get copyWith =>
+      __$$PlaybackState_StartedCopyWithImpl<_$PlaybackState_Started>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) {
+    return started(field0);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) {
+    return started?.call(field0);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (started != null) {
+      return started(field0);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) {
+    return started(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) {
+    return started?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (started != null) {
+      return started(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackState_Started implements PlaybackState {
+  const factory PlaybackState_Started(final Duration field0) =
+      _$PlaybackState_Started;
+
+  Duration get field0;
+  @JsonKey(ignore: true)
+  _$$PlaybackState_StartedCopyWith<_$PlaybackState_Started> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$PlaybackState_PlayCopyWith<$Res> {
+  factory _$$PlaybackState_PlayCopyWith(_$PlaybackState_Play value,
+          $Res Function(_$PlaybackState_Play) then) =
+      __$$PlaybackState_PlayCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$PlaybackState_PlayCopyWithImpl<$Res>
+    extends _$PlaybackStateCopyWithImpl<$Res, _$PlaybackState_Play>
+    implements _$$PlaybackState_PlayCopyWith<$Res> {
+  __$$PlaybackState_PlayCopyWithImpl(
+      _$PlaybackState_Play _value, $Res Function(_$PlaybackState_Play) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$PlaybackState_Play implements PlaybackState_Play {
+  const _$PlaybackState_Play();
+
+  @override
+  String toString() {
+    return 'PlaybackState.play()';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$PlaybackState_Play);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) {
+    return play();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) {
+    return play?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (play != null) {
+      return play();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) {
+    return play(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) {
+    return play?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (play != null) {
+      return play(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackState_Play implements PlaybackState {
+  const factory PlaybackState_Play() = _$PlaybackState_Play;
+}
+
+/// @nodoc
+abstract class _$$PlaybackState_PauseCopyWith<$Res> {
+  factory _$$PlaybackState_PauseCopyWith(_$PlaybackState_Pause value,
+          $Res Function(_$PlaybackState_Pause) then) =
+      __$$PlaybackState_PauseCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$PlaybackState_PauseCopyWithImpl<$Res>
+    extends _$PlaybackStateCopyWithImpl<$Res, _$PlaybackState_Pause>
+    implements _$$PlaybackState_PauseCopyWith<$Res> {
+  __$$PlaybackState_PauseCopyWithImpl(
+      _$PlaybackState_Pause _value, $Res Function(_$PlaybackState_Pause) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$PlaybackState_Pause implements PlaybackState_Pause {
+  const _$PlaybackState_Pause();
+
+  @override
+  String toString() {
+    return 'PlaybackState.pause()';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$PlaybackState_Pause);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) {
+    return pause();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) {
+    return pause?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (pause != null) {
+      return pause();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) {
+    return pause(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) {
+    return pause?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (pause != null) {
+      return pause(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackState_Pause implements PlaybackState {
+  const factory PlaybackState_Pause() = _$PlaybackState_Pause;
+}
+
+/// @nodoc
+abstract class _$$PlaybackState_DoneCopyWith<$Res> {
+  factory _$$PlaybackState_DoneCopyWith(_$PlaybackState_Done value,
+          $Res Function(_$PlaybackState_Done) then) =
+      __$$PlaybackState_DoneCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$PlaybackState_DoneCopyWithImpl<$Res>
+    extends _$PlaybackStateCopyWithImpl<$Res, _$PlaybackState_Done>
+    implements _$$PlaybackState_DoneCopyWith<$Res> {
+  __$$PlaybackState_DoneCopyWithImpl(
+      _$PlaybackState_Done _value, $Res Function(_$PlaybackState_Done) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$PlaybackState_Done implements PlaybackState_Done {
+  const _$PlaybackState_Done();
+
+  @override
+  String toString() {
+    return 'PlaybackState.done()';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$PlaybackState_Done);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) {
+    return done();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) {
+    return done?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (done != null) {
+      return done();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) {
+    return done(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) {
+    return done?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (done != null) {
+      return done(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackState_Done implements PlaybackState {
+  const factory PlaybackState_Done() = _$PlaybackState_Done;
+}
+
+/// @nodoc
+abstract class _$$PlaybackState_StopCopyWith<$Res> {
+  factory _$$PlaybackState_StopCopyWith(_$PlaybackState_Stop value,
+          $Res Function(_$PlaybackState_Stop) then) =
+      __$$PlaybackState_StopCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$PlaybackState_StopCopyWithImpl<$Res>
+    extends _$PlaybackStateCopyWithImpl<$Res, _$PlaybackState_Stop>
+    implements _$$PlaybackState_StopCopyWith<$Res> {
+  __$$PlaybackState_StopCopyWithImpl(
+      _$PlaybackState_Stop _value, $Res Function(_$PlaybackState_Stop) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$PlaybackState_Stop implements PlaybackState_Stop {
+  const _$PlaybackState_Stop();
+
+  @override
+  String toString() {
+    return 'PlaybackState.stop()';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$PlaybackState_Stop);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) {
+    return stop();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) {
+    return stop?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (stop != null) {
+      return stop();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) {
+    return stop(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) {
+    return stop?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (stop != null) {
+      return stop(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackState_Stop implements PlaybackState {
+  const factory PlaybackState_Stop() = _$PlaybackState_Stop;
+}
+
+/// @nodoc
+abstract class _$$PlaybackState_PreloadPlayedCopyWith<$Res> {
+  factory _$$PlaybackState_PreloadPlayedCopyWith(
+          _$PlaybackState_PreloadPlayed value,
+          $Res Function(_$PlaybackState_PreloadPlayed) then) =
+      __$$PlaybackState_PreloadPlayedCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$PlaybackState_PreloadPlayedCopyWithImpl<$Res>
+    extends _$PlaybackStateCopyWithImpl<$Res, _$PlaybackState_PreloadPlayed>
+    implements _$$PlaybackState_PreloadPlayedCopyWith<$Res> {
+  __$$PlaybackState_PreloadPlayedCopyWithImpl(
+      _$PlaybackState_PreloadPlayed _value,
+      $Res Function(_$PlaybackState_PreloadPlayed) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$PlaybackState_PreloadPlayed implements PlaybackState_PreloadPlayed {
+  const _$PlaybackState_PreloadPlayed();
+
+  @override
+  String toString() {
+    return 'PlaybackState.preloadPlayed()';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PlaybackState_PreloadPlayed);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(Duration field0) started,
+    required TResult Function() play,
+    required TResult Function() pause,
+    required TResult Function() done,
+    required TResult Function() stop,
+    required TResult Function() preloadPlayed,
+  }) {
+    return preloadPlayed();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(Duration field0)? started,
+    TResult? Function()? play,
+    TResult? Function()? pause,
+    TResult? Function()? done,
+    TResult? Function()? stop,
+    TResult? Function()? preloadPlayed,
+  }) {
+    return preloadPlayed?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(Duration field0)? started,
+    TResult Function()? play,
+    TResult Function()? pause,
+    TResult Function()? done,
+    TResult Function()? stop,
+    TResult Function()? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (preloadPlayed != null) {
+      return preloadPlayed();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(PlaybackState_Started value) started,
+    required TResult Function(PlaybackState_Play value) play,
+    required TResult Function(PlaybackState_Pause value) pause,
+    required TResult Function(PlaybackState_Done value) done,
+    required TResult Function(PlaybackState_Stop value) stop,
+    required TResult Function(PlaybackState_PreloadPlayed value) preloadPlayed,
+  }) {
+    return preloadPlayed(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(PlaybackState_Started value)? started,
+    TResult? Function(PlaybackState_Play value)? play,
+    TResult? Function(PlaybackState_Pause value)? pause,
+    TResult? Function(PlaybackState_Done value)? done,
+    TResult? Function(PlaybackState_Stop value)? stop,
+    TResult? Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+  }) {
+    return preloadPlayed?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(PlaybackState_Started value)? started,
+    TResult Function(PlaybackState_Play value)? play,
+    TResult Function(PlaybackState_Pause value)? pause,
+    TResult Function(PlaybackState_Done value)? done,
+    TResult Function(PlaybackState_Stop value)? stop,
+    TResult Function(PlaybackState_PreloadPlayed value)? preloadPlayed,
+    required TResult orElse(),
+  }) {
+    if (preloadPlayed != null) {
+      return preloadPlayed(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class PlaybackState_PreloadPlayed implements PlaybackState {
+  const factory PlaybackState_PreloadPlayed() = _$PlaybackState_PreloadPlayed;
 }
