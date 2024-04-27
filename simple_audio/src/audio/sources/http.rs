@@ -231,9 +231,8 @@ impl Read for HttpStream
                 let result = Self::read_chunk(tx, url, chunk_write_pos, file_size);
 
                 if let Err(err) = result {
-                    let _ = error_sender.send(PlayerEvent::Error(Error::NetworkStream {
-                        message: err.to_string(),
-                    }));
+                    let _ = error_sender
+                        .send(PlayerEvent::Error(Error::NetworkStream(err.to_string())));
                 }
             });
         }

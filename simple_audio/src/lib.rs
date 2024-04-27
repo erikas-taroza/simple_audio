@@ -188,11 +188,7 @@ impl Player
         let buffer_signal = Arc::new(AtomicBool::new(false));
         let source = match self.source_from_path(path, buffer_signal.clone()) {
             Ok(source) => source,
-            Err(err) => {
-                return Err(Error::Open {
-                    message: err.to_string(),
-                })
-            }
+            Err(err) => return Err(Error::Open(err.to_string())),
         };
 
         let send_event = self
@@ -202,9 +198,7 @@ impl Player
             .send(DecoderEvent::Open(source, buffer_signal));
 
         if let Err(err) = send_event {
-            return Err(Error::Open {
-                message: err.to_string(),
-            });
+            return Err(Error::Open(err.to_string()));
         }
 
         if autoplay {
@@ -228,11 +222,7 @@ impl Player
         let buffer_signal = Arc::new(AtomicBool::new(false));
         let source = match self.source_from_path(path, buffer_signal.clone()) {
             Ok(source) => source,
-            Err(err) => {
-                return Err(Error::Preload {
-                    message: err.to_string(),
-                })
-            }
+            Err(err) => return Err(Error::Preload(err.to_string())),
         };
 
         let send_event = self
@@ -243,9 +233,7 @@ impl Player
 
         match send_event {
             Ok(_) => Ok(()),
-            Err(err) => Err(Error::Preload {
-                message: err.to_string(),
-            }),
+            Err(err) => Err(Error::Preload(err.to_string())),
         }
     }
 

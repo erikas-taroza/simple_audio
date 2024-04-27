@@ -222,9 +222,8 @@ impl Read for HlsStream
                     let result = Self::read_chunk(tx, url, start, file_size);
 
                     if let Err(err) = result {
-                        let _ = error_sender.send(PlayerEvent::Error(Error::NetworkStream {
-                            message: err.to_string(),
-                        }));
+                        let _ = error_sender
+                            .send(PlayerEvent::Error(Error::NetworkStream(err.to_string())));
                     }
                 });
 

@@ -105,9 +105,7 @@ impl Decoder
                 self.controls
                     .player_event_handler()
                     .0
-                    .send(PlayerEvent::Error(Error::Decode {
-                        message: err.to_string(),
-                    }))
+                    .send(PlayerEvent::Error(Error::Decode(err.to_string())))
                     .unwrap();
             }
 
@@ -116,9 +114,7 @@ impl Decoder
                 self.controls
                     .player_event_handler()
                     .0
-                    .send(PlayerEvent::Error(Error::Decode {
-                        message: err.to_string(),
-                    }))
+                    .send(PlayerEvent::Error(Error::Decode(err.to_string())))
                     .unwrap();
             }
 
@@ -133,9 +129,7 @@ impl Decoder
                     self.controls
                         .player_event_handler()
                         .0
-                        .send(PlayerEvent::Error(Error::Decode {
-                            message: err.to_string(),
-                        }))
+                        .send(PlayerEvent::Error(Error::Decode(err.to_string())))
                         .unwrap();
                 }
             }
