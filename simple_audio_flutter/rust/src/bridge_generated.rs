@@ -84,7 +84,7 @@ fn wire_progress_state_stream__static_method__PlayerWrapper_impl(port_: MessageP
         move || {
             move |task_callback| {
                 Result::<_, ()>::Ok(PlayerWrapper::progress_state_stream(
-                    task_callback.stream_sink::<_, mirror_ProgressState>(),
+                    task_callback.stream_sink::<_, ProgressState>(),
                 ))
             }
         },
@@ -100,7 +100,7 @@ fn wire_error_stream__static_method__PlayerWrapper_impl(port_: MessagePort) {
         move || {
             move |task_callback| {
                 Result::<_, ()>::Ok(PlayerWrapper::error_stream(
-                    task_callback.stream_sink::<_, mirror_Error>(),
+                    task_callback.stream_sink::<_, Error>(),
                 ))
             }
         },
@@ -126,7 +126,7 @@ fn wire_progress__method__PlayerWrapper_impl(
     port_: MessagePort,
     that: impl Wire2Api<PlayerWrapper> + UnwindSafe,
 ) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, mirror_ProgressState, _>(
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, ProgressState, _>(
         WrapInfo {
             debug_name: "progress__method__PlayerWrapper",
             port: Some(port_),
@@ -403,45 +403,8 @@ fn wire_normalize_volume__method__PlayerWrapper_impl(
 }
 // Section: wrapper structs
 
-#[derive(Clone)]
-pub struct mirror_Error(Error);
-
-#[derive(Clone)]
-pub struct mirror_PlaybackState(PlaybackState);
-
-#[derive(Clone)]
-pub struct mirror_ProgressState(ProgressState);
-
 // Section: static checks
 
-const _: fn() = || {
-    match None::<Error>.unwrap() {
-        Error::NetworkStream(field0) => {
-            let _: String = field0;
-        }
-        Error::Decode(field0) => {
-            let _: String = field0;
-        }
-        Error::Open(field0) => {
-            let _: String = field0;
-        }
-        Error::Preload(field0) => {
-            let _: String = field0;
-        }
-    }
-    match None::<PlaybackState>.unwrap() {
-        PlaybackState::Play => {}
-        PlaybackState::Pause => {}
-        PlaybackState::Done => {}
-        PlaybackState::Stop => {}
-        PlaybackState::PreloadPlayed => {}
-    }
-    {
-        let ProgressState = None::<ProgressState>.unwrap();
-        let _: chrono::Duration = ProgressState.position;
-        let _: chrono::Duration = ProgressState.duration;
-    }
-};
 // Section: allocate functions
 
 // Section: related functions
@@ -486,42 +449,40 @@ impl Wire2Api<u8> for u8 {
 
 // Section: impl IntoDart
 
-impl support::IntoDart for mirror_Error {
+impl support::IntoDart for Error {
     fn into_dart(self) -> support::DartAbi {
-        match self.0 {
-            Error::NetworkStream(field0) => {
-                vec![0.into_dart(), field0.into_into_dart().into_dart()]
-            }
-            Error::Decode(field0) => vec![1.into_dart(), field0.into_into_dart().into_dart()],
-            Error::Open(field0) => vec![2.into_dart(), field0.into_into_dart().into_dart()],
-            Error::Preload(field0) => vec![3.into_dart(), field0.into_into_dart().into_dart()],
+        match self {
+            Self::NetworkStream(field0) => vec![0.into_dart(), field0.into_into_dart().into_dart()],
+            Self::Decode(field0) => vec![1.into_dart(), field0.into_into_dart().into_dart()],
+            Self::Open(field0) => vec![2.into_dart(), field0.into_into_dart().into_dart()],
+            Self::Preload(field0) => vec![3.into_dart(), field0.into_into_dart().into_dart()],
         }
         .into_dart()
     }
 }
-impl support::IntoDartExceptPrimitive for mirror_Error {}
-impl rust2dart::IntoIntoDart<mirror_Error> for Error {
-    fn into_into_dart(self) -> mirror_Error {
-        mirror_Error(self)
+impl support::IntoDartExceptPrimitive for Error {}
+impl rust2dart::IntoIntoDart<Error> for Error {
+    fn into_into_dart(self) -> Self {
+        self
     }
 }
 
-impl support::IntoDart for mirror_PlaybackState {
+impl support::IntoDart for PlaybackState {
     fn into_dart(self) -> support::DartAbi {
-        match self.0 {
-            PlaybackState::Play => 0,
-            PlaybackState::Pause => 1,
-            PlaybackState::Done => 2,
-            PlaybackState::Stop => 3,
-            PlaybackState::PreloadPlayed => 4,
+        match self {
+            Self::Play => 0,
+            Self::Pause => 1,
+            Self::Done => 2,
+            Self::Stop => 3,
+            Self::PreloadPlayed => 4,
         }
         .into_dart()
     }
 }
-impl support::IntoDartExceptPrimitive for mirror_PlaybackState {}
-impl rust2dart::IntoIntoDart<mirror_PlaybackState> for PlaybackState {
-    fn into_into_dart(self) -> mirror_PlaybackState {
-        mirror_PlaybackState(self)
+impl support::IntoDartExceptPrimitive for PlaybackState {}
+impl rust2dart::IntoIntoDart<PlaybackState> for PlaybackState {
+    fn into_into_dart(self) -> Self {
+        self
     }
 }
 
@@ -537,19 +498,19 @@ impl rust2dart::IntoIntoDart<PlayerWrapper> for PlayerWrapper {
     }
 }
 
-impl support::IntoDart for mirror_ProgressState {
+impl support::IntoDart for ProgressState {
     fn into_dart(self) -> support::DartAbi {
         vec![
-            self.0.position.into_into_dart().into_dart(),
-            self.0.duration.into_into_dart().into_dart(),
+            self.position.into_into_dart().into_dart(),
+            self.duration.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
 }
-impl support::IntoDartExceptPrimitive for mirror_ProgressState {}
-impl rust2dart::IntoIntoDart<mirror_ProgressState> for ProgressState {
-    fn into_into_dart(self) -> mirror_ProgressState {
-        mirror_ProgressState(self)
+impl support::IntoDartExceptPrimitive for ProgressState {}
+impl rust2dart::IntoIntoDart<ProgressState> for ProgressState {
+    fn into_into_dart(self) -> Self {
+        self
     }
 }
 

@@ -2,10 +2,8 @@ use std::sync::{OnceLock, RwLock};
 
 use chrono::Duration;
 use flutter_rust_bridge::StreamSink;
-use simple_audio::{
-    error::Error,
-    types::{PlaybackState, ProgressState},
-};
+
+use crate::api::{Error, PlaybackState, ProgressState};
 
 static PLAYBACK_STARTED_STREAM: OnceLock<RwLock<Option<StreamSink<Duration>>>> = OnceLock::new();
 

@@ -1,11 +1,8 @@
 use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use flutter_rust_bridge::{frb, RustOpaque, StreamSink};
-pub use simple_audio::{
-    error::Error,
-    types::{PlaybackState, ProgressState},
-};
-use simple_audio::{types::PlayerEvent, Player};
+use flutter_rust_bridge::{RustOpaque, StreamSink};
+use simple_audio::types::PlayerEvent;
+pub use simple_audio::Player;
 
 use std::{sync::OnceLock, thread};
 
@@ -42,11 +39,15 @@ impl PlayerWrapper
                 if let Ok(event) = event_receiver.recv() {
                     match event {
                         PlayerEvent::PlaybackStarted(duration) => {
-                            update_playback_started_stream(Duration::from_std(duration))
+                            update_playback_started_stream(Duration::from_std(duration).unwrap())
                         }
-                        PlayerEvent::Playback(playback) => update_playback_state_stream(playback),
-                        PlayerEvent::Progress(progress) => update_progress_state_stream(progress),
-                        PlayerEvent::Error(error) => update_error_stream(error),
+                        PlayerEvent::Playback(playback) => {
+                            update_playback_state_stream(playback.into())
+                        }
+                        PlayerEvent::Progress(progress) => {
+                            update_progress_state_stream(progress.into())
+                        }
+                        PlayerEvent::Error(error) => update_error_stream(error.into()),
                     }
                 }
             }
@@ -90,12 +91,12 @@ impl PlayerWrapper
 
     pub fn playback_state(&self) -> PlaybackState
     {
-        self.internal.playback_state()
+        self.internal.playback_state().into()
     }
 
     pub fn progress(&self) -> ProgressState
     {
-        self.internal.progress()
+        self.internal.progress().into()
     }
 
     /// Returns `true` if there is a file preloaded for playback.
@@ -121,12 +122,12 @@ impl PlayerWrapper
 
     pub fn open(&self, path: String, autoplay: bool) -> Result<(), Error>
     {
-        self.internal.open(path, autoplay)
+        self.internal.open(path, autoplay).map_err(|err| err.into())
     }
 
     pub fn preload(&self, path: String) -> Result<(), Error>
     {
-        self.internal.preload(path)
+        self.internal.preload(path).map_err(|err| err.into())
     }
 
     pub fn play_preload(&self)
@@ -176,8 +177,7 @@ impl PlayerWrapper
     }
 }
 
-#[frb(mirror(PlaybackState))]
-pub enum _PlaybackState
+pub enum PlaybackState
 {
     /// The player is currently playing the file.
     Play,
@@ -191,8 +191,21 @@ pub enum _PlaybackState
     PreloadPlayed,
 }
 
-#[frb(mirror(ProgressState))]
-pub struct _ProgressState
+impl Into<PlaybackState> for simple_audio::types::PlaybackState
+{
+    fn into(self) -> PlaybackState
+    {
+        match self {
+            Self::Play => PlaybackState::Play,
+            Self::Pause => PlaybackState::Pause,
+            Self::Done => PlaybackState::Done,
+            Self::Stop => PlaybackState::Stop,
+            Self::PreloadPlayed => PlaybackState::PreloadPlayed,
+        }
+    }
+}
+
+pub struct ProgressState
 {
     /// The position of the player.
     pub position: Duration,
@@ -200,8 +213,18 @@ pub struct _ProgressState
     pub duration: Duration,
 }
 
-#[frb(mirror(Error))]
-pub enum _Error
+impl Into<ProgressState> for simple_audio::types::ProgressState
+{
+    fn into(self) -> ProgressState
+    {
+        ProgressState {
+            position: Duration::from_std(self.position).unwrap(),
+            duration: Duration::from_std(self.duration).unwrap(),
+        }
+    }
+}
+
+pub enum Error
 {
     /// An error occurred when trying to fetch more bytes for
     /// a network stream.
@@ -212,4 +235,17 @@ pub enum _Error
     Open(String),
     /// An error occurred when trying to preload a file.
     Preload(String),
+}
+
+impl Into<Error> for simple_audio::error::Error
+{
+    fn into(self) -> Error
+    {
+        match self {
+            Self::NetworkStream(message) => Error::NetworkStream(message),
+            Self::Decode(message) => Error::Decode(message),
+            Self::Open(message) => Error::Open(message),
+            Self::Preload(message) => Error::Preload(message),
+        }
+    }
 }

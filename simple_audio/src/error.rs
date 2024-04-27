@@ -1,5 +1,5 @@
 /// Errors that can be thrown by `simple_audio`.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Error
 {
     /// An error occurred when trying to fetch more bytes for
