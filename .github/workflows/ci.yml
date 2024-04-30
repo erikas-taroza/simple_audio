@@ -10,6 +10,9 @@ jobs:
   rust_lint:
     name: Rust Lint
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path: ["simple_audio", "simple_audio_flutter"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -28,16 +31,15 @@ jobs:
       - name: Install Rust -sys dependencies
         run: |
           sudo apt install libasound2-dev
-          sudo apt install libdbus-1-dev pkg-config
 
       - name: Format
         run: |
-          cd rust
+          cd ${{ matrix.path }}
           cargo +nightly fmt --check
           cd ..
       - name: Clippy
         run: |
-          cd rust
+          cd ${{ matrix.path }}
           cargo +nightly clippy 
           cd ..
 
@@ -55,22 +57,22 @@ jobs:
       - run: flutter pub get
       - name: Format
         run: |
-          cd lib/src
+          cd simple_audio_flutter/lib/src
           dart format --set-exit-if-changed . 
           cd ../..
       - name: Lint
         run: |
-          cd lib/src
+          cd simple_audio_flutter/lib/src
           dart analyze --fatal-infos
           cd ../..
       - name: Format Example
         run: |
-          cd example/lib
+          cd simple_audio_flutter/example/lib
           dart format --set-exit-if-changed . 
           cd ../..
       - name: Lint Example
         run: |
-          cd example/lib
+          cd simple_audio_flutter/example/lib
           dart analyze --fatal-infos
           cd ../..
 
@@ -101,7 +103,8 @@ jobs:
         if: ${{ matrix.target == 'linux' }}
         run: |
           sudo apt install libasound2-dev
-          sudo apt install libdbus-1-dev pkg-config
 
       - name: Build
-        run: python ./plugin_tool.py -b ${{ matrix.target }}
+        run: |
+          cd simple_audio_flutter
+          python ./plugin_tool.py -b ${{ matrix.target }}
