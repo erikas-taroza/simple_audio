@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:anni_mpris_service/anni_mpris_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:simple_audio/simple_audio.dart';
@@ -45,6 +47,9 @@ class Mpris extends MPRISService with mc.MediaController {
   @override
   Future<void> onSetPosition(String trackId, int position) =>
       player.seek(Duration(microseconds: position));
+
+  @override
+  Future<void> onRaise() async => Process.run(Platform.resolvedExecutable, []);
 
   @override
   void setMetadata(mc.Metadata m, Duration duration) {
