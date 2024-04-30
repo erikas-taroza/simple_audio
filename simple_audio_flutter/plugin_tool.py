@@ -30,12 +30,6 @@ parser.add_argument(
     help="Bumps the version of the plugin to the given version. Ex. \"1.0.0\""
 )
 
-parser.add_argument(
-    "--ios-ssl",
-    action="store",
-    help="Used to fix the build for OpenSSL if the vendored feature is being used on aarch64-apple-ios-sim target. Please provide the path to the openssl include directory."
-)
-
 def init():
     print("Initializing your project...")
 
@@ -200,7 +194,7 @@ def code_gen():
         )
 
 
-def build(targets: list[str], openssl_path: str = None):
+def build(targets: list[str]):
     print("Building Rust code...\n")
 
     package_name = open("./rust/Cargo.toml", "r").read().split("name = \"")[1].split("\"")[0]
@@ -307,6 +301,11 @@ def bump_version(version: str):
     replace_string_in_file(cargo, r'version = "[\d|\.]+"\s', f'version = "{version}"\n')
     cargo.close()
 
+    # Cargo.toml in main Rust project
+    cargo = open("../simple_audio/Cargo.toml", "r+")
+    replace_string_in_file(cargo, r'version = "[\d|\.]+"\s', f'version = "{version}"\n')
+    cargo.close()
+
     # Android CMake
     android_cmake = open("./android/CMakeLists.txt", "r+")
     replace_string_in_file(android_cmake, r'set\(Version "[\d|\.]+"\)\s', f'set(Version "{version}")\n')
@@ -351,7 +350,7 @@ if __name__ == "__main__":
         targets = args.build
         if len(args.build) == 0:
             targets = ["android", "linux", "windows", "ios", "macos"]
-        build(targets, args.ios_ssl)
+        build(targets)
 
     if args.bump_version:
         bump_version(args.bump_version)
