@@ -24,10 +24,14 @@ jobs:
           components: rustfmt, clippy
       # Clippy builds the project so we need build dependencies.
       - uses: subosito/flutter-action@v2.10.0
+        if: ${{ matrix.path == 'simple_audio_flutter' }}
         with:
           channel: "stable"
           cache: true
-      - run: flutter pub get
+      - run: |
+          if: ${{ matrix.path == 'simple_audio_flutter' }}
+          cd simple_audio_flutter
+          flutter pub get
       - name: Install Rust -sys dependencies
         run: |
           sudo apt install libasound2-dev
@@ -54,25 +58,27 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - run: flutter pub get
+      - run: |
+          cd simple_audio_flutter
+          flutter pub get
       - name: Format
         run: |
-          cd simple_audio_flutter/lib/src
+          cd lib/src
           dart format --set-exit-if-changed . 
-          cd ../..
+          cd ../../
       - name: Lint
         run: |
-          cd simple_audio_flutter/lib/src
+          cd lib/src
           dart analyze --fatal-infos
           cd ../..
       - name: Format Example
         run: |
-          cd simple_audio_flutter/example/lib
+          cd example/lib
           dart format --set-exit-if-changed . 
           cd ../..
       - name: Lint Example
         run: |
-          cd simple_audio_flutter/example/lib
+          cd example/lib
           dart analyze --fatal-infos
           cd ../..
 
