@@ -45,4 +45,4 @@ crossterm = "0.27.0"
 lto = true
 
 [patch.crates-io]
-audiopus_sys = { git = "https://github.com/erikas-taroza/audiopus_sys" }
+audiopus_sys = { git = "https://github.com/erikas-taroza/audiopus_sys", branch = "cmake-patch" }
