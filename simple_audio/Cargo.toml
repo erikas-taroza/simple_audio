@@ -1,0 +1,48 @@
+[package]
+name = "simple_audio"
+version = "1.9.0"
+edition = "2021"
+
+[features]
+all = ["http_streaming", "hls_streaming", "opus"]
+http_streaming = ["dep:reqwest"]
+hls_streaming = ["dep:reqwest"]
+opus = ["dep:audiopus"]
+
+[dependencies]
+cpal = "0.15.2"
+reqwest = { version = "0", features = [
+	"blocking",
+	"rustls-tls",
+], default-features = false, optional = true }
+# symphonia = { version = "0.5.2", features = ["all"] }
+symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-opus-improvements", features = [
+	"all",
+] }
+symphonia-core = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-opus-improvements" }
+crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
+rubato = "0.14.1"
+rangemap = "1.4.0"
+arrayvec = "0.7.4"
+ebur128 = "0.1.8"
+anyhow = "1.0.75"
+lazy_static = "1.4.0"
+audiopus = { version = "0.3.0-rc.0", optional = true }
+
+# Android Dependencies
+[target.'cfg(target_os = "android")'.dependencies]
+# Debug only.
+android_logger = "0.13.3"
+log = "0.4.20"
+jni = "0.21.1"
+ndk-context = "0.1.1"
+
+[dev-dependencies]
+ratatui = "0.26.2"
+crossterm = "0.27.0"
+
+[profile.release]
+lto = true
+
+[patch.crates-io]
+audiopus_sys = { git = "https://github.com/erikas-taroza/audiopus_sys" }

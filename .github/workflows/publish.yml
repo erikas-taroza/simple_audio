@@ -40,15 +40,15 @@ jobs:
         if: ${{ matrix.target == 'linux' }}
         run: |
           sudo apt install libasound2-dev
-          sudo apt install libdbus-1-dev pkg-config
 
       - name: Build
+        working-directory: simple_audio_flutter
         run: python ./plugin_tool.py -b ${{ matrix.target }}
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3.1.2
         with:
           name: ${{ matrix.target }}
-          path: ${{ matrix.path }}
+          path: simple_audio_flutter/${{ matrix.path }}
 
   publish_to_release:
     name: Publish Artifacts to Release
