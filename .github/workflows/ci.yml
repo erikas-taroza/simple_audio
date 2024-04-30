@@ -96,8 +96,6 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
       - uses: ./.github/actions/setup_build
-        with:
-          working-directory: simple_audio_flutter
       - name: Install Rust -sys dependencies
         if: ${{ matrix.target == 'linux' }}
         run: |

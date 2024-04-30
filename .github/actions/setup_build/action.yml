@@ -21,4 +21,5 @@ runs:
         channel: "stable"
         cache: true
     - run: flutter pub get
+      working-directory: simple_audio_flutter
       shell: bash
