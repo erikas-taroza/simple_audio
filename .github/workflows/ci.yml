@@ -28,8 +28,9 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - run: |
-          if: ${{ matrix.path == 'simple_audio_flutter' }}
+      - name: flutter pub get
+        if: ${{ matrix.path == 'simple_audio_flutter' }}
+        run: |
           cd simple_audio_flutter
           flutter pub get
       - name: Install Rust -sys dependencies
@@ -58,29 +59,19 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - run: |
-          cd simple_audio_flutter
-          flutter pub get
+      - run: flutter pub get
       - name: Format
-        run: |
-          cd lib/src
-          dart format --set-exit-if-changed . 
-          cd ../../
+        working-directory: simple_audio_flutter/lib/src
+        run: dart format --set-exit-if-changed .
       - name: Lint
-        run: |
-          cd lib/src
-          dart analyze --fatal-infos
-          cd ../..
+        working-directory: simple_audio_flutter/lib/src
+        run: dart analyze --fatal-infos
       - name: Format Example
-        run: |
-          cd example/lib
-          dart format --set-exit-if-changed . 
-          cd ../..
+        working-directory: simple_audio_flutter/example/lib
+        run: dart format --set-exit-if-changed .
       - name: Lint Example
-        run: |
-          cd example/lib
-          dart analyze --fatal-infos
-          cd ../..
+        working-directory: simple_audio_flutter/example/lib
+        run: dart analyze --fatal-infos
 
   build:
     name: Build Libraries
