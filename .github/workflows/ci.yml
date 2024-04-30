@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        path: ["simple_audio", "simple_audio_flutter"]
+        path: ["simple_audio", "simple_audio_flutter/rust"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -59,7 +59,7 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - run: flutter pub get
+      - run: cd simple_audio_flutter && flutter pub get
       - name: Format
         working-directory: simple_audio_flutter/lib/src
         run: dart format --set-exit-if-changed .
