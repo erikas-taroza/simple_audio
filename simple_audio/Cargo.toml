@@ -10,7 +10,7 @@ hls_streaming = ["dep:reqwest"]
 opus = ["dep:audiopus"]
 
 [dependencies]
-cpal = "0.15.2"
+cpal = { git = "https://github.com/sidit77/cpal.git", branch = "master" }
 reqwest = { version = "0", features = [
 	"blocking",
 	"rustls-tls",
