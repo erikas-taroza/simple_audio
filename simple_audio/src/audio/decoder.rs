@@ -217,6 +217,7 @@ impl Decoder
                         return Ok(());
                     }
 
+                    self.state = DecoderState::Playing;
                     let playback = self.preload_playback.take().unwrap();
                     self.playback = Some(playback);
                     self.controls.set_is_file_preloaded(false);
