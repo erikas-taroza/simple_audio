@@ -8,7 +8,7 @@ class AudioServiceController extends BaseAudioHandler
     with SeekHandler, MediaController {
   AudioServiceController(this.player) {
     AudioService.init(
-      builder: () => AudioServiceController(player),
+      builder: () => this,
       config: const AudioServiceConfig(
         androidNotificationChannelId: "com.erikastaroza.simple_audio.example",
         androidNotificationChannelName: "Simple Audio",
