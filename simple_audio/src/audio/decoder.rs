@@ -389,6 +389,21 @@ impl Decoder
         if let Some(preload) = self.preload_playback.take() {
             self.playback = Some(preload);
             self.controls.set_is_file_preloaded(false);
+
+            let _ = self
+                .controls
+                .player_event_handler()
+                .0
+                .send(PlayerEvent::Playback(PlaybackState::PreloadPlayed));
+
+            if let Some(playback) = &self.playback {
+                let _ = self
+                    .controls
+                    .player_event_handler()
+                    .0
+                    .send(PlayerEvent::PlaybackStarted(playback.duration));
+            }
+
             self.controls
                 .set_playback_state(PlaybackState::PreloadPlayed);
         }
