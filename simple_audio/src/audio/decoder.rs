@@ -222,6 +222,12 @@ impl Decoder
                     self.playback = Some(playback);
                     self.controls.set_is_file_preloaded(false);
 
+                    if let Some(playback) = &self.playback {
+                        self.controls
+                            .player_event_handler()
+                            .0
+                            .send(PlayerEvent::PlaybackStarted(playback.duration))?;
+                    }
                     self.controls
                         .player_event_handler()
                         .0
