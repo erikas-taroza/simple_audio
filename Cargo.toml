@@ -1,0 +1,3 @@
+[workspace]
+
+members = ["simple_audio", "simple_audio_flutter/rust"]

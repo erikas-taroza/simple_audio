@@ -49,7 +49,7 @@ if(NOT EXISTS ${LibPath})
   )
 endif()
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio.so")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio_flutter.so")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E tar -xzf linux.tar.gz
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -60,6 +60,6 @@ endif()
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
 set(simple_audio_bundled_libraries
-  "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio.so"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsimple_audio_flutter.so"
   PARENT_SCOPE
 )

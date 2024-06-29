@@ -13,7 +13,7 @@ if(NOT EXISTS ${ArchivePath})
   )
 endif()
 
-if(NOT EXISTS "${LibPath}/arm64-v8a/libsimple_audio.so")
+if(NOT EXISTS "${LibPath}/arm64-v8a/libsimple_audio_flutter.so")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E tar -xzf ${ArchivePath}
     WORKING_DIRECTORY ${LibPath}

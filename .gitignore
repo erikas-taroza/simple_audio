@@ -1,6 +1,6 @@
-libsimple_audio.so
-libsimple_audio.a
-simple_audio.dll
+simple_audio_flutter.dll
+libsimple_audio_flutter.so
+libsimple_audio_flutter.a
 simple_audio.xcframework
 *.zip
 *.tar.gz
@@ -36,3 +36,4 @@ migrate_working_dir/
 .packages
 build/
 *.lock
+target

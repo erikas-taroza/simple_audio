@@ -118,5 +118,4 @@ jobs:
           sudo apt install libasound2-dev
 
       - name: Build
-        working-directory: simple_audio_flutter
         run: python ./plugin_tool.py -b ${{ matrix.target }}

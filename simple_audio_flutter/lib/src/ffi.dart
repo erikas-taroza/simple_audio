@@ -30,7 +30,7 @@ export 'bridge_definitions.dart';
 export 'bridge_generated.dart';
 import 'dart:io' as io;
 
-const _base = 'simple_audio';
+const _base = 'simple_audio_flutter';
 
 // On MacOS, the dynamic library is not bundled with the binary,
 // but rather directly **linked** against the binary.
