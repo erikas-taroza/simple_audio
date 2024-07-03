@@ -36,7 +36,7 @@ const _base = 'simple_audio_flutter';
 // but rather directly **linked** against the binary.
 final _dylib = io.Platform.isWindows ? '$_base.dll' : 'lib$_base.so';
 
-final SimpleAudio api = SimpleAudioImpl(
+final SimpleAudioFlutter api = SimpleAudioFlutterImpl(
   io.Platform.isIOS || io.Platform.isMacOS
       ? DynamicLibrary.executable()
       : DynamicLibrary.open(_dylib),

@@ -1,6 +1,7 @@
 import argparse, re, os, shutil, sys
 
 FRB_VERSION = "1.82.1"
+PACKAGE_NAME = "simple_audio_flutter"
 
 parser = argparse.ArgumentParser(
     usage="Put this file in your root project directory and execute the commands.",
@@ -31,26 +32,26 @@ def code_gen():
 
     os.system(f"cargo install flutter_rust_bridge_codegen --version {FRB_VERSION}")
     os.system("cargo install cargo-expand --version 1.0.70")
-    os.system('cd simple_audio_flutter && flutter_rust_bridge_codegen \
+    os.system(f'cd {PACKAGE_NAME} && flutter_rust_bridge_codegen \
         --dart-enums-style \
         --rust-input ./rust/src/api.rs \
         --dart-output ./lib/src/bridge_generated.dart \
         --dart-decl-output ./lib/src/bridge_definitions.dart \
         --c-output ./rust/src/bridge_generated.h')
 
-    shutil.copyfile("./rust/src/bridge_generated.h", "./ios/Classes/bridge_generated.h")
-    shutil.move("./rust/src/bridge_generated.h", "./macos/Classes/bridge_generated.h")
+    shutil.copyfile(f"{PACKAGE_NAME}/rust/src/bridge_generated.h", f"{PACKAGE_NAME}/ios/Classes/bridge_generated.h")
+    shutil.move(f"{PACKAGE_NAME}/rust/src/bridge_generated.h", f"{PACKAGE_NAME}/macos/Classes/bridge_generated.h")
 
     # Fix the incorrect import in the generated file.
     # This happens because we are using lib.rs as the entry point.
-    generated_text = open("./rust/src/bridge_generated.rs", "r").read()
-    open("./rust/src/bridge_generated.rs", "w").write(generated_text.replace("use crate::lib::*;", "use crate::*;"))
+    generated_text = open(f"{PACKAGE_NAME}/rust/src/bridge_generated.rs", "r").read()
+    open(f"{PACKAGE_NAME}/rust/src/bridge_generated.rs", "w").write(generated_text.replace("use crate::lib::*;", "use crate::*;"))
 
-    if "ffi.dart" not in os.listdir("./lib/src"):
-        package_name = open("./rust/Cargo.toml", "r").read().split("name = \"")[1].split("\"")[0]
+    if "ffi.dart" not in os.listdir(f"{PACKAGE_NAME}/lib/src"):
+        package_name = open(f"{PACKAGE_NAME}/rust/Cargo.toml", "r").read().split("name = \"")[1].split("\"")[0]
         pascal_case_package_name = package_name.lower().replace("_", " ").title().replace(" ", "")
         import requests
-        file = open("./lib/src/ffi.dart", "w")
+        file = open(f"{PACKAGE_NAME}/lib/src/ffi.dart", "w")
         file.write(
             requests.get(r"https://raw.githubusercontent.com/Desdaemon/flutter_rust_bridge_template/main/lib/ffi.dart")
                 .text
@@ -62,7 +63,6 @@ def code_gen():
 def build(targets: list[str]):
     print("Building Rust code...\n")
 
-    package_name = "simple_audio_flutter"
     is_linux = sys.platform == "linux"
     is_windows = sys.platform == "win32"
     is_mac = sys.platform == "darwin"
@@ -75,11 +75,11 @@ def build(targets: list[str]):
 
         architectures = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
         for architecture in architectures:
-            path = f"./android/src/main/jniLibs/{architecture}/lib{package_name}.so"
+            path = f"{PACKAGE_NAME}/android/src/main/jniLibs/{architecture}/lib{PACKAGE_NAME}.so"
             if os.path.exists(path):
                 os.remove(path)
 
-        result = os.system(f"cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o {package_name}/android/src/main/jniLibs build --release")
+        result = os.system(f"cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 -o {PACKAGE_NAME}/android/src/main/jniLibs build --release")
         assert result == 0
 
     if is_linux and "linux" in targets:
@@ -89,10 +89,10 @@ def build(targets: list[str]):
         result = os.system("cargo build --release --target x86_64-unknown-linux-gnu")
         assert result == 0
 
-        if os.path.exists(f"{package_name}/linux/lib{package_name}.so"):
-            os.remove(f"{package_name}/linux/lib{package_name}.so")
+        if os.path.exists(f"{PACKAGE_NAME}/linux/lib{PACKAGE_NAME}.so"):
+            os.remove(f"{PACKAGE_NAME}/linux/lib{PACKAGE_NAME}.so")
 
-        shutil.move(f"target/x86_64-unknown-linux-gnu/release/lib{package_name}.so", f"{package_name}/linux")
+        shutil.move(f"target/x86_64-unknown-linux-gnu/release/lib{PACKAGE_NAME}.so", f"{PACKAGE_NAME}/linux")
 
     if is_windows and "windows" in targets:
         print("Building Windows libraries...\n")
@@ -101,10 +101,10 @@ def build(targets: list[str]):
         result = os.system("cargo build --release --target x86_64-pc-windows-msvc")
         assert result == 0
 
-        if os.path.exists(f"{package_name}/windows/{package_name}.dll"):
-            os.remove(f"{package_name}/windows/{package_name}.dll")
+        if os.path.exists(f"{PACKAGE_NAME}/windows/{PACKAGE_NAME}.dll"):
+            os.remove(f"{PACKAGE_NAME}/windows/{PACKAGE_NAME}.dll")
 
-        shutil.move(f"target/x86_64-pc-windows-msvc/release/{package_name}.dll", f"{package_name}/windows")
+        shutil.move(f"target/x86_64-pc-windows-msvc/release/{PACKAGE_NAME}.dll", f"{PACKAGE_NAME}/windows")
 
     if is_mac:
         if "macos" in targets:
@@ -116,13 +116,13 @@ def build(targets: list[str]):
             assert result == 0
             result = os.system("cargo build --release --target x86_64-apple-darwin")
             assert result == 0
-            os.system(f'lipo "target/aarch64-apple-darwin/release/lib{package_name}.a" "rust/target/x86_64-apple-darwin/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
+            os.system(f'lipo "target/aarch64-apple-darwin/release/lib{PACKAGE_NAME}.a" "target/x86_64-apple-darwin/release/lib{PACKAGE_NAME}.a" -output "lib{PACKAGE_NAME}.a" -create')
 
-            if os.path.exists(f"{package_name}/macos/Libs/lib{package_name}.a"):
-                os.remove(f"{package_name}/macos/Libs/lib{package_name}.a")
+            if os.path.exists(f"{PACKAGE_NAME}/macos/Libs/lib{PACKAGE_NAME}.a"):
+                os.remove(f"{PACKAGE_NAME}/macos/Libs/lib{PACKAGE_NAME}.a")
 
-            os.makedirs(f"{package_name}/macos/Libs", exist_ok=True)
-            shutil.move(f"./lib{package_name}.a", f"{package_name}/macos/Libs")
+            os.makedirs(f"{PACKAGE_NAME}/macos/Libs", exist_ok=True)
+            shutil.move(f"./lib{PACKAGE_NAME}.a", f"{PACKAGE_NAME}/macos/Libs")
 
         if "ios" in targets:
             # Build for iOS
@@ -137,15 +137,15 @@ def build(targets: list[str]):
 
             result = os.system("CMAKE_OSX_SYSROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) cargo build --release --target x86_64-apple-ios")
             assert result == 0
-            os.system(f'lipo "target/aarch64-apple-ios-sim/release/lib{package_name}.a" "target/x86_64-apple-ios/release/lib{package_name}.a" -output "lib{package_name}.a" -create')
-            os.system(f"xcodebuild -create-xcframework -library target/aarch64-apple-ios/release/lib{package_name}.a -library ./lib{package_name}.a -output {package_name}.xcframework")
-            os.remove(f"./lib{package_name}.a")
+            os.system(f'lipo "target/aarch64-apple-ios-sim/release/lib{PACKAGE_NAME}.a" "target/x86_64-apple-ios/release/lib{PACKAGE_NAME}.a" -output "lib{PACKAGE_NAME}.a" -create')
+            os.system(f"xcodebuild -create-xcframework -library target/aarch64-apple-ios/release/lib{PACKAGE_NAME}.a -library ./lib{PACKAGE_NAME}.a -output {PACKAGE_NAME}.xcframework")
+            os.remove(f"./lib{PACKAGE_NAME}.a")
 
-            if os.path.exists(f"{package_name}/ios/Frameworks/{package_name}.xcframework"):
-                shutil.rmtree(f"{package_name}/ios/Frameworks/{package_name}.xcframework")
+            if os.path.exists(f"{PACKAGE_NAME}/ios/Frameworks/{PACKAGE_NAME}.xcframework"):
+                shutil.rmtree(f"{PACKAGE_NAME}/ios/Frameworks/{PACKAGE_NAME}.xcframework")
 
-            os.makedirs("{package_name}/ios/Frameworks", exist_ok=True)
-            shutil.move(f"./{package_name}.xcframework", f"{package_name}/ios/Frameworks")
+            os.makedirs(f"{PACKAGE_NAME}/ios/Frameworks", exist_ok=True)
+            shutil.move(f"./{PACKAGE_NAME}.xcframework", f"{PACKAGE_NAME}/ios/Frameworks")
 
 
 def bump_version(version: str):

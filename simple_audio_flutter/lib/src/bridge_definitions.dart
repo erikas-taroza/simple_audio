@@ -11,7 +11,7 @@ import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 
 part 'bridge_definitions.freezed.dart';
 
-abstract class SimpleAudio {
+abstract class SimpleAudioFlutter {
   Future<PlayerWrapper> newStaticMethodPlayerWrapper({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kNewStaticMethodPlayerWrapperConstMeta;
@@ -142,7 +142,7 @@ abstract class SimpleAudio {
 
 @sealed
 class Player extends FrbOpaque {
-  final SimpleAudio bridge;
+  final SimpleAudioFlutter bridge;
   Player.fromRaw(int ptr, int size, this.bridge) : super.unsafe(ptr, size);
   @override
   DropFnType get dropFn => bridge.dropOpaquePlayer;
@@ -196,7 +196,7 @@ enum PlaybackState {
 }
 
 class PlayerWrapper {
-  final SimpleAudio bridge;
+  final SimpleAudioFlutter bridge;
   final Player internal;
 
   const PlayerWrapper({
@@ -205,26 +205,27 @@ class PlayerWrapper {
   });
 
   static Future<PlayerWrapper> newPlayerWrapper(
-          {required SimpleAudio bridge, dynamic hint}) =>
+          {required SimpleAudioFlutter bridge, dynamic hint}) =>
       bridge.newStaticMethodPlayerWrapper(hint: hint);
 
-  static Future<void> dispose({required SimpleAudio bridge, dynamic hint}) =>
+  static Future<void> dispose(
+          {required SimpleAudioFlutter bridge, dynamic hint}) =>
       bridge.disposeStaticMethodPlayerWrapper(hint: hint);
 
   static Stream<Duration> playbackStartedStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
+          {required SimpleAudioFlutter bridge, dynamic hint}) =>
       bridge.playbackStartedStreamStaticMethodPlayerWrapper(hint: hint);
 
   static Stream<PlaybackState> playbackStateStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
+          {required SimpleAudioFlutter bridge, dynamic hint}) =>
       bridge.playbackStateStreamStaticMethodPlayerWrapper(hint: hint);
 
   static Stream<ProgressState> progressStateStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
+          {required SimpleAudioFlutter bridge, dynamic hint}) =>
       bridge.progressStateStreamStaticMethodPlayerWrapper(hint: hint);
 
   static Stream<Error> errorStream(
-          {required SimpleAudio bridge, dynamic hint}) =>
+          {required SimpleAudioFlutter bridge, dynamic hint}) =>
       bridge.errorStreamStaticMethodPlayerWrapper(hint: hint);
 
   Future<PlaybackState> playbackState({dynamic hint}) =>
