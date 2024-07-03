@@ -40,9 +40,3 @@ ndk-context = "0.1.1"
 [dev-dependencies]
 ratatui = "0.26.2"
 crossterm = "0.27.0"
-
-[profile.release]
-lto = true
-
-[patch.crates-io]
-audiopus_sys = { git = "https://github.com/erikas-taroza/audiopus_sys" }
