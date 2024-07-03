@@ -44,7 +44,7 @@ jobs:
             path: simple_audio_flutter/macos/Libs/libsimple_audio_flutter.a
           - target: ios
             os: macos-latest
-            path: simple_audio_flutter/ios/Frameworks/simple_audio.xcframework
+            path: simple_audio_flutter/ios/Frameworks/simple_audio_flutter.xcframework
     runs-on: ${{ matrix.os }}
 
     steps:
