@@ -28,23 +28,23 @@ jobs:
         include:
           - target: linux
             os: ubuntu-20.04
-            path: ./linux/libsimple_audio_flutter.so
+            path: simple_audio_flutter/linux/libsimple_audio_flutter.so
           - target: android
             os: ubuntu-latest
             path: |
-              ./android/src/main/jniLibs/arm64-v8a/libsimple_audio_flutter.so
-              ./android/src/main/jniLibs/armeabi-v7a/libsimple_audio_flutter.so
-              ./android/src/main/jniLibs/x86_64/libsimple_audio_flutter.so
-              ./android/src/main/jniLibs/x86/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/arm64-v8a/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/armeabi-v7a/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/x86_64/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/x86/libsimple_audio_flutter.so
           - target: windows
             os: windows-latest
-            path: ./windows/simple_audio_flutter.dll
+            path: simple_audio_flutter/windows/simple_audio_flutter.dll
           - target: macos
             os: macos-latest
-            path: ./macos/Libs/libsimple_audio_flutter.a
+            path: simple_audio_flutter/macos/Libs/libsimple_audio_flutter.a
           - target: ios
             os: macos-latest
-            path: ./ios/Frameworks/simple_audio.xcframework
+            path: simple_audio_flutter/ios/Frameworks/simple_audio.xcframework
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -63,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v3.1.2
         with:
           name: ${{ matrix.target }}
-          path: simple_audio_flutter/${{ matrix.path }}
+          path: ${{ matrix.path }}
 
   publish_to_release:
     name: Publish Artifacts to Release
