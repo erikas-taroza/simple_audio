@@ -31,9 +31,9 @@ class SimpleAudioPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        System.loadLibrary("simple_audio")
+        System.loadLibrary("simple_audio_flutter")
 
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio")
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "simple_audio_flutter")
         channel.setMethodCallHandler(this)
     }
 
