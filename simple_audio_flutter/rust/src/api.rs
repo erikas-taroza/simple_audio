@@ -36,6 +36,16 @@ impl PlayerWrapper
 {
     pub fn new() -> PlayerWrapper
     {
+        // Enable logging from Rust to Android logcat.
+        // `android_logger::init_once` can safely be called multiple times
+        // but will only initialize once.
+        #[cfg(all(debug_assertions, target_os = "android"))]
+        {
+            use android_logger::Config;
+            use log::LevelFilter;
+            android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
+        }
+
         let _ = EVENT_THREAD_KILLER.set(unbounded());
         let _ = PLAYER_THREAD_KILLER.set(unbounded());
 
@@ -47,7 +57,6 @@ impl PlayerWrapper
             move || loop {
                 if let Ok(should_stop) = event_thread_killer.try_recv() {
                     if should_stop {
-                        println!("Stopped");
                         break;
                     }
                 }

@@ -29,11 +29,7 @@ anyhow = "1.0.75"
 lazy_static = "1.4.0"
 audiopus = { version = "0.3.0-rc.0", optional = true }
 
-# Android Dependencies
 [target.'cfg(target_os = "android")'.dependencies]
-# Debug only.
-android_logger = "0.13.3"
-log = "0.4.20"
 jni = "0.21.1"
 ndk-context = "0.1.1"
 

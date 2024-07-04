@@ -64,16 +64,6 @@ impl Player
     /// * `thread_killer` - A Receiver that the decoding thread listens to in order to close.
     pub fn new(thread_killer: Receiver<bool>) -> Player
     {
-        // Enable logging from Rust to Android logcat.
-        // `android_logger::init_once` can safely be called multiple times
-        // but will only initialize once.
-        #[cfg(all(debug_assertions, target_os = "android"))]
-        {
-            use android_logger::Config;
-            use log::LevelFilter;
-            android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
-        }
-
         let player_controls = Controls::default();
 
         // Start the decoding thread.
