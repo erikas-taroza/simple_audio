@@ -74,18 +74,6 @@ You will have to add a dependency to your Xcode project.
 - Select the `Runner` target, go to the `General` tab and scroll down until you see `Frameworks, Libraries, Embedded Content`
 - Press the `+` icon and add the `AudioToolbox.framework` framework. Select `Do Not Embed` under the `Embed` column.
 
-Add this to your `Info.plist` file located in `ios/Runner`:
-
-```xml
-<dict>
-  <!-- ... -->
-  <key>UIBackgroundModes</key>
-  <array>
-    <string>audio</string>
-  </array>
-</dict>
-```
-
 ### Special Thanks
 
 - [sanihaq](https://github.com/sanihaq) - Reported multiple bugs in `simple_audio`'s first releases.
