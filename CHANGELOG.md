@@ -1,3 +1,25 @@
+## 2.0.0
+
+Main changes:
+
+- Removed media controllers
+  - Please check the [example project](https://github.com/erikas-taroza/simple_audio/tree/master/simple_audio_flutter/example) to see how you can implement media controllers using other packages
+- Decoupled Rust code from FlutterRustBridge.
+  - Allows for compatibility with other FlutterRustBridge packages that may have a different version from simple_audio. If you need this functionality, please check how [`simple_audio_flutter`](https://github.com/erikas-taroza/simple_audio/tree/master/simple_audio_flutter/rust) implements a Dart API.
+- API changes
+
+How to migrate to V2 from v1.9.0:
+
+- `SimpleAudio.init()` no longer takes any parameters.
+- `SimpleAudio()` constructor only takes one optional parameter: `shouldNormalizeVolume`
+- `playbackStateStream` is renamed to `playbackState`
+- `progressStateStream` is renamed to `progressState`
+- Network errors are now handled by listening to the `networkError` stream
+- Decode errors are now handled by listening to the `decodeError` stream
+- `ProgressState` now represents time via `Duration`. To get the position in seconds, do `state.position.inSeconds`
+- `seek` now takes a `Duration`. To seek to a given point in seconds, do `seek(Duration(seconds: seconds)`
+- `setMetadata` and `Metadata` are removed. Please use other packages as shown in the [example](https://github.com/erikas-taroza/simple_audio/tree/master/simple_audio_flutter/example) to implement media controllers.
+
 ## 1.9.0
 
 - Improved gapless playback
