@@ -1,3 +1,19 @@
+# This file is a part of simple_audio
+# Copyright (c) 2022-2023 Erikas Taroza <erikastaroza@gmail.com>
+#
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with this program.
+# If not, see <https://www.gnu.org/licenses/>.
+
 name: CI
 
 on:
@@ -10,6 +26,9 @@ jobs:
   rust_lint:
     name: Rust Lint
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path: ["simple_audio", "simple_audio_flutter/rust"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -21,23 +40,27 @@ jobs:
           components: rustfmt, clippy
       # Clippy builds the project so we need build dependencies.
       - uses: subosito/flutter-action@v2.10.0
+        if: ${{ matrix.path == 'simple_audio_flutter' }}
         with:
           channel: "stable"
           cache: true
-      - run: flutter pub get
+      - name: flutter pub get
+        if: ${{ matrix.path == 'simple_audio_flutter' }}
+        run: |
+          cd simple_audio_flutter
+          flutter pub get
       - name: Install Rust -sys dependencies
         run: |
           sudo apt install libasound2-dev
-          sudo apt install libdbus-1-dev pkg-config
 
       - name: Format
         run: |
-          cd rust
+          cd ${{ matrix.path }}
           cargo +nightly fmt --check
           cd ..
       - name: Clippy
         run: |
-          cd rust
+          cd ${{ matrix.path }}
           cargo +nightly clippy 
           cd ..
 
@@ -52,27 +75,19 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - run: flutter pub get
+      - run: cd simple_audio_flutter && flutter pub get
       - name: Format
-        run: |
-          cd lib/src
-          dart format --set-exit-if-changed . 
-          cd ../..
+        working-directory: simple_audio_flutter/lib/src
+        run: dart format --set-exit-if-changed .
       - name: Lint
-        run: |
-          cd lib/src
-          dart analyze --fatal-infos
-          cd ../..
+        working-directory: simple_audio_flutter/lib/src
+        run: dart analyze --fatal-infos
       - name: Format Example
-        run: |
-          cd example/lib
-          dart format --set-exit-if-changed . 
-          cd ../..
+        working-directory: simple_audio_flutter/example/lib
+        run: dart format --set-exit-if-changed .
       - name: Lint Example
-        run: |
-          cd example/lib
-          dart analyze --fatal-infos
-          cd ../..
+        working-directory: simple_audio_flutter/example/lib
+        run: dart analyze --fatal-infos
 
   build:
     name: Build Libraries
@@ -101,7 +116,6 @@ jobs:
         if: ${{ matrix.target == 'linux' }}
         run: |
           sudo apt install libasound2-dev
-          sudo apt install libdbus-1-dev pkg-config
 
       - name: Build
         run: python ./plugin_tool.py -b ${{ matrix.target }}

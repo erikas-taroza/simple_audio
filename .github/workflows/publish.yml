@@ -1,3 +1,19 @@
+# This file is a part of simple_audio
+# Copyright (c) 2022-2023 Erikas Taroza <erikastaroza@gmail.com>
+#
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with this program.
+# If not, see <https://www.gnu.org/licenses/>.
+
 name: Publish
 
 on:
@@ -12,23 +28,23 @@ jobs:
         include:
           - target: linux
             os: ubuntu-20.04
-            path: ./linux/libsimple_audio.so
+            path: simple_audio_flutter/linux/libsimple_audio_flutter.so
           - target: android
             os: ubuntu-latest
             path: |
-              ./android/src/main/jniLibs/arm64-v8a/libsimple_audio.so
-              ./android/src/main/jniLibs/armeabi-v7a/libsimple_audio.so
-              ./android/src/main/jniLibs/x86_64/libsimple_audio.so
-              ./android/src/main/jniLibs/x86/libsimple_audio.so
+              simple_audio_flutter/android/src/main/jniLibs/arm64-v8a/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/armeabi-v7a/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/x86_64/libsimple_audio_flutter.so
+              simple_audio_flutter/android/src/main/jniLibs/x86/libsimple_audio_flutter.so
           - target: windows
             os: windows-latest
-            path: ./windows/simple_audio.dll
+            path: simple_audio_flutter/windows/simple_audio_flutter.dll
           - target: macos
             os: macos-latest
-            path: ./macos/Libs/libsimple_audio.a
+            path: simple_audio_flutter/macos/Libs/libsimple_audio_flutter.a
           - target: ios
             os: macos-latest
-            path: ./ios/Frameworks/simple_audio.xcframework
+            path: simple_audio_flutter/ios/Frameworks/simple_audio_flutter.xcframework
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -40,7 +56,6 @@ jobs:
         if: ${{ matrix.target == 'linux' }}
         run: |
           sudo apt install libasound2-dev
-          sudo apt install libdbus-1-dev pkg-config
 
       - name: Build
         run: python ./plugin_tool.py -b ${{ matrix.target }}

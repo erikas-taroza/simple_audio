@@ -1,0 +1,6 @@
+simple_audio_flutter.dll
+libsimple_audio_flutter.so
+libsimple_audio_flutter.a
+ios/Frameworks/simple_audio.xcframework
+*.zip
+*.tar.gz

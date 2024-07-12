@@ -1,0 +1,9 @@
+[workspace]
+members = ["simple_audio", "simple_audio_flutter/rust"]
+resolver = "2"
+
+[profile.release]
+lto = true
+
+[patch.crates-io]
+audiopus_sys = { git = "https://github.com/erikas-taroza/audiopus_sys" }
