@@ -21,7 +21,7 @@ symphonia = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-
 ] }
 symphonia-core = { git = "https://github.com/erikas-taroza/Symphonia", branch = "mp4-opus-improvements" }
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
-rubato = "0.14.1"
+rubato = "0.12.0"
 rangemap = "1.4.0"
 arrayvec = "0.7.4"
 ebur128 = "0.1.8"
