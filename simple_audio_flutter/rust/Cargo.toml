@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-flutter_rust_bridge = "=1.82.1"
+flutter_rust_bridge = { version = "=2.5.1", features = ["chrono"] }
 simple_audio = { path = "../../simple_audio", features = ["all"] }
 crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
 chrono = "0.4.38"

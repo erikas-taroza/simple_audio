@@ -14,32 +14,32 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-export 'bridge_definitions.dart' show ProgressState, PlaybackState;
+export 'rust/api/api.dart' hide PlayerWrapper, $ErrorCopyWith;
 
 import 'dart:async';
 
-import './ffi.dart' hide PlaybackState;
-import 'bridge_definitions.dart';
+import 'rust/api/api.dart';
+import 'rust/frb_generated.dart';
 
 late final PlayerWrapper _player;
 
 class SimpleAudio {
   late final Stream<Error> _error =
-      PlayerWrapper.errorStream(bridge: api).asBroadcastStream();
+      PlayerWrapper.errorStream().asBroadcastStream();
 
   /// A stream that returns the [Duration] of the file when it begins playing or looping.
   /// The [Duration] is meant to be used in a media controller to support seeking and progress bars.
   late Stream<Duration> playbackStarted =
-      PlayerWrapper.playbackStartedStream(bridge: api).asBroadcastStream();
+      PlayerWrapper.playbackStartedStream().asBroadcastStream();
 
   /// A stream that returns a [PlaybackState] when the state of the player is changed.
   late Stream<PlaybackState> playbackState =
-      PlayerWrapper.playbackStateStream(bridge: api).asBroadcastStream();
+      PlayerWrapper.playbackStateStream().asBroadcastStream();
 
   /// A stream that returns a [ProgressState] when the progress of the player
   /// or duration of the file is changed.
   late Stream<ProgressState> progressState =
-      PlayerWrapper.progressStateStream(bridge: api).asBroadcastStream();
+      PlayerWrapper.progressStateStream().asBroadcastStream();
 
   late Stream<String> decodeError = _error
       .where((error) => error is Error_Decode)
@@ -72,9 +72,10 @@ class SimpleAudio {
   /// This method should be awaited to make sure that the player is created
   /// before the app runs.
   static Future<void> init() async {
+    await RustLib.init();
     // Disposes of any old players and starts the Rust code from a fresh state.
-    PlayerWrapper.dispose(bridge: api);
-    _player = await PlayerWrapper.newPlayerWrapper(bridge: api);
+    PlayerWrapper.dispose();
+    _player = await PlayerWrapper.newInstance();
   }
 
   /// Open a new file for playback.

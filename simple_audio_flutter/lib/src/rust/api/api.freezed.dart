@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'bridge_definitions.dart';
+part of 'api.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -12,7 +12,7 @@ part of 'bridge_definitions.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$Error {
@@ -105,22 +105,22 @@ class _$ErrorCopyWithImpl<$Res, $Val extends Error>
 }
 
 /// @nodoc
-abstract class _$$Error_NetworkStreamCopyWith<$Res>
+abstract class _$$Error_NetworkStreamImplCopyWith<$Res>
     implements $ErrorCopyWith<$Res> {
-  factory _$$Error_NetworkStreamCopyWith(_$Error_NetworkStream value,
-          $Res Function(_$Error_NetworkStream) then) =
-      __$$Error_NetworkStreamCopyWithImpl<$Res>;
+  factory _$$Error_NetworkStreamImplCopyWith(_$Error_NetworkStreamImpl value,
+          $Res Function(_$Error_NetworkStreamImpl) then) =
+      __$$Error_NetworkStreamImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String field0});
 }
 
 /// @nodoc
-class __$$Error_NetworkStreamCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_NetworkStream>
-    implements _$$Error_NetworkStreamCopyWith<$Res> {
-  __$$Error_NetworkStreamCopyWithImpl(
-      _$Error_NetworkStream _value, $Res Function(_$Error_NetworkStream) _then)
+class __$$Error_NetworkStreamImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_NetworkStreamImpl>
+    implements _$$Error_NetworkStreamImplCopyWith<$Res> {
+  __$$Error_NetworkStreamImplCopyWithImpl(_$Error_NetworkStreamImpl _value,
+      $Res Function(_$Error_NetworkStreamImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -128,7 +128,7 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$Error_NetworkStream(
+    return _then(_$Error_NetworkStreamImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -139,8 +139,8 @@ class __$$Error_NetworkStreamCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_NetworkStream implements Error_NetworkStream {
-  const _$Error_NetworkStream(this.field0);
+class _$Error_NetworkStreamImpl extends Error_NetworkStream {
+  const _$Error_NetworkStreamImpl(this.field0) : super._();
 
   @override
   final String field0;
@@ -151,10 +151,10 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_NetworkStream &&
+            other is _$Error_NetworkStreamImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
@@ -164,8 +164,8 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_NetworkStreamCopyWith<_$Error_NetworkStream> get copyWith =>
-      __$$Error_NetworkStreamCopyWithImpl<_$Error_NetworkStream>(
+  _$$Error_NetworkStreamImplCopyWith<_$Error_NetworkStreamImpl> get copyWith =>
+      __$$Error_NetworkStreamImplCopyWithImpl<_$Error_NetworkStreamImpl>(
           this, _$identity);
 
   @override
@@ -243,34 +243,36 @@ class _$Error_NetworkStream implements Error_NetworkStream {
   }
 }
 
-abstract class Error_NetworkStream implements Error {
+abstract class Error_NetworkStream extends Error {
   const factory Error_NetworkStream(final String field0) =
-      _$Error_NetworkStream;
+      _$Error_NetworkStreamImpl;
+  const Error_NetworkStream._() : super._();
 
   @override
   String get field0;
   @override
   @JsonKey(ignore: true)
-  _$$Error_NetworkStreamCopyWith<_$Error_NetworkStream> get copyWith =>
+  _$$Error_NetworkStreamImplCopyWith<_$Error_NetworkStreamImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Error_DecodeCopyWith<$Res> implements $ErrorCopyWith<$Res> {
-  factory _$$Error_DecodeCopyWith(
-          _$Error_Decode value, $Res Function(_$Error_Decode) then) =
-      __$$Error_DecodeCopyWithImpl<$Res>;
+abstract class _$$Error_DecodeImplCopyWith<$Res>
+    implements $ErrorCopyWith<$Res> {
+  factory _$$Error_DecodeImplCopyWith(
+          _$Error_DecodeImpl value, $Res Function(_$Error_DecodeImpl) then) =
+      __$$Error_DecodeImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String field0});
 }
 
 /// @nodoc
-class __$$Error_DecodeCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_Decode>
-    implements _$$Error_DecodeCopyWith<$Res> {
-  __$$Error_DecodeCopyWithImpl(
-      _$Error_Decode _value, $Res Function(_$Error_Decode) _then)
+class __$$Error_DecodeImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_DecodeImpl>
+    implements _$$Error_DecodeImplCopyWith<$Res> {
+  __$$Error_DecodeImplCopyWithImpl(
+      _$Error_DecodeImpl _value, $Res Function(_$Error_DecodeImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -278,7 +280,7 @@ class __$$Error_DecodeCopyWithImpl<$Res>
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$Error_Decode(
+    return _then(_$Error_DecodeImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -289,8 +291,8 @@ class __$$Error_DecodeCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_Decode implements Error_Decode {
-  const _$Error_Decode(this.field0);
+class _$Error_DecodeImpl extends Error_Decode {
+  const _$Error_DecodeImpl(this.field0) : super._();
 
   @override
   final String field0;
@@ -301,10 +303,10 @@ class _$Error_Decode implements Error_Decode {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_Decode &&
+            other is _$Error_DecodeImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
@@ -314,8 +316,8 @@ class _$Error_Decode implements Error_Decode {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_DecodeCopyWith<_$Error_Decode> get copyWith =>
-      __$$Error_DecodeCopyWithImpl<_$Error_Decode>(this, _$identity);
+  _$$Error_DecodeImplCopyWith<_$Error_DecodeImpl> get copyWith =>
+      __$$Error_DecodeImplCopyWithImpl<_$Error_DecodeImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -392,33 +394,34 @@ class _$Error_Decode implements Error_Decode {
   }
 }
 
-abstract class Error_Decode implements Error {
-  const factory Error_Decode(final String field0) = _$Error_Decode;
+abstract class Error_Decode extends Error {
+  const factory Error_Decode(final String field0) = _$Error_DecodeImpl;
+  const Error_Decode._() : super._();
 
   @override
   String get field0;
   @override
   @JsonKey(ignore: true)
-  _$$Error_DecodeCopyWith<_$Error_Decode> get copyWith =>
+  _$$Error_DecodeImplCopyWith<_$Error_DecodeImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Error_OpenCopyWith<$Res> implements $ErrorCopyWith<$Res> {
-  factory _$$Error_OpenCopyWith(
-          _$Error_Open value, $Res Function(_$Error_Open) then) =
-      __$$Error_OpenCopyWithImpl<$Res>;
+abstract class _$$Error_OpenImplCopyWith<$Res> implements $ErrorCopyWith<$Res> {
+  factory _$$Error_OpenImplCopyWith(
+          _$Error_OpenImpl value, $Res Function(_$Error_OpenImpl) then) =
+      __$$Error_OpenImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String field0});
 }
 
 /// @nodoc
-class __$$Error_OpenCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_Open>
-    implements _$$Error_OpenCopyWith<$Res> {
-  __$$Error_OpenCopyWithImpl(
-      _$Error_Open _value, $Res Function(_$Error_Open) _then)
+class __$$Error_OpenImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_OpenImpl>
+    implements _$$Error_OpenImplCopyWith<$Res> {
+  __$$Error_OpenImplCopyWithImpl(
+      _$Error_OpenImpl _value, $Res Function(_$Error_OpenImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -426,7 +429,7 @@ class __$$Error_OpenCopyWithImpl<$Res>
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$Error_Open(
+    return _then(_$Error_OpenImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -437,8 +440,8 @@ class __$$Error_OpenCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_Open implements Error_Open {
-  const _$Error_Open(this.field0);
+class _$Error_OpenImpl extends Error_Open {
+  const _$Error_OpenImpl(this.field0) : super._();
 
   @override
   final String field0;
@@ -449,10 +452,10 @@ class _$Error_Open implements Error_Open {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_Open &&
+            other is _$Error_OpenImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
@@ -462,8 +465,8 @@ class _$Error_Open implements Error_Open {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_OpenCopyWith<_$Error_Open> get copyWith =>
-      __$$Error_OpenCopyWithImpl<_$Error_Open>(this, _$identity);
+  _$$Error_OpenImplCopyWith<_$Error_OpenImpl> get copyWith =>
+      __$$Error_OpenImplCopyWithImpl<_$Error_OpenImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -540,33 +543,35 @@ class _$Error_Open implements Error_Open {
   }
 }
 
-abstract class Error_Open implements Error {
-  const factory Error_Open(final String field0) = _$Error_Open;
+abstract class Error_Open extends Error {
+  const factory Error_Open(final String field0) = _$Error_OpenImpl;
+  const Error_Open._() : super._();
 
   @override
   String get field0;
   @override
   @JsonKey(ignore: true)
-  _$$Error_OpenCopyWith<_$Error_Open> get copyWith =>
+  _$$Error_OpenImplCopyWith<_$Error_OpenImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$Error_PreloadCopyWith<$Res> implements $ErrorCopyWith<$Res> {
-  factory _$$Error_PreloadCopyWith(
-          _$Error_Preload value, $Res Function(_$Error_Preload) then) =
-      __$$Error_PreloadCopyWithImpl<$Res>;
+abstract class _$$Error_PreloadImplCopyWith<$Res>
+    implements $ErrorCopyWith<$Res> {
+  factory _$$Error_PreloadImplCopyWith(
+          _$Error_PreloadImpl value, $Res Function(_$Error_PreloadImpl) then) =
+      __$$Error_PreloadImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String field0});
 }
 
 /// @nodoc
-class __$$Error_PreloadCopyWithImpl<$Res>
-    extends _$ErrorCopyWithImpl<$Res, _$Error_Preload>
-    implements _$$Error_PreloadCopyWith<$Res> {
-  __$$Error_PreloadCopyWithImpl(
-      _$Error_Preload _value, $Res Function(_$Error_Preload) _then)
+class __$$Error_PreloadImplCopyWithImpl<$Res>
+    extends _$ErrorCopyWithImpl<$Res, _$Error_PreloadImpl>
+    implements _$$Error_PreloadImplCopyWith<$Res> {
+  __$$Error_PreloadImplCopyWithImpl(
+      _$Error_PreloadImpl _value, $Res Function(_$Error_PreloadImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -574,7 +579,7 @@ class __$$Error_PreloadCopyWithImpl<$Res>
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$Error_Preload(
+    return _then(_$Error_PreloadImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -585,8 +590,8 @@ class __$$Error_PreloadCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$Error_Preload implements Error_Preload {
-  const _$Error_Preload(this.field0);
+class _$Error_PreloadImpl extends Error_Preload {
+  const _$Error_PreloadImpl(this.field0) : super._();
 
   @override
   final String field0;
@@ -597,10 +602,10 @@ class _$Error_Preload implements Error_Preload {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$Error_Preload &&
+            other is _$Error_PreloadImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
@@ -610,8 +615,8 @@ class _$Error_Preload implements Error_Preload {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$Error_PreloadCopyWith<_$Error_Preload> get copyWith =>
-      __$$Error_PreloadCopyWithImpl<_$Error_Preload>(this, _$identity);
+  _$$Error_PreloadImplCopyWith<_$Error_PreloadImpl> get copyWith =>
+      __$$Error_PreloadImplCopyWithImpl<_$Error_PreloadImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -688,13 +693,14 @@ class _$Error_Preload implements Error_Preload {
   }
 }
 
-abstract class Error_Preload implements Error {
-  const factory Error_Preload(final String field0) = _$Error_Preload;
+abstract class Error_Preload extends Error {
+  const factory Error_Preload(final String field0) = _$Error_PreloadImpl;
+  const Error_Preload._() : super._();
 
   @override
   String get field0;
   @override
   @JsonKey(ignore: true)
-  _$$Error_PreloadCopyWith<_$Error_Preload> get copyWith =>
+  _$$Error_PreloadImplCopyWith<_$Error_PreloadImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

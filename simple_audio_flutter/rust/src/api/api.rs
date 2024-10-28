@@ -16,13 +16,15 @@
 
 use chrono::Duration;
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use flutter_rust_bridge::{RustOpaque, StreamSink};
 use simple_audio::types::PlayerEvent;
 pub use simple_audio::Player;
 
 use std::{sync::OnceLock, thread};
 
-use crate::streams::*;
+use crate::{
+    frb_generated::{RustOpaque, StreamSink},
+    streams::*,
+};
 
 static EVENT_THREAD_KILLER: OnceLock<(Sender<bool>, Receiver<bool>)> = OnceLock::new();
 static PLAYER_THREAD_KILLER: OnceLock<(Sender<bool>, Receiver<bool>)> = OnceLock::new();

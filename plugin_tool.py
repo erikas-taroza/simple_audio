@@ -1,6 +1,6 @@
 import argparse, re, os, shutil, sys
 
-FRB_VERSION = "1.82.1"
+FRB_VERSION = "2.5.1"
 PACKAGE_NAME = "simple_audio_flutter"
 
 parser = argparse.ArgumentParser(
@@ -30,34 +30,37 @@ parser.add_argument(
 def code_gen():
     print("Generating code with flutter_rust_bridge...\n")
 
+    pubspec = open("simple_audio_flutter/pubspec.yaml", "r+")
+    lines = pubspec.readlines()
+    for line in range(0, len(lines)):
+        if "# rust_lib_simple_audio" not in lines[line]:
+            continue
+
+        lines[line] = "  rust_lib_simple_audio:\n"
+        lines[line + 1] = "    path: rust_builder\n"
+        pubspec.seek(0)
+        pubspec.writelines(lines)
+        pubspec.truncate()
+        break
+    pubspec.close()
+
     os.system(f"cargo install flutter_rust_bridge_codegen --version {FRB_VERSION}")
     os.system("cargo install cargo-expand --version 1.0.70")
-    os.system(f'cd {PACKAGE_NAME} && flutter_rust_bridge_codegen \
-        --dart-enums-style \
-        --rust-input ./rust/src/api.rs \
-        --dart-output ./lib/src/bridge_generated.dart \
-        --dart-decl-output ./lib/src/bridge_definitions.dart \
-        --c-output ./rust/src/bridge_generated.h')
+    os.system("flutter_rust_bridge_codegen generate --config-file simple_audio_flutter/flutter_rust_bridge.yaml")
 
-    shutil.copyfile(f"{PACKAGE_NAME}/rust/src/bridge_generated.h", f"{PACKAGE_NAME}/ios/Classes/bridge_generated.h")
-    shutil.move(f"{PACKAGE_NAME}/rust/src/bridge_generated.h", f"{PACKAGE_NAME}/macos/Classes/bridge_generated.h")
+    pubspec = open("simple_audio_flutter/pubspec.yaml", "r+")
+    lines = pubspec.readlines()
+    for line in range(0, len(lines)):
+        if "rust_lib_simple_audio" not in lines[line]:
+            continue
 
-    # Fix the incorrect import in the generated file.
-    # This happens because we are using lib.rs as the entry point.
-    generated_text = open(f"{PACKAGE_NAME}/rust/src/bridge_generated.rs", "r").read()
-    open(f"{PACKAGE_NAME}/rust/src/bridge_generated.rs", "w").write(generated_text.replace("use crate::lib::*;", "use crate::*;"))
-
-    if "ffi.dart" not in os.listdir(f"{PACKAGE_NAME}/lib/src"):
-        package_name = open(f"{PACKAGE_NAME}/rust/Cargo.toml", "r").read().split("name = \"")[1].split("\"")[0]
-        pascal_case_package_name = package_name.lower().replace("_", " ").title().replace(" ", "")
-        import requests
-        file = open(f"{PACKAGE_NAME}/lib/src/ffi.dart", "w")
-        file.write(
-            requests.get(r"https://raw.githubusercontent.com/Desdaemon/flutter_rust_bridge_template/main/lib/ffi.dart")
-                .text
-                .replace("native", package_name)
-                .replace("Native", pascal_case_package_name)
-        )
+        lines[line] = "  # rust_lib_simple_audio:\n"
+        lines[line + 1] = "  #   path: rust_builder\n"
+        pubspec.seek(0)
+        pubspec.writelines(lines)
+        pubspec.truncate()
+        break
+    pubspec.close()
 
 
 def build(targets: list[str]):

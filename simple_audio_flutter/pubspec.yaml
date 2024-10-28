@@ -10,7 +10,7 @@ topics:
   - player
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
   flutter: ">=3.0.0"
 
 dependencies:
@@ -18,10 +18,13 @@ dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
   ffi: ^2.0.1
-  flutter_rust_bridge: ^1.82.1
+  flutter_rust_bridge: ^2.5.1
   meta: ^1.8.0
   freezed_annotation: ^2.4.1
   uuid: any
+  # Needed to run codegen. Uncomment to run codegen, otherwise keep it commented to the package can be published.
+  # rust_lib_simple_audio:
+  #   path: rust_builder
 
 dev_dependencies:
   flutter_test:
