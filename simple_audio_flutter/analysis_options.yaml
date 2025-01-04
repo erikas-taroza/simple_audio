@@ -1,8 +1,8 @@
 include: package:flutter_lints/flutter.yaml
 
-analyzer: 
-  exclude: 
-    - lib/src/bridge_*.dart
+analyzer:
+  exclude:
+    - lib/src/rust
 
 linter:
   rules:
