@@ -33,7 +33,10 @@ dependencies:
   file_picker: ^5.2.2
   audio_service: ^0.18.13
   anni_mpris_service: ^0.1.0
-  smtc_windows: ^0.1.2
+  smtc_windows:
+    git:
+      url: https://github.com/erikas-taroza/frb_plugins
+      path: packages/smtc_windows
 
 dev_dependencies:
   flutter_test:

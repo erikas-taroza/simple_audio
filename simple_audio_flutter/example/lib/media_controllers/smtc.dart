@@ -64,17 +64,17 @@ class Smtc extends MediaController {
 
   @override
   void onPlaybackStarted() {
-    smtc.setPlaybackStatus(PlaybackStatus.Playing);
+    smtc.setPlaybackStatus(PlaybackStatus.playing);
   }
 
   @override
   void onPlaybackStateChanged(PlaybackState state, Duration position) {
     PlaybackStatus playbackStatus = {
-      PlaybackState.play: PlaybackStatus.Playing,
-      PlaybackState.preloadPlayed: PlaybackStatus.Playing,
-      PlaybackState.pause: PlaybackStatus.Paused,
-      PlaybackState.stop: PlaybackStatus.Stopped,
-      PlaybackState.done: PlaybackStatus.Stopped,
+      PlaybackState.play: PlaybackStatus.playing,
+      PlaybackState.preloadPlayed: PlaybackStatus.playing,
+      PlaybackState.pause: PlaybackStatus.paused,
+      PlaybackState.stop: PlaybackStatus.stopped,
+      PlaybackState.done: PlaybackStatus.stopped,
     }[state]!;
 
     smtc.setPlaybackStatus(playbackStatus);
