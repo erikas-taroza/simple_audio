@@ -1,3 +1,11 @@
+## 2.0.2
+
+- Reset seek ts in decoder when opening new file.
+- Update FRB to 2.7.0.
+- Downgrade resampler dependency that caused unexpected results.
+- Fixed clippy suggestions.
+- Fix iOS build
+
 ## 2.0.1
 
 - Support Gradle 8
