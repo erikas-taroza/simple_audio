@@ -157,6 +157,7 @@ impl Decoder
                     self.cpal_output.ring_buffer_reader.skip_all();
                     self.output_writer = None;
                     self.playback = Some(Self::open(source, buffer_signal)?);
+                    self.controls.set_seek_ts(None);
 
                     if let Some(playback) = &self.playback {
                         self.controls
