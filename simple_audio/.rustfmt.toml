@@ -1,9 +1,3 @@
 brace_style = "AlwaysNextLine"
 control_brace_style = "ClosingNextLine"
 empty_item_single_line = true
-
-ignore = [
-    "src/audio/dsp/resampler.rs",
-    "src/bridge_generated.io.rs",
-    "src/bridge_generated.rs"
-]
