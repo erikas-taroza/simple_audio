@@ -17,7 +17,6 @@
 #[allow(dead_code)]
 fn add_lib(name: impl AsRef<str>, _static: bool)
 {
-    #[cfg(not(feature = "test"))]
     println!(
         "cargo:rustc-link-lib={}{}",
         if _static { "static=" } else { "" },
