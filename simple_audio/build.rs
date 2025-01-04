@@ -13,22 +13,8 @@
 //
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
-
-#[allow(dead_code)]
-fn add_lib(name: impl AsRef<str>, _static: bool)
-{
-    println!(
-        "cargo:rustc-link-lib={}{}",
-        if _static { "static=" } else { "" },
-        name.as_ref()
-    );
-}
-
 fn main()
 {
-    let target = std::env::var("TARGET").expect("ERR: Could not check the target for the build.");
-
-    if target.contains("android") {
-        add_lib("c++_shared", false);
-    }
+    #[cfg(target_os = "android")]
+    println!("cargo:rustc-link-lib=c++_shared");
 }
