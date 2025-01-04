@@ -218,16 +218,16 @@ pub enum PlaybackState
     PreloadPlayed,
 }
 
-impl Into<PlaybackState> for simple_audio::types::PlaybackState
+impl From<simple_audio::types::PlaybackState> for PlaybackState
 {
-    fn into(self) -> PlaybackState
+    fn from(value: simple_audio::types::PlaybackState) -> Self
     {
-        match self {
-            Self::Play => PlaybackState::Play,
-            Self::Pause => PlaybackState::Pause,
-            Self::Done => PlaybackState::Done,
-            Self::Stop => PlaybackState::Stop,
-            Self::PreloadPlayed => PlaybackState::PreloadPlayed,
+        match value {
+            simple_audio::types::PlaybackState::Play => PlaybackState::Play,
+            simple_audio::types::PlaybackState::Pause => PlaybackState::Pause,
+            simple_audio::types::PlaybackState::Done => PlaybackState::Done,
+            simple_audio::types::PlaybackState::Stop => PlaybackState::Stop,
+            simple_audio::types::PlaybackState::PreloadPlayed => PlaybackState::PreloadPlayed,
         }
     }
 }
@@ -240,13 +240,13 @@ pub struct ProgressState
     pub duration: Duration,
 }
 
-impl Into<ProgressState> for simple_audio::types::ProgressState
+impl From<simple_audio::types::ProgressState> for ProgressState
 {
-    fn into(self) -> ProgressState
+    fn from(value: simple_audio::types::ProgressState) -> Self
     {
         ProgressState {
-            position: Duration::from_std(self.position).unwrap(),
-            duration: Duration::from_std(self.duration).unwrap(),
+            position: Duration::from_std(value.position).unwrap(),
+            duration: Duration::from_std(value.duration).unwrap(),
         }
     }
 }
@@ -264,15 +264,15 @@ pub enum Error
     Preload(String),
 }
 
-impl Into<Error> for simple_audio::error::Error
+impl From<simple_audio::error::Error> for Error
 {
-    fn into(self) -> Error
+    fn from(value: simple_audio::error::Error) -> Self
     {
-        match self {
-            Self::NetworkStream(message) => Error::NetworkStream(message),
-            Self::Decode(message) => Error::Decode(message),
-            Self::Open(message) => Error::Open(message),
-            Self::Preload(message) => Error::Preload(message),
+        match value {
+            simple_audio::error::Error::NetworkStream(message) => Error::NetworkStream(message),
+            simple_audio::error::Error::Decode(message) => Error::Decode(message),
+            simple_audio::error::Error::Open(message) => Error::Open(message),
+            simple_audio::error::Error::Preload(message) => Error::Preload(message),
         }
     }
 }
