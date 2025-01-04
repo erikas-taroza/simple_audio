@@ -132,7 +132,7 @@ def build(targets: list[str]):
             print("Building iOS libraries...\n")
 
             os.system("rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios")
-            result = os.system("cargo build --release --target aarch64-apple-ios")
+            result = os.system("IPHONEOS_DEPLOYMENT_TARGET=10.0 cargo build --release --target aarch64-apple-ios")
             assert result == 0
 
             result = os.system(f"cargo build --release --target aarch64-apple-ios-sim")
