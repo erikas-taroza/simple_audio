@@ -1,6 +1,6 @@
 import argparse, re, os, shutil, sys
 
-FRB_VERSION = "2.5.1"
+FRB_VERSION = "2.7.0"
 PACKAGE_NAME = "simple_audio_flutter"
 
 parser = argparse.ArgumentParser(
