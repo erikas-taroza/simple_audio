@@ -1,5 +1,5 @@
 # Download the binary from GitHub.
-version = "2.0.2"
+version = "2.0.3"
 lib_url = "https://github.com/erikas-taroza/simple_audio/releases/download/v#{version}/macos.zip"
 
 `
@@ -15,7 +15,7 @@ cd ..
 
 Pod::Spec.new do |s|
   s.name             = 'simple_audio'
-  s.version          = '2.0.2'
+  s.version          = '2.0.3'
   s.summary          = 'A simple cross-platform solution for playing audio in Flutter.'
   s.description      = <<-DESC
   A simple cross-platform solution for playing audio in Flutter.

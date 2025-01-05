@@ -1,3 +1,7 @@
+## 2.0.3
+
+- Fix missing symbol error when running on Android
+
 ## 2.0.2
 
 - Reset seek ts in decoder when opening new file.
