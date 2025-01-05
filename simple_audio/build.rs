@@ -15,6 +15,8 @@
 // If not, see <https://www.gnu.org/licenses/>.
 fn main()
 {
-    #[cfg(target_os = "android")]
-    println!("cargo:rustc-link-lib=c++_shared");
+    let target = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+    if target.contains("android") {
+        println!("cargo:rustc-link-lib=c++_shared");
+    }
 }
