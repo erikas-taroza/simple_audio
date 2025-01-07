@@ -1,3 +1,7 @@
+## 2.0.4
+
+- Fix race condition when setting seek ts when opening a new file.
+
 ## 2.0.3
 
 - Fix missing symbol error when running on Android
