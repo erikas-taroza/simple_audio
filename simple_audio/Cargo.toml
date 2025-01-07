@@ -4,6 +4,7 @@ version = "2.0.4"
 edition = "2021"
 
 [features]
+default = ["all"]
 all = ["http_streaming", "hls_streaming", "opus"]
 http_streaming = ["dep:reqwest"]
 hls_streaming = ["dep:reqwest"]

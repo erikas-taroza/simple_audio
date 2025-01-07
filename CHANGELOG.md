@@ -1,6 +1,7 @@
 ## 2.0.4
 
 - Fix race condition when setting seek ts when opening a new file.
+- Enable all Cargo features by default
 
 ## 2.0.3
 
