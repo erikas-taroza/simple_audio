@@ -181,6 +181,7 @@ impl Player
             Err(err) => return Err(Error::Open(err.to_string())),
         };
 
+        self.controls.set_seek_ts(None);
         let send_event = self
             .controls
             .decoder_event_handler()
