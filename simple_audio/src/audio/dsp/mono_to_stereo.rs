@@ -14,6 +14,27 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-pub mod mono_to_stereo;
-pub mod normalizer;
-pub mod resampler;
+pub struct MonoToStereo
+{
+    buffer: Vec<f32>,
+}
+
+impl MonoToStereo
+{
+    pub fn new() -> Self
+    {
+        MonoToStereo { buffer: Vec::new() }
+    }
+
+    pub fn mono_to_stereo(&mut self, input: &[f32]) -> &[f32]
+    {
+        self.buffer = vec![0.0; input.len() * 2];
+
+        for (i, &sample) in input.iter().enumerate() {
+            self.buffer[2 * i] = sample;
+            self.buffer[2 * i + 1] = sample;
+        }
+
+        &self.buffer
+    }
+}
