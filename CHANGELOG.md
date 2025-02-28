@@ -1,3 +1,7 @@
+## 2.0.5
+
+- Fix mono files being played at 2x speed
+
 ## 2.0.4
 
 - Fix race condition when setting seek ts when opening a new file.
