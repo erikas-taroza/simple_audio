@@ -25,7 +25,7 @@ use crate::utils::blocking_rb::*;
 
 use super::{
     controls::*,
-    dsp::{normalizer::Normalizer, resampler::Resampler},
+    dsp::{mono_to_stereo::MonoToStereo, normalizer::Normalizer, resampler::Resampler},
 };
 
 /// The default output volume is way too high.
@@ -187,6 +187,7 @@ pub struct OutputWriter
     sample_buffer: SampleBuffer<f32>,
     resampler: Option<Resampler<f32>>,
     normalizer: Normalizer,
+    mono_to_stereo: Option<MonoToStereo>,
 }
 
 impl OutputWriter
@@ -209,6 +210,13 @@ impl OutputWriter
             None
         };
 
+        let mono_to_stereo = if spec.channels.count() as u16 != config.channels {
+            Some(MonoToStereo::new())
+        }
+        else {
+            None
+        };
+
         let normalizer = Normalizer::new(spec.channels.count(), stream_sample_rate);
 
         let sample_buffer = SampleBuffer::<f32>::new(duration, spec);
@@ -218,6 +226,7 @@ impl OutputWriter
             ring_buffer_writer,
             normalizer,
             resampler,
+            mono_to_stereo,
             sample_buffer,
         }
     }
@@ -238,6 +247,10 @@ impl OutputWriter
             self.sample_buffer.copy_interleaved_ref(decoded);
             self.sample_buffer.samples()
         };
+
+        if let Some(mono_to_stereo) = &mut self.mono_to_stereo {
+            samples = mono_to_stereo.mono_to_stereo(samples);
+        }
 
         if self.controls.is_normalizing() {
             if let Some(normalized) = self.normalizer.normalize(samples) {
