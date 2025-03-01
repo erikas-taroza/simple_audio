@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'FlutterMacOS'
-  s.vendored_libraries = 'Libs/**/*.a'
+  # s.vendored_libraries = 'Libs/**/*.a'
   s.vendored_frameworks = 'Frameworks/**/*.xcframework'
   s.static_framework = true
 

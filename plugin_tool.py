@@ -119,9 +119,7 @@ def build(targets: list[str]):
             assert result == 0
             result = os.system("cargo build --release --target x86_64-apple-darwin")
             assert result == 0
-            os.system(f'lipo "target/aarch64-apple-darwin/release/lib{PACKAGE_NAME}.a" "target/x86_64-apple-darwin/release/lib{PACKAGE_NAME}.a" -output "lib{PACKAGE_NAME}.a" -create')
-            os.system(f"xcodebuild -create-xcframework -library target/aarch64-apple-darwin/release/lib{PACKAGE_NAME}.a -library ./lib{PACKAGE_NAME}.a -output {PACKAGE_NAME}.xcframework")
-            os.remove(f"./lib{PACKAGE_NAME}.a")
+            os.system(f"xcodebuild -create-xcframework -library target/aarch64-apple-darwin/release/lib{PACKAGE_NAME}.a -library target/x86_64-apple-darwin/release/lib{PACKAGE_NAME}.a -output {PACKAGE_NAME}.xcframework")
 
             if os.path.exists(f"{PACKAGE_NAME}/macos/Frameworks/{PACKAGE_NAME}.xcframework"):
                 shutil.rmtree(f"{PACKAGE_NAME}/macos/Frameworks/{PACKAGE_NAME}.xcframework")
@@ -137,7 +135,7 @@ def build(targets: list[str]):
             result = os.system("IPHONEOS_DEPLOYMENT_TARGET=10.0 cargo build --release --target aarch64-apple-ios")
             assert result == 0
 
-            result = os.system(f"cargo build --release --target aarch64-apple-ios-sim")
+            result = os.system("cargo build --release --target aarch64-apple-ios-sim")
             assert result == 0
 
             result = os.system("CMAKE_OSX_SYSROOT=$(xcrun --sdk iphonesimulator --show-sdk-path) cargo build --release --target x86_64-apple-ios")
