@@ -120,12 +120,14 @@ def build(targets: list[str]):
             result = os.system("cargo build --release --target x86_64-apple-darwin")
             assert result == 0
             os.system(f'lipo "target/aarch64-apple-darwin/release/lib{PACKAGE_NAME}.a" "target/x86_64-apple-darwin/release/lib{PACKAGE_NAME}.a" -output "lib{PACKAGE_NAME}.a" -create')
+            os.system(f"xcodebuild -create-xcframework -library target/aarch64-apple-darwin/release/lib{PACKAGE_NAME}.a -library ./lib{PACKAGE_NAME}.a -output {PACKAGE_NAME}.xcframework")
+            os.remove(f"./lib{PACKAGE_NAME}.a")
 
-            if os.path.exists(f"{PACKAGE_NAME}/macos/Libs/lib{PACKAGE_NAME}.a"):
-                os.remove(f"{PACKAGE_NAME}/macos/Libs/lib{PACKAGE_NAME}.a")
+            if os.path.exists(f"{PACKAGE_NAME}/macos/Frameworks/{PACKAGE_NAME}.xcframework"):
+                shutil.rmtree(f"{PACKAGE_NAME}/macos/Frameworks/{PACKAGE_NAME}.xcframework")
 
-            os.makedirs(f"{PACKAGE_NAME}/macos/Libs", exist_ok=True)
-            shutil.move(f"./lib{PACKAGE_NAME}.a", f"{PACKAGE_NAME}/macos/Libs")
+            os.makedirs(f"{PACKAGE_NAME}/macos/Frameworks", exist_ok=True)
+            shutil.move(f"./{PACKAGE_NAME}.xcframework", f"{PACKAGE_NAME}/macos/Frameworks")
 
         if "ios" in targets:
             # Build for iOS
