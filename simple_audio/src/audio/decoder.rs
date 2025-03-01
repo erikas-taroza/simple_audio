@@ -154,7 +154,7 @@ impl Decoder
             None => (),
             Some(message) => match message {
                 DecoderEvent::Open(source, buffer_signal) => {
-                    self.cpal_output.ring_buffer_reader.skip_all();
+                    self.cpal_output.flush()?;
                     self.output_writer = None;
                     self.playback = Some(Self::open(source, buffer_signal)?);
 
@@ -185,8 +185,7 @@ impl Decoder
                 }
                 DecoderEvent::Stop => {
                     self.state = DecoderState::Paused;
-                    self.cpal_output.ring_buffer_reader.skip_all();
-                    self.cpal_output.pause();
+                    self.cpal_output.flush()?;
                     self.output_writer = None;
                     self.playback = None;
 
@@ -254,6 +253,8 @@ impl Decoder
         if self.playback.is_none() || self.state.is_paused() {
             return Ok(false);
         }
+
+        self.cpal_output.needs_flush = true;
 
         // Handle buffering.
         if let Some(playback) = &self.playback {
@@ -418,7 +419,7 @@ impl Decoder
         // Nothing is preloaded so stop like normal.
         else {
             self.state = DecoderState::Paused;
-            self.cpal_output.pause();
+            let _ = self.cpal_output.flush();
             self.controls
                 .player_event_handler()
                 .0

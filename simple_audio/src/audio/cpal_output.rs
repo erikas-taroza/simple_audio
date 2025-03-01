@@ -37,6 +37,9 @@ pub struct CpalOutput
     /// A safety to prevent playing/pausing the stream when it is already in that state.
     /// If this happens, the Android implementation won't work.
     is_playing: bool,
+    pub needs_flush: bool,
+    controls: Controls,
+    device: Device,
     pub stream_config: StreamConfig,
     pub ring_buffer_reader: BlockingRb<f32, Consumer>,
     pub ring_buffer_writer: BlockingRb<f32, Producer>,
@@ -52,7 +55,34 @@ impl CpalOutput
         let rb = BlockingRb::<f32>::new(ring_buffer_size);
         let ring_buffer_writer = rb.0;
         let ring_buffer_reader = rb.1;
+        let stream = Self::build_stream(
+            &device,
+            &stream_config,
+            &controls,
+            &ring_buffer_writer,
+            &ring_buffer_reader,
+        )?;
 
+        Ok(Self {
+            stream,
+            is_playing: true,
+            needs_flush: true,
+            controls,
+            device,
+            stream_config,
+            ring_buffer_reader,
+            ring_buffer_writer,
+        })
+    }
+
+    fn build_stream(
+        device: &Device,
+        stream_config: &StreamConfig,
+        controls: &Controls,
+        ring_buffer_writer: &BlockingRb<f32, Producer>,
+        ring_buffer_reader: &BlockingRb<f32, Consumer>,
+    ) -> anyhow::Result<Stream>
+    {
         let stream = device.build_output_stream(
             &stream_config,
             {
@@ -66,7 +96,7 @@ impl CpalOutput
                             .for_each(|s| *s *= BASE_VOLUME * *controls.volume());
                     }
                     else {
-                        data.iter_mut().for_each(|s| *s = 0.0);
+                        data.fill(0.0);
                     }
                 }
             },
@@ -97,14 +127,29 @@ impl CpalOutput
 
         let stream = stream.context("Could not build the stream.")?;
         let _ = stream.play();
+        Ok(stream)
+    }
 
-        Ok(Self {
-            stream,
-            is_playing: true,
-            stream_config,
-            ring_buffer_reader,
-            ring_buffer_writer,
-        })
+    /// Prepares `CpalOutput` for playback again. Not needed when playing a preloaded file.
+    pub fn flush(&mut self) -> anyhow::Result<()>
+    {
+        if !self.needs_flush {
+            return Ok(());
+        }
+
+        self.ring_buffer_reader.skip_all();
+        self.stream.pause()?;
+        self.stream = Self::build_stream(
+            &self.device,
+            &self.stream_config,
+            &self.controls,
+            &self.ring_buffer_writer,
+            &self.ring_buffer_reader,
+        )?;
+
+        self.needs_flush = false;
+
+        Ok(())
     }
 
     pub fn play(&mut self)
