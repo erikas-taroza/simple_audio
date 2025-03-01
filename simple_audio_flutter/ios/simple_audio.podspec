@@ -8,7 +8,7 @@ cd Frameworks
 if [ ! -d ios.zip ]
 then
   curl -L "#{lib_url}" -o ios.zip
-  unzip ios.zip -d 'simple_audio.xcframework'
+  unzip ios.zip -d 'simple_audio_flutter.xcframework'
 fi
 cd ..
 `
