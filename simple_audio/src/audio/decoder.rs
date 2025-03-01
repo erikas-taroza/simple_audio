@@ -321,6 +321,10 @@ impl Decoder
                     && err.to_string() == "end of stream" =>
             {
                 if self.controls.is_looping() {
+                    if let Some(output_writer) = &mut self.output_writer {
+                        output_writer.flush();
+                    }
+
                     self.controls.set_seek_ts(Some(Duration::ZERO));
                     self.controls
                         .player_event_handler()
