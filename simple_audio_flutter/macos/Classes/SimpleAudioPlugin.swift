@@ -24,8 +24,6 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
         let channel = FlutterMethodChannel(name: "simple_audio", binaryMessenger: registrar.messenger)
         let instance = SimpleAudioPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
-
-        let _ = dummy()
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult)
@@ -37,7 +35,5 @@ public class SimpleAudioPlugin: NSObject, FlutterPlugin
             result(FlutterMethodNotImplemented)
         }
     }
-
-    public static func dummy() -> Int64
-    { return dummy_method_to_enforce_bundling() }
+    
 }

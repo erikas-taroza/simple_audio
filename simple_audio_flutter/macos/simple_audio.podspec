@@ -27,7 +27,9 @@ Pod::Spec.new do |s|
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'FlutterMacOS'
-  s.vendored_libraries = 'Libs/**/*'
+  s.vendored_libraries = 'Libs/**/*.a'
+  s.vendored_frameworks = 'Frameworks/**/*.xcframework'
+  s.static_framework = true
 
   s.platform = :osx, '10.11'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
