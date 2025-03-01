@@ -82,7 +82,7 @@ impl<T: Copy + Clone + Default + Sync + Send, Type> BlockingRb<T, Type>
         num_values == self.size
     }
 
-    fn is_empty(&self) -> bool
+    pub fn is_empty(&self) -> bool
     {
         let num_values = self.num_values.load(std::sync::atomic::Ordering::SeqCst);
         num_values == 0

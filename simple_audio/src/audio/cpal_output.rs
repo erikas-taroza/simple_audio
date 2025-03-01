@@ -275,5 +275,10 @@ impl OutputWriter
                 remaining_samples = &remaining_samples[written..];
             }
         }
+
+        // Wait for the remaining samples to be written.
+        while !self.ring_buffer_writer.is_empty() {
+            continue;
+        }
     }
 }
