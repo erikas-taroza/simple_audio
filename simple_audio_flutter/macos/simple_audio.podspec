@@ -3,12 +3,12 @@ version = "2.0.5"
 lib_url = "https://github.com/erikas-taroza/simple_audio/releases/download/v#{version}/macos.zip"
 
 `
-mkdir Libs
-cd Libs
+mkdir Frameworks
+cd Frameworks
 if [ ! -f macos.zip ]
 then
   curl -L "#{lib_url}" -o macos.zip
-  unzip macos.zip
+  unzip macos.zip -d 'simple_audio.xcframework'
 fi
 cd ..
 `
