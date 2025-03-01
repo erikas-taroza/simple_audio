@@ -316,7 +316,10 @@ impl Decoder
             Ok(packet) => packet,
             // An error occurs when the stream
             // has reached the end of the audio.
-            Err(_) => {
+            Err(symphonia_core::errors::Error::IoError(err))
+                if err.kind() == std::io::ErrorKind::UnexpectedEof
+                    && err.to_string() == "end of stream" =>
+            {
                 if self.controls.is_looping() {
                     self.controls.set_seek_ts(Some(Duration::ZERO));
                     self.controls
@@ -328,6 +331,7 @@ impl Decoder
 
                 return Ok(true);
             }
+            Err(err) => return Err(anyhow!(err)),
         };
 
         if packet.track_id() != playback.track_id {
