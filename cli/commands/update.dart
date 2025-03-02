@@ -65,14 +65,13 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
       return ExitCode.usage.code;
     }
 
+    final _Level level = _Level.fromString(option);
+    final _Version currentVersion = _Version.fromString(packageVersion);
+    final _Version newVersion = currentVersion.increment(level);
+
     final File pubspec =
         File("$projectRootDirectory/$packageName/pubspec.yaml");
     final YamlEditor yamlEditor = YamlEditor(await pubspec.readAsString());
-
-    final _Level level = _Level.fromString(option);
-    final _Version currentVersion =
-        _Version.fromString(yamlEditor.parseAt(["version"]).value);
-    final _Version newVersion = currentVersion.increment(level);
 
     if (!isDryRun) {
       String answer = logger.prompt(
