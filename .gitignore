@@ -37,3 +37,5 @@ migrate_working_dir/
 build/
 *.lock
 target
+
+!cli/commands/build
