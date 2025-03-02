@@ -83,19 +83,21 @@ class MacosBuildCommand extends CliCommand
       return result;
     }
 
-    // Merge aarch64-apple-darwin and x86_64-apple-darwin targets
+    // Create xcframework
     logger.detail(
-      "Merging aarch64-apple-darwin and x86_64-apple-darwin with lipo...",
+      "Creating xcframework...",
     );
 
     result = await runProcess(
-      "lipo",
+      "xcodebuild",
       [
+        "-create-xcframework",
+        "-library",
         "$projectRootDirectory/target/aarch64-apple-darwin/release/lib$packageName.a",
+        "-library",
         "$projectRootDirectory/target/x86_64-apple-darwin/release/lib$packageName.a",
         "-output",
-        "lib$packageName.a",
-        "-create",
+        "$packageName.xcframework",
       ],
       logger: logger,
     );
@@ -104,17 +106,20 @@ class MacosBuildCommand extends CliCommand
       return result;
     }
 
-    final File file =
-        File("$projectRootDirectory/$packageName/macos/Libs/lib$packageName.a");
-    if (await file.exists()) {
-      logger.detail("Found existing macOS binary. Deleting...");
-      await file.delete();
+    final Directory directory = Directory(
+      "$projectRootDirectory/$packageName/macos/Frameworks/$packageName.xcframework",
+    );
+
+    if (await directory.exists()) {
+      logger.detail("Found existing xcframework. Deleting...");
+      await directory.delete(recursive: true);
     }
 
-    await Directory("$projectRootDirectory/$packageName/macos/Libs")
+    // Move the created xcframework.
+    await Directory("$projectRootDirectory/$packageName/macos/Frameworks")
         .create(recursive: true);
-    await File("lib$packageName.a").rename(
-      "$projectRootDirectory/$packageName/macos/Libs/lib$packageName.a",
+    await Directory("$packageName.xcframework").rename(
+      "$projectRootDirectory/$packageName/macos/Frameworks/$packageName.xcframework",
     );
 
     logger.success("Done!");
