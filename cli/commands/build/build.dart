@@ -1,5 +1,4 @@
 import '../../cli_command.dart';
-import '../../mixins/logger.dart';
 import 'subcommands/android.dart';
 import 'subcommands/ios.dart';
 import 'subcommands/linux.dart';
@@ -8,7 +7,7 @@ import 'subcommands/windows.dart';
 
 export "./build.dart";
 
-class BuildCommand extends CliCommand with Logger {
+class BuildCommand extends CliCommand {
   @override
   String get name => "build";
 
