@@ -8,33 +8,41 @@ import '../cli_command.dart';
 import '../mixins/cli_logger.dart';
 import '../mixins/package_info.dart';
 
-class BumpVersionCommand extends CliCommand with CliLogger, PackageInfo {
+class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
   @override
-  String get name => "bump_version";
+  String get name => "update";
 
   @override
-  List<String> get aliases => ["bv"];
+  List<String> get aliases => ["u"];
 
   @override
   String get description => "Updates the version shown in files.";
 
-  BumpVersionCommand() {
-    argParser.addOption(
-      "level",
-      abbr: "l",
-      mandatory: true,
-      help: "The semver version level to change.",
-      allowed: ["major", "minor", "patch"],
-      allowedHelp: {
-        "major": "Updates the first number in the version (x.0.0)",
-        "minor": "Updates the second number in the version (0.x.0)",
-        "patch": "Updates the third number in the version (0.0.x)",
-      },
-    );
+  UpdateCommand() {
+    argParser
+      ..addOption(
+        "level",
+        abbr: "l",
+        mandatory: true,
+        help: "The semver version level to change.",
+        allowed: ["major", "minor", "patch"],
+        allowedHelp: {
+          "major": "Updates the first number in the version (x.0.0)",
+          "minor": "Updates the second number in the version (0.x.0)",
+          "patch": "Updates the third number in the version (0.0.x)",
+        },
+      )
+      ..addFlag(
+        "dry-run",
+        abbr: "d",
+        help:
+            "Performs the steps to update the version but doesn't commit the changes.",
+      );
   }
 
   @override
   Future<int> run() async {
+    final bool isDryRun = argResults?.flag("dry-run") ?? false;
     final String? option = argResults?.option("level");
     if (option == null) {
       logger.stderr('Missing argument for "--level".');
@@ -51,12 +59,19 @@ class BumpVersionCommand extends CliCommand with CliLogger, PackageInfo {
     final _Version newVersion = currentVersion.increment(level);
 
     logger.stdout(
-        "Updating version to $newVersion from $currentVersion (${level.name}).");
+      "Updating version to $newVersion from $currentVersion (${level.name}).",
+    );
 
     // pubspec.yaml
     yamlEditor.update(["version"], newVersion.toString());
-    await pubspec.writeAsString(yamlEditor.toString());
-    logger.trace("Updated ${pubspec.path}");
+    if (!isDryRun) {
+      await pubspec.writeAsString(yamlEditor.toString());
+      logger.trace("Updated ${pubspec.path}");
+    } else {
+      logger.stdout(pubspec.path);
+      logger.stdout(yamlEditor.toString());
+      logger.stdout("\n");
+    }
 
     // Cargo.toml
     final List<String> cargoPaths = [
@@ -70,8 +85,15 @@ class BumpVersionCommand extends CliCommand with CliLogger, PackageInfo {
       ))
           .toMap();
       toml["package"]["version"] = newVersion.toString();
-      await File(path).writeAsString(TomlDocument.fromMap(toml).toString());
-      logger.trace("Updated $path");
+
+      if (!isDryRun) {
+        await File(path).writeAsString(TomlDocument.fromMap(toml).toString());
+        logger.trace("Updated $path");
+      } else {
+        logger.stdout(path);
+        logger.stdout(TomlDocument.fromMap(toml).toString());
+        logger.stdout("\n");
+      }
     }
 
     // CMake
@@ -83,13 +105,19 @@ class BumpVersionCommand extends CliCommand with CliLogger, PackageInfo {
 
     for (String path in cmakePaths) {
       final File cmake = File(path);
-      await cmake.writeAsString(
-        (await cmake.readAsString()).replaceFirst(
-          RegExp(r'set\(Version "[\d|\.]+"\)\s'),
-          'set(Version "${newVersion.toString()}")\n',
-        ),
+      final String text = (await cmake.readAsString()).replaceFirst(
+        RegExp(r'set\(Version "[\d|\.]+"\)\s'),
+        'set(Version "${newVersion.toString()}")\n',
       );
-      logger.trace("Updated $path");
+
+      if (!isDryRun) {
+        await cmake.writeAsString(text);
+        logger.trace("Updated $path");
+      } else {
+        logger.stdout(path);
+        logger.stdout(text);
+        logger.stdout("\n");
+      }
     }
 
     // Podspec
@@ -111,8 +139,14 @@ class BumpVersionCommand extends CliCommand with CliLogger, PackageInfo {
         "s.version          = '$newVersion'\n",
       );
 
-      await podspec.writeAsString(text);
-      logger.trace("Updated $path");
+      if (!isDryRun) {
+        await podspec.writeAsString(text);
+        logger.trace("Updated $path");
+      } else {
+        logger.stdout(path);
+        logger.stdout(text);
+        logger.stdout("\n");
+      }
     }
 
     logger.stdout("Done!");
