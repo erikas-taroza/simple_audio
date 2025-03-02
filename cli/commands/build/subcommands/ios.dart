@@ -147,7 +147,8 @@ class IosBuildCommand extends CliCommand
     await Directory("$projectRootDirectory/$packageName/ios/Frameworks")
         .create(recursive: true);
     await Directory("$packageName.xcframework").rename(
-        "$projectRootDirectory/$packageName/ios/Frameworks/$packageName.xcframework");
+      "$projectRootDirectory/$packageName/ios/Frameworks/$packageName.xcframework",
+    );
 
     logger.stdout("Done!");
     return ExitCode.success.code;

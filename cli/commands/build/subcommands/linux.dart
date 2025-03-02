@@ -57,8 +57,8 @@ class LinuxBuildCommand extends CliCommand
     }
 
     await File(
-            "$projectRootDirectory/target/x86_64-unknown-linux-gnu/release/lib$packageName.so")
-        .rename("$projectRootDirectory/$packageName/linux/lib$packageName.so");
+      "$projectRootDirectory/target/x86_64-unknown-linux-gnu/release/lib$packageName.so",
+    ).rename("$projectRootDirectory/$packageName/linux/lib$packageName.so");
 
     logger.stdout("Done!");
     return ExitCode.success.code;
