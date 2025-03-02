@@ -11,12 +11,14 @@ mixin ProcessRunner on CliCommand {
     String executable,
     List<String> arguments, {
     String? workingDirectory,
+    Map<String, String>? environment,
     Logger? logger,
   }) async {
     Process process = await Process.start(
       executable,
       arguments,
       workingDirectory: workingDirectory,
+      environment: environment,
     );
 
     final List<String> errs = [];

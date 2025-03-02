@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../cli_command.dart';
 import 'subcommands/android.dart';
 import 'subcommands/ios.dart';
@@ -22,9 +24,14 @@ class BuildCommand extends CliCommand {
 
   BuildCommand() {
     addSubcommand(AndroidBuildCommand());
-    addSubcommand(IosBuildCommand());
-    addSubcommand(LinuxBuildCommand());
-    addSubcommand(MacosBuildCommand());
-    addSubcommand(WindowsBuildCommand());
+
+    if (Platform.isLinux) addSubcommand(LinuxBuildCommand());
+
+    if (Platform.isWindows) addSubcommand(WindowsBuildCommand());
+
+    if (Platform.isMacOS) {
+      addSubcommand(IosBuildCommand());
+      addSubcommand(MacosBuildCommand());
+    }
   }
 }

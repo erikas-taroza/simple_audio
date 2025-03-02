@@ -60,10 +60,9 @@ class AndroidBuildCommand extends CliCommand
 
     // Delete existing binaries.
     for (String arch in architectures) {
-      final Uri path = Uri.parse(
+      final File file = File(
         "$packageName/android/src/main/jniLibs/$arch/lib$packageName.so",
       );
-      final File file = File.fromUri(path);
 
       if (await file.exists()) {
         logger.trace("Found existing $arch binary. Deleting...");
