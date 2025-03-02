@@ -16,7 +16,6 @@
 
 import 'dart:io';
 
-import 'package:io/io.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:toml/toml.dart';
 import 'package:yaml_edit/yaml_edit.dart';

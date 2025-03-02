@@ -109,7 +109,7 @@ jobs:
 
   build:
     name: Build Libraries
-    needs: [rust_lint, dart_lint]
+    needs: [rust_lint, dart_lint, dart_cli_lint]
     strategy:
       matrix:
         include:
