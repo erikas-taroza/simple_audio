@@ -14,6 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-mod api;
-mod frb_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod streams;
+import 'package:args/command_runner.dart';
+
+import '../commands/build/build.dart';
+import '../commands/publish.dart';
+import '../commands/update.dart';
+import '../commands/codegen.dart';
+import '../mixins/package_info.dart';
+
+void main(List<String> args) {
+  final CommandRunner<int> runner =
+      CommandRunner("package", "A tool to help with maintaining the package.");
+
+  PackageInfo.init();
+
+  runner
+    ..addCommand(BuildCommand())
+    ..addCommand(CodegenCommand())
+    ..addCommand(UpdateCommand())
+    ..addCommand(PublishCommand())
+    ..run(args);
+}

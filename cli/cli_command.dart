@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-mod api;
-mod frb_generated; /* AUTO INJECTED BY flutter_rust_bridge. This line may not be accurate, and you can change it according to your needs. */
-mod streams;
+import 'package:args/command_runner.dart';
+
+abstract class CliCommand extends Command<int> {
+  bool get verbose => true;
+
+  CliCommand() {
+    if (verbose) {
+      argParser.addFlag("verbose", abbr: "v", defaultsTo: false);
+    }
+  }
+}

@@ -1,5 +1,5 @@
 # This file is a part of simple_audio
-# Copyright (c) 2022-2023 Erikas Taroza <erikastaroza@gmail.com>
+# Copyright (c) 2022-2025 Erikas Taroza <erikastaroza@gmail.com>
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -20,9 +20,6 @@ description: Performs the needed steps to start building the Rust project.
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
@@ -38,4 +35,12 @@ runs:
         cache: true
     - run: flutter pub get
       working-directory: simple_audio_flutter
+      shell: bash
+
+    - uses: subosito/flutter-action@v2.10.0
+      with:
+        channel: "stable"
+        cache: true
+    - run: flutter pub get
+      working-directory: cli
       shell: bash

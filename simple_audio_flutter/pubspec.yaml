@@ -10,8 +10,10 @@ topics:
   - player
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
   flutter: ">=3.0.0"
+
+resolution: workspace
 
 dependencies:
   flutter:
@@ -22,14 +24,11 @@ dependencies:
   meta: ^1.8.0
   freezed_annotation: ^2.4.1
   uuid: any
-  # Needed to run codegen. Uncomment to run codegen, otherwise keep it commented to the package can be published.
-  # rust_lib_simple_audio:
-  #   path: rust_builder
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
   ffigen: ^9.0.1
   build_runner: ^2.4.6
   freezed: ^2.4.2
