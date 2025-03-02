@@ -17,6 +17,7 @@
 import 'dart:io';
 
 import 'package:io/io.dart';
+import 'package:mason_logger/mason_logger.dart';
 import 'package:toml/toml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
@@ -85,7 +86,7 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
       }
     } else {
       logger.info(
-        "Updating version to $newVersion from $currentVersion (${level.name}).",
+        "Updating ${level.name} version to $newVersion from $currentVersion.",
       );
     }
 
@@ -95,8 +96,16 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
       await pubspec.writeAsString(yamlEditor.toString());
       logger.detail("Updated ${pubspec.path}");
     } else {
-      logger.info(pubspec.path);
-      logger.info(yamlEditor.toString());
+      logger.info(styleBold.wrap(pubspec.path) ?? pubspec.path);
+      logger.info(
+        darkGray.wrap(
+              yamlEditor.toString().replaceFirst(
+                    newVersion.toString(),
+                    "${green.wrap(newVersion.toString()) ?? newVersion.toString()}${darkGray.escape}",
+                  ),
+            ) ??
+            yamlEditor.toString(),
+      );
       logger.info("\n");
     }
 
@@ -113,12 +122,22 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
           .toMap();
       toml["package"]["version"] = newVersion.toString();
 
+      final String encodedToml = TomlDocument.fromMap(toml).toString();
+
       if (!isDryRun) {
-        await File(path).writeAsString(TomlDocument.fromMap(toml).toString());
+        await File(path).writeAsString(encodedToml);
         logger.detail("Updated $path");
       } else {
-        logger.info(path);
-        logger.info(TomlDocument.fromMap(toml).toString());
+        logger.info(styleBold.wrap(path) ?? path);
+        logger.info(
+          darkGray.wrap(
+                encodedToml.replaceFirst(
+                  newVersion.toString(),
+                  "${green.wrap(newVersion.toString()) ?? newVersion.toString()}${darkGray.escape}",
+                ),
+              ) ??
+              encodedToml,
+        );
         logger.info("\n");
       }
     }
@@ -141,8 +160,16 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
         await cmake.writeAsString(text);
         logger.detail("Updated $path");
       } else {
-        logger.info(path);
-        logger.info(text);
+        logger.info(styleBold.wrap(path) ?? path);
+        logger.info(
+          darkGray.wrap(
+                text.replaceFirst(
+                  newVersion.toString(),
+                  "${green.wrap(newVersion.toString()) ?? newVersion.toString()}${darkGray.escape}",
+                ),
+              ) ??
+              text,
+        );
         logger.info("\n");
       }
     }
@@ -170,8 +197,16 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
         await podspec.writeAsString(text);
         logger.detail("Updated $path");
       } else {
-        logger.info(path);
-        logger.info(text);
+        logger.info(styleBold.wrap(path) ?? path);
+        logger.info(
+          darkGray.wrap(
+                text.replaceFirst(
+                  newVersion.toString(),
+                  "${green.wrap(newVersion.toString()) ?? newVersion.toString()}${darkGray.escape}",
+                ),
+              ) ??
+              text,
+        );
         logger.info("\n");
       }
     }
