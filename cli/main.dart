@@ -1,6 +1,7 @@
 import 'package:args/command_runner.dart';
 
 import 'commands/build/build.dart';
+import 'commands/bump_version.dart';
 import 'commands/codegen.dart';
 
 void main(List<String> args) {
@@ -10,5 +11,6 @@ void main(List<String> args) {
   runner
     ..addCommand(BuildCommand())
     ..addCommand(CodegenCommand())
+    ..addCommand(BumpVersionCommand())
     ..run(args);
 }

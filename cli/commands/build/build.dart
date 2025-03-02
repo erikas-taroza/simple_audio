@@ -17,9 +17,6 @@ class BuildCommand extends CliCommand {
   @override
   String get description => "Builds the Rust code for the given target.";
 
-  @override
-  bool get verbose => false;
-
   BuildCommand() {
     addSubcommand(AndroidBuildCommand());
 
