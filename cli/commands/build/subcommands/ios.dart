@@ -95,8 +95,8 @@ class IosBuildCommand extends CliCommand
     result = await runProcess(
       "lipo",
       [
-        "target/aarch64-apple-ios-sim/release/lib$packageName.a",
-        "target/x86_64-apple-ios/release/lib$packageName.a",
+        "$projectRootDirectory/target/aarch64-apple-ios-sim/release/lib$packageName.a",
+        "$projectRootDirectory/target/x86_64-apple-ios/release/lib$packageName.a",
         "-output",
         "lib$packageName.a",
         "-create",
@@ -118,9 +118,9 @@ class IosBuildCommand extends CliCommand
       [
         "-create-xcframework",
         "-library",
-        "target/aarch64-apple-ios/release/lib$packageName.a",
+        "$projectRootDirectory/target/aarch64-apple-ios/release/lib$packageName.a",
         "-library",
-        "./lib$packageName.a",
+        "lib$packageName.a",
         "-output",
         "$packageName.xcframework",
       ],
@@ -135,7 +135,7 @@ class IosBuildCommand extends CliCommand
     await File("lib$packageName.a").delete();
 
     final Directory directory = Directory(
-      "$packageName/ios/Frameworks/$packageName.xcframework",
+      "$projectRootDirectory/$packageName/ios/Frameworks/$packageName.xcframework",
     );
 
     if (await directory.exists()) {
@@ -144,10 +144,12 @@ class IosBuildCommand extends CliCommand
     }
 
     // Move the created xcframework.
-    await Directory("$packageName/ios/Frameworks").create(recursive: true);
-    await Directory("$packageName.xcframework")
-        .rename("$packageName/ios/Frameworks/$packageName.xcframework");
+    await Directory("$projectRootDirectory/$packageName/ios/Frameworks")
+        .create(recursive: true);
+    await Directory("$packageName.xcframework").rename(
+        "$projectRootDirectory/$packageName/ios/Frameworks/$packageName.xcframework");
 
+    logger.stdout("Done!");
     return ExitCode.success.code;
   }
 }

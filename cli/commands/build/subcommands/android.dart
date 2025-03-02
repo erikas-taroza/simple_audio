@@ -61,7 +61,7 @@ class AndroidBuildCommand extends CliCommand
     // Delete existing binaries.
     for (String arch in architectures) {
       final File file = File(
-        "$packageName/android/src/main/jniLibs/$arch/lib$packageName.so",
+        "$projectRootDirectory/$packageName/android/src/main/jniLibs/$arch/lib$packageName.so",
       );
 
       if (await file.exists()) {
@@ -85,7 +85,7 @@ class AndroidBuildCommand extends CliCommand
         "-t",
         "x86_64",
         "-o",
-        "$packageName/android/src/main/jniLibs",
+        "$projectRootDirectory/$packageName/android/src/main/jniLibs",
         "build",
         "--release",
       ],
@@ -96,6 +96,7 @@ class AndroidBuildCommand extends CliCommand
       return result;
     }
 
+    logger.stdout("Done!");
     return ExitCode.success.code;
   }
 }
