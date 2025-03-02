@@ -4,7 +4,7 @@ export 'audio_service.dart';
 export 'mpris.dart';
 export 'smtc.dart';
 
-abstract class MediaController {
+abstract mixin class MediaController {
   void setMetadata(Metadata m, Duration duration);
   void onPlaybackStarted();
   void onPlaybackStateChanged(PlaybackState state, Duration position);
