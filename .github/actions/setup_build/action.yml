@@ -37,9 +37,10 @@ runs:
       working-directory: simple_audio_flutter
       shell: bash
 
-    - uses: dart-lang/setup-dart@v1.7.1
+    - uses: subosito/flutter-action@v2.10.0
       with:
-        sdk: "stable"
-    - run: dart pub get
+        channel: "stable"
+        cache: true
+    - run: flutter pub get
       working-directory: cli
       shell: bash
