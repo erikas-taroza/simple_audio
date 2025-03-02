@@ -1,0 +1,11 @@
+name: simple_audio_project
+homepage: https://github.com/erikas-taroza/simple_audio
+repository: https://github.com/erikas-taroza/simple_audio
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+workspace:
+  - simple_audio_flutter
+  - cli

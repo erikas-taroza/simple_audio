@@ -2,7 +2,9 @@ name: cli
 description: A tool to help with maintaining the package.
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
+
+resolution: workspace
 
 dependencies:
   cli_util: ^0.4.2
