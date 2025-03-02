@@ -137,4 +137,4 @@ jobs:
           sudo apt install libasound2-dev
 
       - name: Build
-        run: dart cli/main.dart build ${{ matrix.target }} -v
+        run: dart run cli build ${{ matrix.target }} -v
