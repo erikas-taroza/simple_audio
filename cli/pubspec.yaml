@@ -4,8 +4,6 @@ description: A tool to help with maintaining the package.
 environment:
   sdk: ">=3.6.0 <4.0.0"
 
-resolution: workspace
-
 dependencies:
   cli_util: ^0.4.2
   args: ^2.6.0

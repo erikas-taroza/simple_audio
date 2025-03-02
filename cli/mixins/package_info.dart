@@ -9,20 +9,21 @@ mixin PackageInfo on CliCommand {
   String get projectRootDirectory => _projectRootDirectory;
   static String _projectRootDirectory = "";
   static void initProjectRootDirectory() {
-    Uri path = Uri.parse(Directory.current.path);
+    Directory directory = Directory.current;
 
     // Starts from the current directory and goes up until it finds the root project directory.
     while (true) {
-      List<String> items = Directory.fromUri(path)
+      List<String> items = directory
           .listSync()
-          .map((e) => e.uri.pathSegments.last)
+          .map((e) => e.uri.pathSegments[e.uri.pathSegments.length - 2])
           .toList();
 
-      if (items.contains("pubspec.yaml") && items.contains("Cargo.toml")) {
-        _projectRootDirectory = path.toString();
+      if (items.contains("simple_audio_flutter") &&
+          items.contains("simple_audio")) {
+        _projectRootDirectory = directory.path;
         break;
       } else {
-        path = path.replace(pathSegments: path.pathSegments..removeLast());
+        directory = directory.parent;
       }
     }
   }
