@@ -198,7 +198,7 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
         logger.info(styleBold.wrap(path) ?? path);
         logger.info(
           darkGray.wrap(
-                text.replaceFirst(
+                text.replaceAll(
                   newVersion.toString(),
                   "${green.wrap(newVersion.toString()) ?? newVersion.toString()}${darkGray.escape}",
                 ),
