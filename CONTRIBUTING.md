@@ -23,7 +23,7 @@ If there are any missing dependencies (ex. `flutter_rust_bridge_codegen`), they 
 Show the help section:
 
 ```
-dart cli/main.dart help
+dart run cli help
 ```
 
 **NOTE**: The command was run from the root directory. It is possible to run the CLI from anywhere you want in the project.
