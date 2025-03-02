@@ -22,9 +22,6 @@ dependencies:
   meta: ^1.8.0
   freezed_annotation: ^2.4.1
   uuid: any
-  # Needed to run codegen. Uncomment to run codegen, otherwise keep it commented to the package can be published.
-  # rust_lib_simple_audio:
-  #   path: rust_builder
 
 dev_dependencies:
   flutter_test:

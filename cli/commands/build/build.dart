@@ -7,8 +7,6 @@ import 'subcommands/linux.dart';
 import 'subcommands/macos.dart';
 import 'subcommands/windows.dart';
 
-export "./build.dart";
-
 class BuildCommand extends CliCommand {
   @override
   String get name => "build";
