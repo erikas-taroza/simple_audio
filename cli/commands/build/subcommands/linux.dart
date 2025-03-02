@@ -34,7 +34,7 @@ class LinuxBuildCommand extends CliCommand
   @override
   Future<int> run() async {
     // Ensure rustup targets are installed.
-    logger.stdout("Installing rustup targets...");
+    logger.info("Installing rustup targets...");
     int result = await runProcess(
       "rustup",
       [
@@ -49,7 +49,7 @@ class LinuxBuildCommand extends CliCommand
       return result;
     }
 
-    logger.stdout("Building Linux binary...");
+    logger.info("Building Linux binary...");
     result = await runProcess(
       "cargo",
       [
@@ -68,7 +68,7 @@ class LinuxBuildCommand extends CliCommand
     final File file =
         File("$projectRootDirectory/$packageName/linux/lib$packageName.so");
     if (await file.exists()) {
-      logger.trace("Found existing Linux binary. Deleting...");
+      logger.detail("Found existing Linux binary. Deleting...");
       await file.delete();
     }
 
@@ -76,7 +76,7 @@ class LinuxBuildCommand extends CliCommand
       "$projectRootDirectory/target/x86_64-unknown-linux-gnu/release/lib$packageName.so",
     ).rename("$projectRootDirectory/$packageName/linux/lib$packageName.so");
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

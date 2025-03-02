@@ -34,7 +34,7 @@ class IosBuildCommand extends CliCommand
   @override
   Future<int> run() async {
     // Ensure rustup targets are installed.
-    logger.stdout("Installing rustup targets...");
+    logger.info("Installing rustup targets...");
     int result = await runProcess(
       "rustup",
       [
@@ -52,7 +52,7 @@ class IosBuildCommand extends CliCommand
     }
 
     // Build binaries
-    logger.stdout("Building iOS binaries...");
+    logger.info("Building iOS binaries...");
 
     result = await runProcess(
       "cargo",
@@ -104,7 +104,7 @@ class IosBuildCommand extends CliCommand
     }
 
     // Merge aarch64-apple-ios-sim and x86_64-apple-ios targets
-    logger.trace(
+    logger.detail(
       "Merging aarch64-apple-ios-sim and x86_64-apple-ios with lipo...",
     );
 
@@ -125,7 +125,7 @@ class IosBuildCommand extends CliCommand
     }
 
     // Create xcframework
-    logger.trace(
+    logger.detail(
       "Creating xcframework...",
     );
 
@@ -155,7 +155,7 @@ class IosBuildCommand extends CliCommand
     );
 
     if (await directory.exists()) {
-      logger.trace("Found existing xcframework. Deleting...");
+      logger.detail("Found existing xcframework. Deleting...");
       await directory.delete(recursive: true);
     }
 
@@ -166,7 +166,7 @@ class IosBuildCommand extends CliCommand
       "$projectRootDirectory/$packageName/ios/Frameworks/$packageName.xcframework",
     );
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

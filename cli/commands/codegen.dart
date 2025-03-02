@@ -39,7 +39,7 @@ class CodegenCommand extends CliCommand
 
   @override
   Future<int> run() async {
-    logger.stdout("Preparing...");
+    logger.info("Preparing...");
 
     final File pubspec =
         File("$projectRootDirectory/$packageName/pubspec.yaml");
@@ -58,7 +58,7 @@ class CodegenCommand extends CliCommand
       ["dependencies"],
       YamlMap.wrap(addedDependency),
     );
-    logger.trace("Writing to yaml:\n${yamlEditor.toString()}");
+    logger.detail("Writing to yaml:\n${yamlEditor.toString()}");
     await pubspec.writeAsString(yamlEditor.toString(), flush: true);
 
     // Install FRB
@@ -71,7 +71,7 @@ class CodegenCommand extends CliCommand
       return result;
     }
 
-    logger.stdout("Generating code with flutter_rust_bridge ($frbVersion)...");
+    logger.info("Generating code with flutter_rust_bridge ($frbVersion)...");
     result = await runProcess(
       "flutter_rust_bridge_codegen",
       [
@@ -85,16 +85,16 @@ class CodegenCommand extends CliCommand
       return result;
     }
 
-    logger.stdout("Cleaning up...");
+    logger.info("Cleaning up...");
     // Remove the build dependency.
     yamlEditor.update(
       ["dependencies"],
       originalDependencies,
     );
-    logger.trace("Writing to yaml:\n${yamlEditor.toString()}");
+    logger.detail("Writing to yaml:\n${yamlEditor.toString()}");
     await pubspec.writeAsString(yamlEditor.toString(), flush: true);
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

@@ -34,7 +34,7 @@ class WindowsBuildCommand extends CliCommand
   @override
   Future<int> run() async {
     // Ensure rustup targets are installed.
-    logger.stdout("Installing rustup targets...");
+    logger.info("Installing rustup targets...");
     int result = await runProcess(
       "rustup",
       [
@@ -49,7 +49,7 @@ class WindowsBuildCommand extends CliCommand
       return result;
     }
 
-    logger.stdout("Building Windows binary...");
+    logger.info("Building Windows binary...");
     result = await runProcess(
       "cargo",
       [
@@ -68,7 +68,7 @@ class WindowsBuildCommand extends CliCommand
     final File file =
         File("$projectRootDirectory/$packageName/windows/$packageName.dll");
     if (await file.exists()) {
-      logger.trace("Found existing Windows binary. Deleting...");
+      logger.detail("Found existing Windows binary. Deleting...");
       await file.delete();
     }
 
@@ -76,7 +76,7 @@ class WindowsBuildCommand extends CliCommand
       "$projectRootDirectory/target/x86_64-pc-windows-msvc/release/$packageName.dll",
     ).rename("$projectRootDirectory/$packageName/windows/$packageName.dll");
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

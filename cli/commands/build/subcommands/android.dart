@@ -34,7 +34,7 @@ class AndroidBuildCommand extends CliCommand
   @override
   Future<int> run() async {
     // Ensure rustup targets are installed.
-    logger.stdout("Installing rustup targets...");
+    logger.info("Installing rustup targets...");
     int result = await runProcess(
       "rustup",
       [
@@ -53,7 +53,7 @@ class AndroidBuildCommand extends CliCommand
     }
 
     // Install cargo-ndk
-    logger.stdout("Installing cargo-ndk...");
+    logger.info("Installing cargo-ndk...");
     result = await runProcess(
       "cargo",
       [
@@ -81,13 +81,13 @@ class AndroidBuildCommand extends CliCommand
       );
 
       if (await file.exists()) {
-        logger.trace("Found existing $arch binary. Deleting...");
+        logger.detail("Found existing $arch binary. Deleting...");
         await file.delete();
       }
     }
 
     // Build the binaries
-    logger.stdout("Building Android binaries...");
+    logger.info("Building Android binaries...");
     result = await runProcess(
       "cargo",
       [
@@ -112,7 +112,7 @@ class AndroidBuildCommand extends CliCommand
       return result;
     }
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

@@ -61,7 +61,7 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
     final bool isDryRun = argResults?.flag("dry-run") ?? false;
     final String? option = argResults?.option("level");
     if (option == null) {
-      logger.stderr('Missing argument for "--level".');
+      logger.err('Missing argument for "--level".');
       return ExitCode.usage.code;
     }
 
@@ -74,19 +74,30 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
         _Version.fromString(yamlEditor.parseAt(["version"]).value);
     final _Version newVersion = currentVersion.increment(level);
 
-    logger.stdout(
-      "Updating version to $newVersion from $currentVersion (${level.name}).",
-    );
+    if (!isDryRun) {
+      String answer = logger.prompt(
+        "Update ${level.name} version to $newVersion from $currentVersion?",
+        defaultValue: "y",
+      );
+
+      if (answer.toLowerCase() != "y") {
+        return ExitCode.success.code;
+      }
+    } else {
+      logger.info(
+        "Updating version to $newVersion from $currentVersion (${level.name}).",
+      );
+    }
 
     // pubspec.yaml
     yamlEditor.update(["version"], newVersion.toString());
     if (!isDryRun) {
       await pubspec.writeAsString(yamlEditor.toString());
-      logger.trace("Updated ${pubspec.path}");
+      logger.detail("Updated ${pubspec.path}");
     } else {
-      logger.stdout(pubspec.path);
-      logger.stdout(yamlEditor.toString());
-      logger.stdout("\n");
+      logger.info(pubspec.path);
+      logger.info(yamlEditor.toString());
+      logger.info("\n");
     }
 
     // Cargo.toml
@@ -104,11 +115,11 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
 
       if (!isDryRun) {
         await File(path).writeAsString(TomlDocument.fromMap(toml).toString());
-        logger.trace("Updated $path");
+        logger.detail("Updated $path");
       } else {
-        logger.stdout(path);
-        logger.stdout(TomlDocument.fromMap(toml).toString());
-        logger.stdout("\n");
+        logger.info(path);
+        logger.info(TomlDocument.fromMap(toml).toString());
+        logger.info("\n");
       }
     }
 
@@ -128,11 +139,11 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
 
       if (!isDryRun) {
         await cmake.writeAsString(text);
-        logger.trace("Updated $path");
+        logger.detail("Updated $path");
       } else {
-        logger.stdout(path);
-        logger.stdout(text);
-        logger.stdout("\n");
+        logger.info(path);
+        logger.info(text);
+        logger.info("\n");
       }
     }
 
@@ -157,15 +168,15 @@ class UpdateCommand extends CliCommand with CliLogger, PackageInfo {
 
       if (!isDryRun) {
         await podspec.writeAsString(text);
-        logger.trace("Updated $path");
+        logger.detail("Updated $path");
       } else {
-        logger.stdout(path);
-        logger.stdout(text);
-        logger.stdout("\n");
+        logger.info(path);
+        logger.info(text);
+        logger.info("\n");
       }
     }
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

@@ -17,8 +17,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cli_util/cli_logging.dart';
-import 'package:io/io.dart';
+import 'package:mason_logger/mason_logger.dart';
 
 import '../cli_command.dart';
 
@@ -43,7 +42,7 @@ mixin ProcessRunner on CliCommand {
         .transform(utf8.decoder)
         .transform(LineSplitter())
         .listen((out) {
-      logger?.trace(out);
+      logger?.detail(out);
     });
 
     process.stderr
@@ -57,9 +56,9 @@ mixin ProcessRunner on CliCommand {
 
     for (String err in errs) {
       if (exitCode != ExitCode.success.code) {
-        logger?.stderr(err);
+        logger?.err(err);
       } else {
-        logger?.trace(err);
+        logger?.detail(err);
       }
     }
 

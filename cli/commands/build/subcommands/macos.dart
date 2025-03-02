@@ -34,7 +34,7 @@ class MacosBuildCommand extends CliCommand
   @override
   Future<int> run() async {
     // Ensure rustup targets are installed.
-    logger.stdout("Installing rustup targets...");
+    logger.info("Installing rustup targets...");
     int result = await runProcess(
       "rustup",
       [
@@ -51,7 +51,7 @@ class MacosBuildCommand extends CliCommand
     }
 
     // Build binaries
-    logger.stdout("Building macOS binaries...");
+    logger.info("Building macOS binaries...");
 
     result = await runProcess(
       "cargo",
@@ -84,7 +84,7 @@ class MacosBuildCommand extends CliCommand
     }
 
     // Merge aarch64-apple-darwin and x86_64-apple-darwin targets
-    logger.trace(
+    logger.detail(
       "Merging aarch64-apple-darwin and x86_64-apple-darwin with lipo...",
     );
 
@@ -107,7 +107,7 @@ class MacosBuildCommand extends CliCommand
     final File file =
         File("$projectRootDirectory/$packageName/macos/Libs/lib$packageName.a");
     if (await file.exists()) {
-      logger.trace("Found existing macOS binary. Deleting...");
+      logger.detail("Found existing macOS binary. Deleting...");
       await file.delete();
     }
 
@@ -117,7 +117,7 @@ class MacosBuildCommand extends CliCommand
       "$projectRootDirectory/$packageName/macos/Libs/lib$packageName.a",
     );
 
-    logger.stdout("Done!");
+    logger.success("Done!");
     return ExitCode.success.code;
   }
 }

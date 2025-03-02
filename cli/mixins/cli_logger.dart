@@ -14,11 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'package:cli_util/cli_logging.dart';
+import 'package:mason_logger/mason_logger.dart';
 
 import '../cli_command.dart';
 
 mixin CliLogger on CliCommand {
-  Logger get logger =>
-      argResults?["verbose"] ?? false ? VerboseLogger() : StandardLogger();
+  final Logger _logger = Logger();
+
+  Logger get logger {
+    _logger.level =
+        argResults?["verbose"] ?? false ? Level.verbose : Level.info;
+    return _logger;
+  }
 }
