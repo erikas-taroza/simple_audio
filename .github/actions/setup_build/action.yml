@@ -20,9 +20,6 @@ description: Performs the needed steps to start building the Rust project.
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
@@ -38,4 +35,11 @@ runs:
         cache: true
     - run: flutter pub get
       working-directory: simple_audio_flutter
+      shell: bash
+
+    - uses: dart-lang/setup-dart@v1.7.1
+      with:
+        sdk: "stable"
+    - run: dart pub get
+      working-directory: cli
       shell: bash

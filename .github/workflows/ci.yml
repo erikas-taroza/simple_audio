@@ -61,7 +61,7 @@ jobs:
       - name: Clippy
         run: |
           cd ${{ matrix.path }}
-          cargo +nightly clippy 
+          cargo +nightly clippy
           cd ..
 
   dart_lint:
@@ -118,4 +118,4 @@ jobs:
           sudo apt install libasound2-dev
 
       - name: Build
-        run: python ./plugin_tool.py -b ${{ matrix.target }}
+        run: dart cli/main.dart build ${{ matrix.target }}
