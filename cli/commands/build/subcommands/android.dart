@@ -1,6 +1,6 @@
 import 'package:io/io.dart';
 
-import '../../cli_command.dart';
+import '../../../cli_command.dart';
 
 class AndroidBuildCommand extends CliCommand {
   @override

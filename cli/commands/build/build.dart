@@ -1,12 +1,12 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:args/command_runner.dart';
-import 'package:io/src/exit_code.dart';
-
 import '../../cli_command.dart';
 import '../../mixins/logger.dart';
-import 'android.dart';
+import 'subcommands/android.dart';
+import 'subcommands/ios.dart';
+import 'subcommands/linux.dart';
+import 'subcommands/macos.dart';
+import 'subcommands/windows.dart';
+
+export "./build.dart";
 
 class BuildCommand extends CliCommand with Logger {
   @override
@@ -23,5 +23,9 @@ class BuildCommand extends CliCommand with Logger {
 
   BuildCommand() {
     addSubcommand(AndroidBuildCommand());
+    addSubcommand(IosBuildCommand());
+    addSubcommand(LinuxBuildCommand());
+    addSubcommand(MacosBuildCommand());
+    addSubcommand(WindowsBuildCommand());
   }
 }
