@@ -89,6 +89,24 @@ jobs:
         working-directory: simple_audio_flutter/example/lib
         run: dart analyze --fatal-infos
 
+  dart_cli_lint:
+    name: Dart CLI Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: dart-lang/setup-dart@v1.7.1
+        with:
+          sdk: "stable"
+      - run: cd cli && dart pub get
+      - name: Format
+        working-directory: cli
+        run: dart format --set-exit-if-changed .
+      - name: Lint
+        working-directory: cli
+        run: dart analyze --fatal-infos
+
   build:
     name: Build Libraries
     needs: [rust_lint, dart_lint]
