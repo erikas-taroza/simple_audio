@@ -44,13 +44,7 @@ mixin PackageInfo on CliCommand {
 
     // Starts from the current directory and goes up until it finds the root project directory.
     while (true) {
-      List<String> items = directory
-          .listSync()
-          .map((e) => e.uri.pathSegments[e.uri.pathSegments.length - 2])
-          .toList();
-
-      if (items.contains("simple_audio_flutter") &&
-          items.contains("simple_audio")) {
+      if (Directory("${directory.path}/simple_audio_flutter").existsSync()) {
         return directory.path;
       } else {
         directory = directory.parent;
