@@ -56,7 +56,8 @@ class LinuxBuildCommand extends CliCommand
       await file.delete();
     }
 
-    File("$projectRootDirectory/target/x86_64-unknown-linux-gnu/release/lib$packageName.so")
+    await File(
+            "$projectRootDirectory/target/x86_64-unknown-linux-gnu/release/lib$packageName.so")
         .rename("$projectRootDirectory/$packageName/linux/lib$packageName.so");
 
     logger.stdout("Done!");
