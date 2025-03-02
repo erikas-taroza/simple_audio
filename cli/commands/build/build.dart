@@ -31,7 +31,8 @@ class BuildCommand extends CliCommand {
   List<String> get aliases => ["b"];
 
   @override
-  String get description => "Builds the Rust code for the given target.";
+  String get description =>
+      "Builds the Rust code for the given target.\nThe build targets are listed based on your OS.";
 
   BuildCommand() {
     addSubcommand(AndroidBuildCommand());
