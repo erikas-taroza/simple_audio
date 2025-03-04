@@ -104,17 +104,44 @@ class MacosBuildCommand extends CliCommand
       return result;
     }
 
-    final File file =
-        File("$projectRootDirectory/$packageName/macos/Libs/lib$packageName.a");
-    if (await file.exists()) {
-      logger.detail("Found existing macOS binary. Deleting...");
-      await file.delete();
+    // Create xcframework
+    logger.detail(
+      "Creating xcframework...",
+    );
+
+    result = await runProcess(
+      "xcodebuild",
+      [
+        "-create-xcframework",
+        "-library",
+        "lib$packageName.a",
+        "-output",
+        "$packageName.xcframework",
+      ],
+      logger: logger,
+    );
+
+    if (result != ExitCode.success.code) {
+      return result;
     }
 
-    await Directory("$projectRootDirectory/$packageName/macos/Libs")
+    // Remove useless files
+    await File("lib$packageName.a").delete();
+
+    final Directory directory = Directory(
+      "$projectRootDirectory/$packageName/macos/Frameworks/$packageName.xcframework",
+    );
+
+    if (await directory.exists()) {
+      logger.detail("Found existing xcframework. Deleting...");
+      await directory.delete(recursive: true);
+    }
+
+    // Move the created xcframework.
+    await Directory("$projectRootDirectory/$packageName/macos/Frameworks")
         .create(recursive: true);
-    await File("lib$packageName.a").rename(
-      "$projectRootDirectory/$packageName/macos/Libs/lib$packageName.a",
+    await Directory("$packageName.xcframework").rename(
+      "$projectRootDirectory/$packageName/macos/Frameworks/$packageName.xcframework",
     );
 
     logger.success("Done!");
