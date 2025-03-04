@@ -36,11 +36,13 @@ use symphonia::{
 };
 use symphonia_core::codecs::CodecRegistry;
 
-use crate::{error::Error, types::*};
-
-use super::{
-    controls::*,
-    cpal_output::{CpalOutput, OutputWriter},
+use crate::{
+    audio::{
+        controls::{Controls, DecoderEvent},
+        output::{cpal_output::CpalOutput, output_writer::OutputWriter},
+    },
+    error::Error,
+    types::*,
 };
 
 lazy_static! {
@@ -48,7 +50,7 @@ lazy_static! {
         let mut registry = CodecRegistry::new();
         register_enabled_codecs(&mut registry);
         #[cfg(feature = "opus")]
-        registry.register_all::<crate::audio::opus::OpusDecoder>();
+        registry.register_all::<crate::audio::decoder::opus::OpusDecoder>();
         registry
     };
 }

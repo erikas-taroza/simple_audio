@@ -48,7 +48,7 @@ use types::*;
 
 use audio::{
     controls::{Controls, DecoderEvent},
-    decoder::Decoder,
+    decoder::decoder::Decoder,
 };
 
 pub struct Player
