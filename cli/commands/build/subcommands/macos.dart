@@ -83,6 +83,27 @@ class MacosBuildCommand extends CliCommand
       return result;
     }
 
+    // Merge aarch64-apple-darwin and x86_64-apple-darwin targets
+    logger.detail(
+      "Merging aarch64-apple-darwin and x86_64-apple-darwin with lipo...",
+    );
+
+    result = await runProcess(
+      "lipo",
+      [
+        "$projectRootDirectory/target/aarch64-apple-darwin/release/lib$packageName.a",
+        "$projectRootDirectory/target/x86_64-apple-darwin/release/lib$packageName.a",
+        "-output",
+        "lib$packageName.a",
+        "-create",
+      ],
+      logger: logger,
+    );
+
+    if (result != ExitCode.success.code) {
+      return result;
+    }
+
     // Create xcframework
     logger.detail(
       "Creating xcframework...",
@@ -93,9 +114,7 @@ class MacosBuildCommand extends CliCommand
       [
         "-create-xcframework",
         "-library",
-        "$projectRootDirectory/target/aarch64-apple-darwin/release/lib$packageName.a",
-        "-library",
-        "$projectRootDirectory/target/x86_64-apple-darwin/release/lib$packageName.a",
+        "lib$packageName.a",
         "-output",
         "$packageName.xcframework",
       ],
@@ -105,6 +124,9 @@ class MacosBuildCommand extends CliCommand
     if (result != ExitCode.success.code) {
       return result;
     }
+
+    // Remove useless files
+    await File("lib$packageName.a").delete();
 
     final Directory directory = Directory(
       "$projectRootDirectory/$packageName/macos/Frameworks/$packageName.xcframework",
