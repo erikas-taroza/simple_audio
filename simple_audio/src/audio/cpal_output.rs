@@ -309,7 +309,7 @@ impl OutputWriter
     }
 
     /// Clean up after playback is done.
-    pub fn flush(&mut self, wait_for_samples: bool)
+    pub fn flush(&mut self)
     {
         // If there is a resampler, then it may need to be flushed
         // depending on the number of samples it has.
@@ -322,11 +322,8 @@ impl OutputWriter
         }
 
         // Wait for the remaining samples to be written.
-        // Not needed when preloading since the samples will be played anyways.
-        if wait_for_samples {
-            while !self.ring_buffer_writer.is_empty() {
-                continue;
-            }
+        while !self.ring_buffer_writer.is_empty() {
+            continue;
         }
     }
 }

@@ -323,7 +323,7 @@ impl Decoder
             {
                 if self.controls.is_looping() {
                     if let Some(output_writer) = &mut self.output_writer {
-                        output_writer.flush(true);
+                        output_writer.flush();
                     }
 
                     self.controls.set_seek_ts(Some(Duration::ZERO));
@@ -391,7 +391,7 @@ impl Decoder
     fn finish_playback(&mut self)
     {
         if let Some(mut output_writer) = self.output_writer.take() {
-            output_writer.flush(self.preload_playback.is_none());
+            output_writer.flush();
         }
 
         // Use the preloaded playback as the current playback.
