@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:io/io.dart';
@@ -85,6 +86,21 @@ class IosBuildCommand extends CliCommand
       return result;
     }
 
+    // Get simulator SDK path
+    Process process = await Process.start(
+      "xcrun",
+      [
+        "--sdk",
+        "iphonesimulator",
+        "--show-sdk-path",
+      ],
+    );
+
+    final String simulatorSdkPath = await process.stdout
+        .transform(utf8.decoder)
+        .transform(LineSplitter())
+        .first;
+
     result = await runProcess(
       "cargo",
       [
@@ -95,7 +111,7 @@ class IosBuildCommand extends CliCommand
       ],
       logger: logger,
       environment: {
-        "CMAKE_OSX_SYSROOT": r"$(xcrun --sdk iphonesimulator --show-sdk-path)",
+        "CMAKE_OSX_SYSROOT": simulatorSdkPath,
       },
     );
 
