@@ -1,3 +1,9 @@
+## 2.0.6
+
+- Added the ability to specify a mime type when opening a file.
+- Fixed old samples being played before new ones when the player is paused and a different file is opened and played.
+- Fixed a small portion of the file not being played at the end.
+
 ## 2.0.5
 
 - Fix mono files being played at 2x speed
