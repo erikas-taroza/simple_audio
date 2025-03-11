@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-export 'rust/api/api.dart' hide PlayerWrapper, $ErrorCopyWith;
-
 import 'dart:async';
 
 import 'rust/api/api.dart';
 import 'rust/frb_generated.dart';
+
+export 'rust/api/api.dart' hide PlayerWrapper, $ErrorCopyWith;
 
 late final PlayerWrapper _player;
 
@@ -85,9 +85,12 @@ class SimpleAudio {
   ///
   /// **[autoplay]** Whether or not to immediately start playing the file when opened.
   ///
+  /// **[mimeType]** Optionally specify a mime type if the decoder cannot open the file
+  /// because it cannot create the format reader.
+  ///
   /// Throws [Error_Open] if the file couldn't be opened.
-  Future<void> open(String path, {bool autoplay = true}) =>
-      _player.open(path: path, autoplay: autoplay);
+  Future<void> open(String path, {bool autoplay = true, String? mimeType}) =>
+      _player.open(path: path, autoplay: autoplay, mimeType: mimeType);
 
   /// Plays the opened file. If the player was paused,
   /// this resumes it.
@@ -128,8 +131,12 @@ class SimpleAudio {
   /// the time spent loading between tracks (especially important
   /// for streaming network files).
   ///
+  /// **[mimeType]** Optionally specify a mime type if the decoder cannot open the file
+  /// because it cannot create the format reader.
+  ///
   /// Throws [Error_Preload] if the file couldn't be preloaded.
-  Future<void> preload(String path) => _player.preload(path: path);
+  Future<void> preload(String path, {String? mimeType}) =>
+      _player.preload(path: path, mimeType: mimeType);
 
   /// Plays the preloaded file.
   Future<void> playPreload() => _player.playPreload();

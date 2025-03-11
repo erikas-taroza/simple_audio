@@ -389,11 +389,16 @@ fn wire__crate__api__api__player_wrapper_open_impl(
             let api_that = <crate::api::api::PlayerWrapper>::sse_decode(&mut deserializer);
             let api_path = <String>::sse_decode(&mut deserializer);
             let api_autoplay = <bool>::sse_decode(&mut deserializer);
+            let api_mime_type = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, crate::api::api::Error>((move || {
-                    let output_ok =
-                        crate::api::api::PlayerWrapper::open(&api_that, api_path, api_autoplay)?;
+                    let output_ok = crate::api::api::PlayerWrapper::open(
+                        &api_that,
+                        api_path,
+                        api_autoplay,
+                        api_mime_type,
+                    )?;
                     Ok(output_ok)
                 })())
             }
@@ -640,10 +645,15 @@ fn wire__crate__api__api__player_wrapper_preload_impl(
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_that = <crate::api::api::PlayerWrapper>::sse_decode(&mut deserializer);
             let api_path = <String>::sse_decode(&mut deserializer);
+            let api_mime_type = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, crate::api::api::Error>((move || {
-                    let output_ok = crate::api::api::PlayerWrapper::preload(&api_that, api_path)?;
+                    let output_ok = crate::api::api::PlayerWrapper::preload(
+                        &api_that,
+                        api_path,
+                        api_mime_type,
+                    )?;
                     Ok(output_ok)
                 })())
             }
@@ -1005,6 +1015,17 @@ impl SseDecode for Vec<u8> {
             ans_.push(<u8>::sse_decode(deserializer));
         }
         return ans_;
+    }
+}
+
+impl SseDecode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<String>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
     }
 }
 
@@ -1395,6 +1416,16 @@ impl SseEncode for Vec<u8> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <u8>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <String>::sse_encode(value, serializer);
         }
     }
 }

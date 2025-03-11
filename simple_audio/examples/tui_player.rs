@@ -67,7 +67,7 @@ fn main() -> io::Result<()>
     let app = Arc::new(RwLock::new(App::new()));
     let thread_killer = unbounded::<bool>();
     let player = Player::new(thread_killer.1);
-    player.open(args[1].clone(), true).unwrap();
+    player.open(args[1].clone(), true, None).unwrap();
 
     // Listen to events
     let receiver_app = app.clone();

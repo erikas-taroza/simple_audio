@@ -103,7 +103,8 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateApiApiPlayerWrapperOpen(
       {required PlayerWrapper that,
       required String path,
-      required bool autoplay});
+      required bool autoplay,
+      String? mimeType});
 
   Future<void> crateApiApiPlayerWrapperPause({required PlayerWrapper that});
 
@@ -120,7 +121,7 @@ abstract class RustLibApi extends BaseApi {
   Stream<PlaybackState> crateApiApiPlayerWrapperPlaybackStateStream();
 
   Future<void> crateApiApiPlayerWrapperPreload(
-      {required PlayerWrapper that, required String path});
+      {required PlayerWrapper that, required String path, String? mimeType});
 
   Future<ProgressState> crateApiApiPlayerWrapperProgress(
       {required PlayerWrapper that});
@@ -409,7 +410,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<void> crateApiApiPlayerWrapperOpen(
       {required PlayerWrapper that,
       required String path,
-      required bool autoplay}) {
+      required bool autoplay,
+      String? mimeType}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -417,6 +419,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_box_autoadd_player_wrapper(that, serializer);
           sse_encode_String(path, serializer);
           sse_encode_bool(autoplay, serializer);
+          sse_encode_opt_String(mimeType, serializer);
           pdeCallFfi(generalizedFrbRustBinding, serializer,
               funcId: 10, port: port_);
         },
@@ -425,7 +428,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_error,
         ),
         constMeta: kCrateApiApiPlayerWrapperOpenConstMeta,
-        argValues: [that, path, autoplay],
+        argValues: [that, path, autoplay, mimeType],
         apiImpl: this,
       ),
     );
@@ -434,7 +437,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiApiPlayerWrapperOpenConstMeta =>
       const TaskConstMeta(
         debugName: "player_wrapper_open",
-        argNames: ["that", "path", "autoplay"],
+        argNames: ["that", "path", "autoplay", "mimeType"],
       );
 
   @override
@@ -611,13 +614,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<void> crateApiApiPlayerWrapperPreload(
-      {required PlayerWrapper that, required String path}) {
+      {required PlayerWrapper that, required String path, String? mimeType}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_player_wrapper(that, serializer);
           sse_encode_String(path, serializer);
+          sse_encode_opt_String(mimeType, serializer);
           pdeCallFfi(generalizedFrbRustBinding, serializer,
               funcId: 17, port: port_);
         },
@@ -626,7 +630,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_error,
         ),
         constMeta: kCrateApiApiPlayerWrapperPreloadConstMeta,
-        argValues: [that, path],
+        argValues: [that, path, mimeType],
         apiImpl: this,
       ),
     );
@@ -635,7 +639,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiApiPlayerWrapperPreloadConstMeta =>
       const TaskConstMeta(
         debugName: "player_wrapper_preload",
-        argNames: ["that", "path"],
+        argNames: ["that", "path", "mimeType"],
       );
 
   @override
@@ -930,6 +934,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
   PlaybackState dco_decode_playback_state(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return PlaybackState.values[raw as int];
@@ -1091,6 +1101,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
   }
 
   @protected
@@ -1274,6 +1295,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
   }
 
   @protected

@@ -102,9 +102,10 @@ class PlayerWrapper {
       RustLib.instance.api.crateApiApiPlayerWrapperNormalizeVolume(
           that: this, shouldNormalize: shouldNormalize);
 
-  Future<void> open({required String path, required bool autoplay}) => RustLib
-      .instance.api
-      .crateApiApiPlayerWrapperOpen(that: this, path: path, autoplay: autoplay);
+  Future<void> open(
+          {required String path, required bool autoplay, String? mimeType}) =>
+      RustLib.instance.api.crateApiApiPlayerWrapperOpen(
+          that: this, path: path, autoplay: autoplay, mimeType: mimeType);
 
   Future<void> pause() => RustLib.instance.api.crateApiApiPlayerWrapperPause(
         that: this,
@@ -130,8 +131,9 @@ class PlayerWrapper {
   static Stream<PlaybackState> playbackStateStream() =>
       RustLib.instance.api.crateApiApiPlayerWrapperPlaybackStateStream();
 
-  Future<void> preload({required String path}) => RustLib.instance.api
-      .crateApiApiPlayerWrapperPreload(that: this, path: path);
+  Future<void> preload({required String path, String? mimeType}) =>
+      RustLib.instance.api.crateApiApiPlayerWrapperPreload(
+          that: this, path: path, mimeType: mimeType);
 
   Future<ProgressState> progress() =>
       RustLib.instance.api.crateApiApiPlayerWrapperProgress(

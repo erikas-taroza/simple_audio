@@ -155,10 +155,10 @@ impl Decoder
         match recv {
             None => (),
             Some(message) => match message {
-                DecoderEvent::Open(source, buffer_signal) => {
+                DecoderEvent::Open(source, buffer_signal, mime_type) => {
                     self.cpal_output.flush()?;
                     self.output_writer = None;
-                    self.playback = Some(Self::open(source, buffer_signal)?);
+                    self.playback = Some(Self::open(source, buffer_signal, mime_type)?);
 
                     if let Some(playback) = &self.playback {
                         self.controls
@@ -207,10 +207,10 @@ impl Decoder
                     self.cpal_output = CpalOutput::new(self.controls.clone())?;
                     self.output_writer = None;
                 }
-                DecoderEvent::Preload(source, buffer_signal) => {
+                DecoderEvent::Preload(source, buffer_signal, mime_type) => {
                     self.preload_playback = None;
                     self.controls.set_is_file_preloaded(false);
-                    let handle = self.preload(source, buffer_signal);
+                    let handle = self.preload(source, buffer_signal, mime_type);
                     self.preload_thread = Some(handle);
                 }
                 DecoderEvent::PlayPreload => {
@@ -448,6 +448,7 @@ impl Decoder
     fn open(
         source: Box<dyn MediaSource>,
         buffer_signal: Arc<AtomicBool>,
+        mime_type: Option<String>,
     ) -> anyhow::Result<Playback>
     {
         let mss = MediaSourceStream::new(source, Default::default());
@@ -457,8 +458,13 @@ impl Decoder
         };
         let metadata_options: MetadataOptions = Default::default();
 
+        let mut hint = Hint::new();
+        if let Some(mime_type) = mime_type {
+            hint.mime_type(mime_type.as_str());
+        }
+
         let probed = default::get_probe()
-            .format(&Hint::new(), mss, &format_options, &metadata_options)
+            .format(&hint, mss, &format_options, &metadata_options)
             .context("Failed to create format reader.")?;
 
         let reader = probed.format;
@@ -505,10 +511,11 @@ impl Decoder
         &self,
         source: Box<dyn MediaSource>,
         buffer_signal: Arc<AtomicBool>,
+        mime_type: Option<String>,
     ) -> JoinHandle<anyhow::Result<Playback>>
     {
         thread::spawn(move || {
-            let mut playback = Self::open(source, buffer_signal.clone())?;
+            let mut playback = Self::open(source, buffer_signal.clone(), mime_type)?;
             // Preload
             let packet = playback.reader.next_packet()?;
             let buf_ref = playback.decoder.decode(&packet)?;

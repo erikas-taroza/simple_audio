@@ -113,14 +113,14 @@ impl Default for Controls
 /// Messages to communicate with the decoder from the player.
 pub enum DecoderEvent
 {
-    Open(Box<dyn MediaSource>, Arc<AtomicBool>),
+    Open(Box<dyn MediaSource>, Arc<AtomicBool>, Option<String>),
     Play,
     Pause,
     Stop,
     /// Called by `cpal_output` in the event the device outputting
     /// audio was changed/disconnected.
     DeviceChanged,
-    Preload(Box<dyn MediaSource>, Arc<AtomicBool>),
+    Preload(Box<dyn MediaSource>, Arc<AtomicBool>, Option<String>),
     PlayPreload,
     ClearPreload,
 }

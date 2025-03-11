@@ -147,14 +147,19 @@ impl PlayerWrapper
         self.internal.volume()
     }
 
-    pub fn open(&self, path: String, autoplay: bool) -> Result<(), Error>
+    pub fn open(&self, path: String, autoplay: bool, mime_type: Option<String>)
+        -> Result<(), Error>
     {
-        self.internal.open(path, autoplay).map_err(|err| err.into())
+        self.internal
+            .open(path, autoplay, mime_type)
+            .map_err(|err| err.into())
     }
 
-    pub fn preload(&self, path: String) -> Result<(), Error>
+    pub fn preload(&self, path: String, mime_type: Option<String>) -> Result<(), Error>
     {
-        self.internal.preload(path).map_err(|err| err.into())
+        self.internal
+            .preload(path, mime_type)
+            .map_err(|err| err.into())
     }
 
     pub fn play_preload(&self)
