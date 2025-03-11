@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'package:args/command_runner.dart';
+import "package:args/command_runner.dart";
 
 abstract class CliCommand extends Command<int> {
   bool get verbose => true;

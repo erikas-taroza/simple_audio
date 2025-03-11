@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:io';
+import "dart:io";
 
-import 'package:yaml_edit/yaml_edit.dart';
+import "package:yaml_edit/yaml_edit.dart";
 
-import '../cli_command.dart';
+import "../cli_command.dart";
 
 mixin PackageInfo on CliCommand {
   String get frbVersion => "2.7.0";

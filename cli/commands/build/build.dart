@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:io';
+import "dart:io";
 
-import '../../cli_command.dart';
-import 'subcommands/android.dart';
-import 'subcommands/ios.dart';
-import 'subcommands/linux.dart';
-import 'subcommands/macos.dart';
-import 'subcommands/windows.dart';
+import "../../cli_command.dart";
+import "subcommands/android.dart";
+import "subcommands/ios.dart";
+import "subcommands/linux.dart";
+import "subcommands/macos.dart";
+import "subcommands/windows.dart";
 
 class BuildCommand extends CliCommand {
   @override

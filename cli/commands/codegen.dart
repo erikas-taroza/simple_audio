@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:io';
+import "dart:io";
 
-import 'package:io/io.dart';
-import 'package:yaml/yaml.dart';
-import 'package:yaml_edit/yaml_edit.dart';
+import "package:io/io.dart";
+import "package:yaml/yaml.dart";
+import "package:yaml_edit/yaml_edit.dart";
 
-import '../cli_command.dart';
-import '../mixins/cli_logger.dart';
-import '../mixins/package_info.dart';
-import '../mixins/process_runner.dart';
+import "../cli_command.dart";
+import "../mixins/cli_logger.dart";
+import "../mixins/package_info.dart";
+import "../mixins/process_runner.dart";
 
 class CodegenCommand extends CliCommand
     with CliLogger, ProcessRunner, PackageInfo {

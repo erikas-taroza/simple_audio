@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:convert';
-import 'dart:io';
+import "dart:convert";
+import "dart:io";
 
-import 'package:mason_logger/mason_logger.dart';
+import "package:mason_logger/mason_logger.dart";
 
-import '../cli_command.dart';
+import "../cli_command.dart";
 
 mixin ProcessRunner on CliCommand {
   Future<int> runProcess(

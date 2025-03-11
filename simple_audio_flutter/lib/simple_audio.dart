@@ -14,4 +14,4 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-export 'package:simple_audio/src/simple_audio.dart';
+export "package:simple_audio/src/simple_audio.dart";

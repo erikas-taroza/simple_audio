@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:async';
+import "dart:async";
 
-import 'rust/api/api.dart';
-import 'rust/frb_generated.dart';
+import "rust/api/api.dart";
+import "rust/frb_generated.dart";
 
-export 'rust/api/api.dart' hide PlayerWrapper, $ErrorCopyWith;
+export "rust/api/api.dart" hide PlayerWrapper, $ErrorCopyWith;
 
 late final PlayerWrapper _player;
 

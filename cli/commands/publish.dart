@@ -14,15 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'package:collection/collection.dart';
-import 'package:github/github.dart';
-import 'package:io/io.dart';
-import 'package:pub_updater/pub_updater.dart';
+import "package:collection/collection.dart";
+import "package:github/github.dart";
+import "package:io/io.dart";
+import "package:pub_updater/pub_updater.dart";
 
-import '../cli_command.dart';
-import '../mixins/cli_logger.dart';
-import '../mixins/package_info.dart';
-import '../mixins/process_runner.dart';
+import "../cli_command.dart";
+import "../mixins/cli_logger.dart";
+import "../mixins/package_info.dart";
+import "../mixins/process_runner.dart";
 
 class PublishCommand extends CliCommand
     with CliLogger, ProcessRunner, PackageInfo {

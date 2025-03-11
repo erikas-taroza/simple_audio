@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
-import 'package:args/command_runner.dart';
+import "package:args/command_runner.dart";
 
-import '../commands/build/build.dart';
-import '../commands/publish.dart';
-import '../commands/update.dart';
-import '../commands/codegen.dart';
-import '../mixins/package_info.dart';
+import "../commands/build/build.dart";
+import "../commands/publish.dart";
+import "../commands/update.dart";
+import "../commands/codegen.dart";
+import "../mixins/package_info.dart";
 
 void main(List<String> args) {
   final CommandRunner<int> runner =
