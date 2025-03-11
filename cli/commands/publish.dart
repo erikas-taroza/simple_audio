@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License along with this program.
 // If not, see <https://www.gnu.org/licenses/>.
 
+import "dart:io";
+
 import "package:collection/collection.dart";
 import "package:github/github.dart";
 import "package:io/io.dart";
@@ -101,12 +103,14 @@ Found: $releaseAssetsNames""",
     }
 
     // Run the pub publish command.
-    int result = await runProcess(
+    final Process process = await Process.start(
       "flutter",
       ["pub", "publish", if (isDryRun) "--dry-run"],
       workingDirectory: "$projectRootDirectory/$packageName",
-      logger: logger,
+      mode: ProcessStartMode.inheritStdio,
     );
+
+    final int result = await process.exitCode;
 
     if (result != ExitCode.success.code) {
       github.dispose();
