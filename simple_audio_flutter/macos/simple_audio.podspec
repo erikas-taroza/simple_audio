@@ -3,12 +3,12 @@ version = "2.0.6"
 lib_url = "https://github.com/erikas-taroza/simple_audio/releases/download/v#{version}/macos.zip"
 
 `
-mkdir Libs
-cd Libs
+mkdir Frameworks
+cd Frameworks
 if [ ! -f macos.zip ]
 then
   curl -L "#{lib_url}" -o macos.zip
-  unzip macos.zip
+  unzip macos.zip -d 'simple_audio_flutter.xcframework'
 fi
 cd ..
 `
@@ -27,7 +27,9 @@ Pod::Spec.new do |s|
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'FlutterMacOS'
-  s.vendored_libraries = 'Libs/**/*'
+  # s.vendored_libraries = 'Libs/**/*.a'
+  s.vendored_frameworks = 'Frameworks/**/*.xcframework'
+  s.static_framework = true
 
   s.platform = :osx, '10.11'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
